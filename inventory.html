@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Styles/style.css">
+    <link rel="stylesheet" href="Styles/pages.css">
 </head>
 <body>
     <div class="sidebar">
@@ -32,14 +33,28 @@
         </header>
 
         <div class="card">
-            <h2>Mi Inventario</h2>
-            <p style="color: var(--text-muted);">Administra tus productos y existencias.</p>
-            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                <button class="rol-selector" style="width: auto; padding: 10px 20px;">+ Agregar Producto</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Mi Inventario</h2>
+                <button class="rol-selector" style="width: auto; margin: 0;">+ Nuevo Producto</button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script src="javascripts/rolusuario.js"></script>
+    <script src="javascripts/inventory.js"></script>
 </body>
 </html>

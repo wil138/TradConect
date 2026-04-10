@@ -1,0 +1,71 @@
+/* Estilos compartidos para las páginas de gestión */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    background: var(--card);
+    border-radius: 12px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th, td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    background: var(--blue-soft);
+    color: var(--blue-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-completed { background: #d1fae5; color: #065f46; }
+.status-shipped { background: #dbeafe; color: #1e40af; }
+
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--blue-primary);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.2s;
+}
+
+.action-btn:hover {
+    color: var(--blue-hover);
+    transform: scale(1.1);
+}
+
+/* Formularios */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    outline: none;
+}

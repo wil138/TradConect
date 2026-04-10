@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Styles/style.css">
+    <link rel="stylesheet" href="Styles/pages.css">
 </head>
 <body>
     <div class="sidebar">
@@ -33,13 +34,24 @@
 
         <div class="card">
             <h2>Facturación y Pagos</h2>
-            <p style="color: var(--text-muted);">Historial de facturas y estados de pago.</p>
-            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                <p>No se encontraron facturas registradas.</p>
+            <div class="table-container" style="margin-top: 20px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nº Factura</th>
+                            <th>Fecha</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script src="javascripts/rolusuario.js"></script>
+    <script src="javascripts/invoices.js"></script>
 </body>
 </html>
