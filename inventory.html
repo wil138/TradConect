@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario | Commerce Connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Styles/style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="institucion">
+            <div class="logo">
+                <div class="logocolor"><samp class="iniciallogo">CC</samp></div>
+                <span class="nombrelogo">Commerce Connect</span>
+            </div>
+        </div>
+        <div class="rol-selector" onclick="ToggleRole()">
+            <span id="role-text">Modo: Proveedor</span>
+        </div>
+        <div id="menu"></div>
+    </div>
+    <div class="overlay"></div>
+
+    <div class="main">
+        <header class="header">
+            <button class="menu-btn" onclick="toggleMenu()">☰</button>
+            <div class="header-search-container">
+                <input placeholder="Buscar en inventario..." />
+            </div>
+            <span>👤</span>
+        </header>
+
+        <div class="card">
+            <h2>Mi Inventario</h2>
+            <p style="color: var(--text-muted);">Administra tus productos y existencias.</p>
+            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <button class="rol-selector" style="width: auto; padding: 10px 20px;">+ Agregar Producto</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="javascripts/rolusuario.js"></script>
+</body>
+</html>

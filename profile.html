@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Perfil | Commerce Connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Styles/style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="institucion">
+            <div class="logo">
+                <div class="logocolor"><samp class="iniciallogo">CC</samp></div>
+                <span class="nombrelogo">Commerce Connect</span>
+            </div>
+        </div>
+        <div class="rol-selector" onclick="ToggleRole()">
+            <span id="role-text">Modo: Proveedor</span>
+        </div>
+        <div id="menu"></div>
+    </div>
+    <div class="overlay"></div>
+
+    <div class="main">
+        <header class="header">
+            <button class="menu-btn" onclick="toggleMenu()">☰</button>
+            <span>👤</span>
+        </header>
+
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 100px; height: 100px; background: var(--blue-soft); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem; color: var(--blue-primary);">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h2>Juan Pérez</h2>
+                <p style="color: var(--text-muted);">juan.perez@ejemplo.com</p>
+            </div>
+            <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <p><strong>Empresa:</strong> Suministros Pro S.A.</p>
+                <p><strong>Rol:</strong> Administrador</p>
+                <button class="rol-selector" style="width: 100%; margin-top: 20px;">Editar Perfil</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="javascripts/rolusuario.js"></script>
+</body>
+</html>
