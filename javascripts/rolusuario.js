@@ -1,91 +1,95 @@
+// --- Gestión del Sidebar ---
 function toggleMenu() {
-  const sidebar = document.querySelector(".sidebar");
-  const overlay = document.querySelector(".overlay");
-
-  // Alternar el estado del sidebar y el overlay
-  sidebar.classList.toggle("active");
-  overlay.classList.toggle("active");
-}
-
-  // Cerrar el sidebar al hacer clic en el overlay
-  const overlay = document.querySelector(".overlay");
-  overlay.addEventListener("click", () => {
     const sidebar = document.querySelector(".sidebar");
-
-    // Asegurar que el sidebar y el overlay se cierren
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-  });
-
-const sidebar = document.getElementById("sidebar");
-const menu = document.getElementById("menu");
-const openBtn = document.getElementById("openBtn");
-const closeBtn = document.getElementById("closeBtn");
-
-// 🔁 Estado
-let role = "provider"; // 'provider' | 'client'
-let isOpen = false;
-
-// 📦 Menús
-const clientMenu = [
-  { label: "Marketplace", href: "/marketplace" },
-  { label: "Mis Pedidos", href: "/my-orders" },
-  { label: "Mis Facturas", href: "/invoices" },
-  { label: "Mi Perfil", href: "/profile" },
-];
-
-const providerMenu = [
-  { label: "Dashboard", href: "/" },
-  { label: "Mi Inventario", href: "/inventory" },
-  { label: "Pedidos Recibidos", href: "/orders" },
-  { label: "Facturación", href: "/invoices" },
-  { label: "Análisis Estratégico", href: "/analytics" },
-];
-// cambio de rol
-function ToggleRole() {
-  role = (role === "provider") ? "client" : "provider";
-
-  const textopantalla = document.getElementById("role-text");
-
-  if (textopantalla) {
-    // Cambiar el texto dinámico del rol
-    textopantalla.textContent = `Modo: ${role === 'provider' ? 'Proveedor' : 'Cliente'}`;
-  }
-
-  renderMenu();
+    const overlay = document.querySelector(".overlay");
+    
+    sidebar.classList.toggle("active");
+    overlay.classList.toggle("active");
 }
 
-// Inicializar logo dinámicamente
+// Cerrar al hacer clic en el overlay
 document.addEventListener("DOMContentLoaded", () => {
-  const logoContainer = document.querySelector(".logo");
-
-  if (logoContainer) {
-    logoContainer.innerHTML = `
-      <div class="logocolor">
-        <samp class="iniciallogo">CC</samp>
-      </div>
-      <span class="nombrelogo">Commerce Connect</span>
-    `;
-  }
-
-  renderMenu();
+    const overlay = document.querySelector(".overlay");
+    if (overlay) {
+        overlay.addEventListener("click", toggleMenu);
+    }
+    
+    // Inicializar menú
+    renderMenu();
 });
 
-// 🧠 Render dinámico
-function renderMenu() {
-  const items = role === "provider" ? providerMenu : clientMenu;
+// --- Gestión de Roles y Menú ---
+let currentRole = localStorage.getItem('userRole') || "provider";
 
-  menu.innerHTML = "";
+const menus = {
+    client: [
+        { label: "Marketplace", href: "marketplace.html", icon: "fa-shop" },
+        { label: "Mis Pedidos", href: "#", icon: "fa-box" },
+        { label: "Mis Facturas", href: "#", icon: "fa-file-invoice" },
+        { label: "Mi Perfil", href: "#", icon: "fa-user" }
+    ],
+    provider: [
+        { label: "Dashboard", href: "index.html", icon: "fa-chart-line" },
+        { label: "Mi Inventario", href: "#", icon: "fa-warehouse" },
+        { label: "Pedidos Recibidos", href: "#", icon: "fa-clipboard-list" },
+        { label: "Facturación", href: "#", icon: "fa-file-invoice-dollar" },
+        { label: "Análisis", href: "#", icon: "fa-microchip" }
+    ]
+};
 
-  items.forEach(item => {
-    const btn = document.createElement("button");
-    btn.textContent = item.label;
-
-    btn.onclick = () => {
-      window.location.href = item.href;
-    };
-
-    menu.appendChild(btn);
-  });
+function ToggleRole() {
+    currentRole = (currentRole === "provider") ? "client" : "provider";
+    localStorage.setItem('userRole', currentRole);
+    
+    // Actualizar texto del botón de rol
+    const roleText = document.getElementById("role-text");
+    if (roleText) {
+        roleText.textContent = `Modo: ${currentRole === 'provider' ? 'Proveedor' : 'Cliente'}`;
+    }
+    
+    renderMenu();
+    
+    // Redirigir si es necesario (opcional)
+    if (currentRole === 'client' && window.location.pathname.includes('index.html')) {
+        // window.location.href = 'marketplace.html';
+    }
 }
-document.addEventListener("DOMContentLoaded", renderMenu);
+
+function renderMenu() {
+    const menuContainer = document.getElementById("menu");
+    if (!menuContainer) return;
+
+    const items = menus[currentRole];
+    menuContainer.innerHTML = "";
+
+    items.forEach(item => {
+        const link = document.createElement("a");
+        link.href = item.href;
+        link.className = "menu-item";
+        
+        // Marcar como activo si la URL coincide
+        if (window.location.pathname.includes(item.href)) {
+            link.classList.add("active");
+        }
+
+        link.innerHTML = `
+            <i class="fa-solid ${item.icon}" style="width: 20px; margin-right: 10px;"></i>
+            <span>${item.label}</span>
+        `;
+
+        link.onclick = (e) => {
+            if (item.href === "#") {
+                e.preventDefault();
+                console.log(`Navegando a: ${item.label}`);
+            }
+        };
+
+        menuContainer.appendChild(link);
+    });
+
+    // Actualizar el texto del rol al cargar
+    const roleText = document.getElementById("role-text");
+    if (roleText) {
+        roleText.textContent = `Modo: ${currentRole === 'provider' ? 'Proveedor' : 'Cliente'}`;
+    }
+}
