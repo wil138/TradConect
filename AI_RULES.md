@@ -1,26 +1,22 @@
-# AI Development Rules - TradConect
+# Reglas de Desarrollo AI - TradConect
 
-## Tech Stack
-- **Framework**: React with TypeScript for robust, type-safe frontend development.
-- **Styling**: Tailwind CSS for utility-first styling and responsive design.
-- **UI Components**: shadcn/ui for high-quality, accessible, and customizable components.
-- **Icons**: Lucide React for a consistent and modern icon set.
-- **Routing**: React Router for client-side navigation and page management.
-- **Data Visualization**: Chart.js for interactive dashboards and analytical charts.
-- **State Management**: React Hooks (useState, useMemo, useEffect) for local and shared state.
-- **Backend/Auth**: Supabase for database, authentication, and real-time features.
+## Stack Tecnológico
+- **Lenguaje**: JavaScript (ES6+) para la lógica del lado del cliente.
+- **Estructura**: HTML5 semántico para la maquetación de las páginas.
+- **Estilos**: CSS3 personalizado con variables para mantener la consistencia visual.
+- **Iconos**: Font Awesome 6.0 para la iconografía del sitio.
+- **Fuentes**: Google Fonts (Inter) para una tipografía moderna y legible.
+- **Visualización de Datos**: Chart.js para los tableros de control y gráficos analíticos.
+- **Organización**: Separación clara entre archivos HTML (raíz), CSS (carpeta Styles/) y JS (carpeta javascripts/).
 
-## Library Usage Rules
-- **UI/UX**: Always prioritize **shadcn/ui** components. Do not reinvent buttons, inputs, or modals.
-- **Styling**: Use **Tailwind CSS** classes exclusively. Avoid writing custom CSS files unless absolutely necessary for complex animations.
-- **Icons**: Use **Lucide React** icons. Only use Font Awesome if a specific icon is missing from Lucide.
-- **Charts**: Use **Chart.js** for all data visualizations, ensuring they are responsive and follow the app's color palette.
-- **Navigation**: All routes must be defined in `src/App.tsx`. Use `Link` from `react-router-dom` for internal navigation.
-- **Components**: Keep components small (under 100 lines). Create new files in `src/components/` for every new UI element.
-- **Pages**: Place top-level views in `src/pages/`. The entry point is `src/pages/Index.tsx`.
-- **Logic**: Keep business logic separated from UI components using custom hooks when complexity grows.
+## Reglas de Uso de Librerías y Estructura
+- **HTML**: Mantener los archivos HTML limpios y utilizar etiquetas semánticas (`<header>`, `<main>`, `<aside>`, `<footer>`).
+- **CSS**: Utilizar variables CSS (`:root`) para colores y espaciados. Los archivos deben residir en la carpeta `Styles/`.
+- **JavaScript**: Utilizar funciones modulares y evitar contaminar el scope global. Los archivos deben residir en la carpeta `javascripts/`.
+- **Gráficos**: Utilizar **Chart.js** para todas las visualizaciones, asegurando que sean responsivas mediante la configuración `responsive: true`.
+- **Interactividad**: Priorizar la manipulación del DOM nativa (`document.getElementById`, `querySelector`) para mantener el proyecto ligero.
 
-## General Principles
-- **Simplicity**: Keep code elegant and avoid over-engineering.
-- **Responsiveness**: Every component and page must be fully responsive (mobile-first).
-- **Type Safety**: Define interfaces for all data structures and component props.
+## Principios Generales
+- **Simplicidad**: Mantener el código elegante y evitar librerías innecesarias.
+- **Responsividad**: Cada página debe ser totalmente adaptable a dispositivos móviles.
+- **Mantenibilidad**: Comentar las secciones clave del código JS y CSS para facilitar futuras modificaciones.
