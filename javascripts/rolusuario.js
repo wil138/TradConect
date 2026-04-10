@@ -7,15 +7,15 @@ function toggleMenu() {
   overlay.classList.toggle("active");
 }
 
-// Cerrar el sidebar al hacer clic en el overlay
-const overlay = document.querySelector(".overlay");
-overlay.addEventListener("click", () => {
-  const sidebar = document.querySelector(".sidebar");
+  // Cerrar el sidebar al hacer clic en el overlay
+  const overlay = document.querySelector(".overlay");
+  overlay.addEventListener("click", () => {
+    const sidebar = document.querySelector(".sidebar");
 
-  // Asegurar que el sidebar y el overlay se cierren
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-});
+    // Asegurar que el sidebar y el overlay se cierren
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+  });
 
 const sidebar = document.getElementById("sidebar");
 const menu = document.getElementById("menu");
