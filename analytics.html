@@ -33,32 +33,15 @@
         </header>
 
         <div class="card">
-            <h2>Análisis Avanzado</h2>
-            <p style="color: var(--text-muted);">Métricas detalladas de tu rendimiento.</p>
-            <div style="height: 300px; margin-top: 20px;">
+            <h2>Análisis de Rendimiento</h2>
+            <p style="color: var(--text-muted);">Visualiza el crecimiento de tu negocio en el último mes.</p>
+            <div style="height: 400px; margin-top: 20px;">
                 <canvas id="analyticsChart"></canvas>
             </div>
         </div>
     </div>
 
     <script src="javascripts/rolusuario.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const ctx = document.getElementById('analyticsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
-                    datasets: [{
-                        label: 'Rendimiento',
-                        data: [65, 59, 80, 81],
-                        borderColor: '#2563eb',
-                        tension: 0.4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        });
-    </script>
+    <script src="javascripts/analytics.js"></script>
 </body>
 </html>
