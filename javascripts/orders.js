@@ -1,145 +1,57 @@
+
+// Datos Simulados basados en la imagen
 const ordersData = [
-    { id: "#ORD-001", date: "2023-10-25", client: "Construcciones S.A.", total: "$1,250.00", status: "completed" },
-    { id: "#ORD-002", date: "2023-10-26", client: "Ferretería Central", total: "$450.00", status: "pending" },
-    { id: "#ORD-003", date: "2023-10-27", client: "Ingeniería Moderna", total: "$2,100.00", status: "shipped" }
+    { id: "ORD-9917", client: "Ferretería El Martillo", initial: "FE", date: "22 May, 2025", items: 20, total: 1800.00, status: "Cancelado" },
+    { id: "ORD-9921", client: "Ferretería El Martillo", initial: "FE", date: "24 May, 2024", items: 12, total: 1250.00, status: "Pendiente" },
+    { id: "ORD-9920", client: "Constructora Norte", initial: "CO", date: "23 May, 2024", items: 45, total: 4500.50, status: "Enviado" },
+    { id: "ORD-9919", client: "Suministros León", initial: "SU", date: "23 May, 2024", items: 8, total: 890.00, status: "Entregado" },
+    { id: "ORD-9918", client: "Agropecuaria Central", initial: "AG", date: "22 May, 2024", items: 15, total: 2100.00, status: "Cancelado" },
 ];
 
-function renderOrders() {
-    constthink
-The user is pointing out that my previous response was cut off. I need to continue the code generation exactly where it stopped.
+function renderOrders(filterStatus = 'todos') {
+    const tableBody = document.getElementById('orders-table-body');
+    tableBody.innerHTML = ''; // Limpiar tabla
 
-The previous response stopped at:
-`<dyad-write path="javascripts/orders.js" description="Lógica para renderizar y gestionar pedidos.">`
-`const ordersData = [`
-`    { id: "#ORD-001", date: "2023-10-25", client: "Construcciones S.A.", total: "$1,250.00", status: "completed" },`
-`    { id: "#ORD-002", date: "2023-10-26", client: "Ferretería Central", total: "$450.00", status: "pending" },`
-`    { id: "#ORD-003", date: "2023-10-27", client: "Ingeniería Moderna", total: "$2,100.00", status: "shipped" }`
-`];`
+    const filteredOrders = filterStatus === 'todos'
+        ? ordersData
+        : ordersData.filter(order => order.status === filterStatus);
 
-`function renderOrders() {`
-`    const`
+    filteredOrders.forEach(order => {
+        const statusClass = `badge-${order.status.toLowerCase()}`;
 
-I need to complete `javascripts/orders.js` and then continue with the other files requested (CSS and JS for each page).
-
-Files to complete/create:
-1. `javascripts/orders.js` (finish)
-2. `javascripts/inventory.js`
-3. `javascripts/invoices.js`
-4. `javascripts/analytics.js`
-5. `javascripts/profile.js`
-6. Update HTML files to include these scripts and the new CSS.
-
-Wait, the user asked for "css y js respectivo para cada uno". I already started `Styles/pages.css`.
-
-Let's finish `javascripts/orders.js` first.
-
-Then `javascripts/inventory.js`.
-Then `javascripts/invoices.js`.
-Then `javascripts/analytics.js`.
-Then `javascripts/profile.js`.
-
-And I should update the HTML files to link these.
-
-Actually, I'll just provide the full content of the files that were missing or incomplete.
-
-The previous response ended at `const` inside `renderOrders`.
-
-```javascript
-    const container = document.getElementById('ordersTableBody');
-    if (!container) return;
-
-    container.innerHTML = ordersData.map(order => `
-        <tr>
-            <td>${order.id}</td>
-            <td>${order.date}</td>
-            <td>${order.client}</td>
-            <td>${order.total}</td>
-            <td><span class="status-badge status-${order.status}">${order.status}</span></td>
-            <td>
-                <button class="action-btn"><i class="fa-solid fa-eye"></i></button>
-                <button class="action-btn"><i class="fa-solid fa-download"></i></button>
-            </td>
-        </tr>
-    `).join('');
+        const row = `
+                    <tr>
+                        <td><a href="#" class="order-id">${order.id}</a></td>
+                        <td>
+                            <div class="client-info">
+                                <div class="avatar-circle">${order.initial}</div>
+                                <span>${order.client}</span>
+                            </div>
+                        </td>
+                        <td style="color: var(--text-muted)">${order.date}</td>
+                        <td class="items-count">${order.items}</td>
+                        <td class="price-cell">$${order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td>
+                            <span class="badge ${statusClass}">${order.status}</span>
+                        </td>
+                    </tr>
+                `;
+        tableBody.innerHTML += row;
+    });
 }
 
-document.addEventListener('DOMContentLoaded', renderOrders);
-```
+// Lógica de las pestañas (Tabs)
+document.querySelectorAll('.tab-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        // Cambiar clase activa
+        document.querySelector('.tab-btn.active').classList.remove('active');
+        button.classList.add('active');
 
-Then `javascripts/inventory.js`:
-```javascript
-const inventoryData = [
-    { id: 1, name: "Cemento Canal 42.5kg", stock: 150, price: "$12.50", category: "Construcción" },
-    { id: 2, name: "Hierro Corrugado 3/8", stock: 45, price: "$8.75", category: "Metales" },
-    { id: 3, name: "Pintura Látex Blanca", stock: 12, price: "$85.00", category: "Acabados" }
-];
+        // Filtrar datos
+        const filterValue = button.getAttribute('data-filter');
+        renderOrders(filterValue);
+    });
+});
 
-function renderInventory() {
-    const container = document.getElementById('inventoryTableBody');
-    if (!container) return;
-
-    container.innerHTML = inventoryData.map(item => `
-        <tr>
-            <td>${item.name}</td>
-            <td>${item.category}</td>
-            <td>${item.stock}</td>
-            <td>${item.price}</td>
-            <td>
-                <button class="action-btn"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button class="action-btn" style="color: #ef4444;"><i class="fa-solid fa-trash"></i></button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-document.addEventListener('DOMContentLoaded', renderInventory);
-```
-
-Then `javascripts/invoices.js`:
-```javascript
-const invoicesData = [
-    { id: "INV-2023-001", date: "2023-10-20", amount: "$1,250.00", status: "paid" },
-    { id: "INV-2023-002", date: "2023-10-22", amount: "$450.00", status: "pending" }
-];
-
-function renderInvoices() {
-    const container = document.getElementById('invoicesTableBody');
-    if (!container) return;
-
-    container.innerHTML = invoicesData.map(inv => `
-        <tr>
-            <td>${inv.id}</td>
-            <td>${inv.date}</td>
-            <td>${inv.amount}</td>
-            <td><span class="status-badge status-${inv.status === 'paid' ? 'completed' : 'pending'}">${inv.status}</span></td>
-            <td>
-                <button class="action-btn"><i class="fa-solid fa-file-pdf"></i></button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-document.addEventListener('DOMContentLoaded', renderInvoices);
-```
-
-I also need to update the HTML files to have the correct table structures and script tags.
-
-Let's go.container = document.getElementById('ordersTableBody');
-    if (!container) return;
-
-    container.innerHTML = ordersData.map(order => `
-        <tr>
-            <td>${order.id}</td>
-            <td>${order.date}</td>
-            <td>${order.client}</td>
-            <td>${order.total}</td>
-            <td><span class="status-badge status-${order.status}">${order.status}</span></td>
-            <td>
-                <button class="action-btn"><i class="fa-solid fa-eye"></i></button>
-                <button class="action-btn"><i class="fa-solid fa-download"></i></button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-document.addEventListener('DOMContentLoaded', renderOrders);
+// Carga inicial
+window.onload = () => renderOrders('todos');

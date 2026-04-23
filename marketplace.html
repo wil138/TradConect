@@ -1,94 +1,125 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suministros Pro | Marketplace</title>
 
-    <!-- Referencia al archivo CSS principal de prueba.html -->
-    <link rel="stylesheet" href="styles/marketplace.css">
 
+    <link rel="stylesheet" href="styles/style.css">
     <!-- Iconos y fuentes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
-
-<header class="main-header">
-    <div class="container header-top">
-        <div class="search-container">
-            <i class="fas fa-search"></i>
-            <input type="text" id="globalSearch" placeholder="Buscar pedidos, productos...">
-        </div>
-
-        <div class="user-actions">
-            <div class="cart-icon-wrapper" id="cartToggle">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cartCount">0</span>
-            </div>
-
-            <i class="far fa-bell"></i>
-
-            <div class="user-profile">
-                <div class="user-info-text">
-                    <span class="user-name">Juan Pérez</span>
-                    <span class="user-status">Premium</span>
+    <!-- 🧭 Sidebar -->
+    <div class="sidebar">
+        <div class="institucion">
+            <div class="logo">
+                <div class="logocolor">
+                    <span class="iniciallogo">CC</span>
                 </div>
-                <div class="user-avatar">JP</div>
+                <span class="nombrelogo">Commerce</span>
+                <span class="nombrelogo">Conect</span>
             </div>
         </div>
+        <div class="rol-selector" onclick="ToggleRole()">
+            <span id="role-text">modo: proveedor</span>
+        </div>
+        <div id="menu"></div>
     </div>
-</header>
 
-<main class="container">
-    <section class="hero-section">
-        <h1>Marketplace de Suministros</h1>
-        <p>Materiales de construcción con entrega inmediata.</p>
+    <!-- Overlay para móvil -->
+    <div class="overlay" onclick="toggleMenu()"></div>
 
-        <div class="hero-controls">
-            <div class="sub-search">
-                <i class="fas fa-search"></i>
-                <input type="text" id="productSearch" placeholder="¿Qué buscas para tu obra?">
+    <!-- 📊 Main Content -->
+    <div class="main">
+        <!-- 🔝 Header Principal -->
+        <header class="main-header">
+            <div class="header-top">
+
+                <button class="menu-btn" id="renderMenu" onclick="toggleMenu()">☰</button>
+
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar en Commerce Connect...">
+                </div>
+
+                <div class="user-actions">
+
+                    <div class="cart-icon-wrapper" id="cartToggle">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cartCount">0</span>
+                    </div>
+
+                    <i class="far fa-bell"></i>
+
+                    <div class="user-profile">
+                        <div class="user-info-text">
+                            <span class="user-name">Juan Pérez</span>
+                            <span class="user-status">Premium</span>
+                        </div>
+                        <div class="user-avatar">JP</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+
+
+        <main class="container">
+            <section class="hero-section">
+                <h1>Marketplace de Suministros</h1>
+                <p>Materiales de construcción con entrega inmediata.</p>
+
+                <div class="hero-controls">
+                    <div class="sub-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="productSearch" placeholder="¿Qué buscas para tu obra?">
+                    </div>
+
+                    <button class="btn-filter">
+                        <i class="fas fa-sliders"></i> Filtros
+                    </button>
+                </div>
+            </section>
+
+            <nav class="categories-nav">
+                <button class="cat-btn active" data-category="todos">Todos</button>
+                <button class="cat-btn" data-category="Construcción">Construcción</button>
+                <button class="cat-btn" data-category="Metales">Metales</button>
+                <button class="cat-btn" data-category="Acabados">Acabados</button>
+                <button class="cat-btn" data-category="Plomería">Plomería</button>
+                <button class="cat-btn" data-category="Herramientas">Herramientas</button>
+            </nav>
+
+            <section class="products-grid" id="productsGrid"></section>
+        </main>
+
+        <div class="overlay" id="overlay"></div>
+
+        <aside class="cart-sidebar" id="cartSidebar">
+            <div class="cart-header">
+                <h2>Mi Carrito</h2>
+                <button class="close-btn" id="closeCart">&times;</button>
             </div>
 
-            <button class="btn-filter">
-                <i class="fas fa-sliders"></i> Filtros
-            </button>
-        </div>
-    </section>
+            <div id="cartItems" class="cart-items-container"></div>
 
-    <nav class="categories-nav">
-        <button class="cat-btn active" data-category="todos">Todos</button>
-        <button class="cat-btn" data-category="Construcción">Construcción</button>
-        <button class="cat-btn" data-category="Metales">Metales</button>
-        <button class="cat-btn" data-category="Acabados">Acabados</button>
-        <button class="cat-btn" data-category="Plomería">Plomería</button>
-        <button class="cat-btn" data-category="Herramientas">Herramientas</button>
-    </nav>
+            <div class="cart-footer">
+                <div class="total-row">
+                    <span>Total:</span>
+                    <span id="cartTotal">$0.00</span>
+                </div>
+                <button class="btn-checkout">Procesar Pedido</button>
+            </div>
+        </aside>
 
-    <section class="products-grid" id="productsGrid"></section>
-</main>
-
-<div class="overlay" id="overlay"></div>
-
-<aside class="cart-sidebar" id="cartSidebar">
-    <div class="cart-header">
-        <h2>Mi Carrito</h2>
-        <button class="close-btn" id="closeCart">&times;</button>
-    </div>
-
-    <div id="cartItems" class="cart-items-container"></div>
-
-    <div class="cart-footer">
-        <div class="total-row">
-            <span>Total:</span>
-            <span id="cartTotal">$0.00</span>
-        </div>
-        <button class="btn-checkout">Procesar Pedido</button>
-    </div>
-</aside>
-
-<!-- Referencia al archivo JavaScript principal de prueba.html -->
-<script src="javascripts/marketplace.js"></script>
+        <!-- Referencia al archivo JavaScript principal de prueba.html -->
+        <script src="javascripts/marketplace.js"></script>
+        <script src="javascripts/rolusuario.js"></script>
 </body>
+
 </html>

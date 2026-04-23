@@ -1,46 +1,131 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Inventario | Commerce Connect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="Styles/style.css">
-    <link rel="stylesheet" href="Styles/pages.css">
+    <link rel="stylesheet" href="Styles/style.css" >
 </head>
+
 <body>
+    <!-- 🧭 Sidebar -->
     <div class="sidebar">
         <div class="institucion">
             <div class="logo">
-                <div class="logocolor"><samp class="iniciallogo">CC</samp></div>
-                <span class="nombrelogo">Commerce Connect</span>
+                <div class="logocolor">
+                    <span class="iniciallogo">CC</span>
+                </div>
+                <span class="nombrelogo">Commerce</span>
+                <span class="nombrelogo">Conect</span>
             </div>
         </div>
         <div class="rol-selector" onclick="ToggleRole()">
-            <span id="role-text">Modo: Proveedor</span>
+            <span id="role-text">modo: proveedor</span>
         </div>
         <div id="menu"></div>
     </div>
-    <div class="overlay"></div>
-
+    
+    <!-- Overlay para móvil -->
+    <div class="overlay" onclick="toggleMenu()"></div>
+    
+    <!-- 📊 Main Content -->
     <div class="main">
-        <header class="header">
-            <button class="menu-btn" onclick="toggleMenu()">☰</button>
-            <div class="header-search-container">
-                <input placeholder="Buscar en inventario..." />
-            </div>
-            <span>👤</span>
-        </header>
+         <!-- 🔝 Header Principal -->
+        <header class="main-header">
+            <div class="header-top">
+                <button class="menu-btn" id="renderMenu" onclick="toggleMenu()">☰</button>
+                
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar en Commerce Connect...">
+                </div>
+                
+                <div class="user-actions">
 
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>Mi Inventario</h2>
-                <button class="rol-selector" style="width: auto; margin: 0;">+ Nuevo Producto</button>
+                    <i class="far fa-bell"></i>
+                    
+                    <div class="user-profile">
+                        <div class="user-info-text">
+                            <span class="user-name">Juan Pérez</span>
+                            <span class="user-status">Premium</span>
+                        </div>
+                        <div class="user-avatar">JP</div>
+                    </div>
+                </div>
             </div>
-            <div class="table-container">
-                <table>
+        </header>
+         <div class="card">
+            <div class="inventory-container">
+            <!-- Header del Inventario -->
+            <div class="inventory-header">
+                <h1>📦 Inventario</h1> 
+                <button class="btn-new-product" onclick="openProductModal()">
+                        <i class="fas fa-plus-circle"></i> Nuevo Producto 
+                    </button>
+                
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalProducts">5</div>
+                    <div class="stat-label">Total Productos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalStock">437</div>
+                    <div class="stat-label">Unidades en Stock</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="lowStock">1</div>
+                    <div class="stat-label">Stock Bajo (<20)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="categories">5</div>
+                    <div class="stat-label">Categorías</div>
+                </div>
+            </div>
+
+            <!-- Barra de búsqueda -->
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       class="search-input" 
+                       id="searchInput" 
+                       placeholder="Buscar por código, nombre o categoría...">
+            </div>
+
+            <!-- Pestañas de filtro -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-btn active" data-filter="todos">
+                        <i class="fas fa-list"></i> Todos
+                    </button>
+                    <button class="tab-btn" data-filter="construcción">
+                        <i class="fas fa-hard-hat"></i> Construcción
+                    </button>
+                    <button class="tab-btn" data-filter="plomería">
+                        <i class="fas fa-wrench"></i> Plomería
+                    </button>
+                    <button class="tab-btn" data-filter="acabados">
+                        <i class="fas fa-paint-brush"></i> Acabados
+                    </button>
+                    <button class="tab-btn" data-filter="herramientas">
+                        <i class="fas fa-tools"></i> Herramientas
+                    </button>
+                    <button class="tab-btn" data-filter="metales">
+                        <i class="fas fa-cog"></i> Metales
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de inventario -->
+            <div class="table-wrapper">
+                <table id="inventoryTable">
                     <thead>
                         <tr>
+                            <th>Código</th>
                             <th>Producto</th>
                             <th>Categoría</th>
                             <th>Stock</th>
@@ -48,13 +133,20 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="inventoryTableBody"></tbody>
+                    <tbody id="inventoryTableBody">
+                        <!-- Los datos se cargarán dinámicamente con JavaScript -->
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-
+       
+  
+         </div>
+        <!-- 📦 Contenedor de Inventario -->
+        
+</body>
+  <!-- Scripts -->
     <script src="javascripts/rolusuario.js"></script>
     <script src="javascripts/inventory.js"></script>
-</body>
-</html>
+</html>                                     

@@ -1,57 +1,216 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Facturación | Commerce Connect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Styles/style.css">
-    <link rel="stylesheet" href="Styles/pages.css">
+
 </head>
+
 <body>
+    <!-- 🧭 Sidebar -->
     <div class="sidebar">
         <div class="institucion">
             <div class="logo">
-                <div class="logocolor"><samp class="iniciallogo">CC</samp></div>
-                <span class="nombrelogo">Commerce Connect</span>
+                <div class="logocolor">
+                    <span class="iniciallogo">CC</span>
+                </div>
+                <span class="nombrelogo">Commerce</span>
+                <span class="nombrelogo">Conect</span>
             </div>
         </div>
         <div class="rol-selector" onclick="ToggleRole()">
-            <span id="role-text">Modo: Proveedor</span>
+            <span id="role-text">modo: proveedor</span>
         </div>
         <div id="menu"></div>
     </div>
-    <div class="overlay"></div>
 
-    <div class="main">
-        <header class="header">
-            <button class="menu-btn" onclick="toggleMenu()">☰</button>
-            <div class="header-search-container">
-                <input placeholder="Buscar facturas..." />
+    <!-- Overlay para móvil -->
+    <div class="overlay" onclick="toggleMenu()"></div>
+
+
+  <div class="main">
+        <!-- 🔝 Header Principal -->
+        <header class="main-header">
+            <div class="header-top">
+                <button class="menu-btn" id="renderMenu" onclick="toggleMenu()">☰</button>
+
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar en Commerce Connect...">
+                </div>
+
+                <div class="user-actions">
+
+                    <i class="far fa-bell"></i>
+
+                    <div class="user-profile">
+                        <div class="user-info-text">
+                            <span class="user-name">Juan Pérez</span>
+                            <span class="user-status">Premium</span>
+                        </div>
+                        <div class="user-avatar">JP</div>
+                    </div>
+                </div>
             </div>
-            <span>👤</span>
         </header>
 
-        <div class="card">
-            <h2>Facturación y Pagos</h2>
-            <div class="table-container" style="margin-top: 20px;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nº Factura</th>
-                            <th>Fecha</th>
-                            <th>Monto</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoicesTableBody"></tbody>
-                </table>
+        <div class="invoice-container">
+
+            <div class="card">
+                <div class="invoice-header">
+                    <h2>
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        Facturación 
+                    </h2>
+                    <button class="btn-new-invoice" onclick="openNewInvoiceModal()">
+                        <i class="fas fa-plus-circle"></i> Nueva Factura
+                    </button>
+                </div>
+
+                <!-- Stats Container -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalFacturas">0</div>
+                        <div class="stat-label">Total Facturas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPagado">$0</div>
+                        <div class="stat-label">Total Pagado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPendiente">$0</div>
+                        <div class="stat-label">Pendiente de Pago</div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="summary-label">
+                            <i class="fas fa-check-circle"></i> Pagadas
+                        </div>
+                        <div class="summary-value" id="pagadasCount">0</div>
+                        <div class="summary-sub">facturas completadas</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">
+                            <i class="fas fa-clock"></i> Pendientes
+                        </div>
+                        <div class="summary-value" id="pendientesCount">0</div>
+                        <div class="summary-sub">facturas por pagar</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">
+                            <i class="fas fa-exclamation-triangle"></i> Vencidas
+                        </div>
+                        <div class="summary-value" id="vencidasCount">0</div>
+                        <div class="summary-sub">requieren atención</div>
+                    </div>
+                </div>
+
+              <!-- Pestañas de filtro -->
+                <div class="tabs-container">
+                    <div class="tabs">
+                        
+                        <button class="tab-btn active" data-filter="all" onclick="filterInvoices('all')">
+                            <i class="fas fa-list"></i> Todos
+                        </button>
+                        <button class="tab-btn" data-filter="pagadas" onclick="filterInvoices('pagadas')">
+                            <i class="fas fa-check-circle"></i> Pagadas
+                        </button>
+                        <button class="tab-btn" data-filter="pendientes" onclick="filterInvoices('pendientes')">
+                            <i class="fas fa-clock"></i> Pendientes
+                        </button>
+                        <button class="tab-btn" data-filter="vencidas" onclick="filterInvoices('vencidas')">
+                            <i class="fas fa-exclamation-triangle"></i> Vencidas
+                        </button>
+                        <button class="tab-btn" data-filter="reembolsadas" onclick="filterInvoices('reembolsadas')">
+                            <i class="fas  fa-undo-alt"></i> Reembolsadas
+                        </button>
+
+
+                    </div>
+                </div>
+                <!-- Barra de búsqueda -->
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" id="searchInvoice"
+                        placeholder="Buscar por número de factura..." onkeyup="searchInvoices()">
+                </div>
+
+                <!-- Tabla de facturas -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nº Factura</th>
+                                <th>Fecha</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Nueva Factura -->
+        <div class="modal-overlay" id="invoiceModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-file-invoice"></i> Nueva Factura</h3>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="invoiceForm">
+                        <div class="form-group">
+                            <label>Número de Factura</label>
+                            <input type="text" id="invoiceId" required placeholder="Ej: INV-2024-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <input type="date" id="invoiceDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Monto</label>
+                            <input type="text" id="invoiceAmount" required placeholder="$0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select id="invoiceStatus">
+                                <option value="pagadas">Pagada</option>
+                                <option value="pendientes">Pendiente</option>
+                                <option value="vencidas">Vencida</option>
+                                <option value="reembolsadas">Reembolsada</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+                            <button type="submit" class="btn-primary">Crear Factura</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-
+    <!-- Modal Detalles Factura -->
+    <div class="modal-overlay" id="detailsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> Detalles de Factura</h3>
+                <button class="modal-close" onclick="closeDetailsModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="detailsContent"></div>
+        </div>
+    </div>
     <script src="javascripts/rolusuario.js"></script>
     <script src="javascripts/invoices.js"></script>
 </body>
+
 </html>

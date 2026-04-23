@@ -82,3 +82,4 @@ function renderMenu() {
         roleText.textContent = `Modo: ${currentRole === 'provider' ? 'Proveedor' : 'Cliente'}`;
     }
 }
+

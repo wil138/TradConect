@@ -1,5 +1,5 @@
 /* ========================================
-   1. VARIABLES CSS - COMPLETADAS
+   1. VARIABLES CSS
    ======================================== */
 :root {
     --bg: #f8fafc;
@@ -9,11 +9,9 @@
     --blue-soft: #eff6ff;
     --text-main: #1e293b;
     --text-light: #64748b;
-    /* ✅ AGREGADO */
     --text-muted: #64748b;
     --border-color: #e2e8f0;
     --border: #e2e8f0;
-    /* ✅ AGREGADO */
     --sidebar-width: 260px;
     --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --primary: #2b63e1;
@@ -21,13 +19,10 @@
     --accent: #ef4444;
     --white: #ffffff;
     --z-header: 100;
-    /* ✅ AGREGADO */
     --z-overlay: 999;
-    /* ✅ AGREGADO */
     --z-modal: 1000;
-    /* ✅ AGREGADO */
 
-    /* Colores de Estados tablas */
+    /* Estados de tablas */
     --status-pending-bg: #fff7ed;
     --status-pending-text: #ea580c;
     --status-sent-bg: #eff6ff;
@@ -215,7 +210,7 @@ body {
 }
 
 /* ========================================
-   4. OVERLAY UNIFICADO 
+   4. OVERLAY UNIFICADO
    ======================================== */
 .overlay {
     position: fixed;
@@ -318,8 +313,6 @@ body {
 
 /* ========================================
    6. CARDS Y COMPONENTES DE KPIs
-    (MANTENIDO COMPLETO, SOLO SE AGREGARON VARIABLES)
-    Resto de estilos de tarjetas y KPIs
    ======================================== */
 .card {
     background: var(--card);
@@ -367,13 +360,12 @@ canvas {
 }
 
 /* ========================================
-   7. BOTONES UNIFICADOS )
+   7. BOTONES UNIFICADOS
    ======================================== */
 .btn-filter {
     background: var(--white);
     border: 1px solid var(--border-color);
     padding: 0 25px;
-
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -427,7 +419,7 @@ canvas {
 }
 
 /* ========================================
-   9. TABS Y TABLAS
+   9. TABS Y TABLAS (genérico para ambos módulos)
    ======================================== */
 .tabs {
     display: flex;
@@ -438,6 +430,7 @@ canvas {
     border: 1px solid var(--border);
     margin-bottom: 25px;
     gap: 4px;
+    flex-wrap: wrap;
 }
 
 .tab-btn {
@@ -453,8 +446,8 @@ canvas {
 }
 
 .tab-btn.active {
-    background: var(--bg);
-    color: var(--text-main);
+    background: var(--blue-primary);
+    color: white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -464,12 +457,15 @@ canvas {
     overflow: hidden;
     border: 1px solid var(--border);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem 2rem;
+    overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    text-align: left;
+    background: var(--white);
+    min-width: 600px;
 }
 
 thead {
@@ -496,6 +492,11 @@ td {
     color: var(--primary);
     font-weight: 700;
     text-decoration: none;
+}
+
+.order-id:hover {
+    color: #764ba2;
+    text-decoration: underline;
 }
 
 .client-info {
@@ -535,28 +536,8 @@ td {
     display: inline-block;
 }
 
-.badge-pendiente {
-    background: var(--status-pending-bg);
-    color: var(--status-pending-text);
-}
-
-.badge-enviado {
-    background: var(--status-sent-bg);
-    color: var(--status-sent-text);
-}
-
-.badge-entregado {
-    background: var(--status-delivered-bg);
-    color: var(--status-delivered-text);
-}
-
-.badge-cancelado {
-    background: var(--status-cancelled-bg);
-    color: var(--status-cancelled-text);
-}
-
 /* ========================================
-   10. CART SIDEBAR 
+   10. CART SIDEBAR
    ======================================== */
 .cart-sidebar {
     position: fixed;
@@ -635,7 +616,7 @@ td {
 }
 
 /* ========================================
-   11. FOOTER (PROPIEDADES LIMPIAS)
+   11. FOOTER
    ======================================== */
 .main-footer {
     display: flex;
@@ -693,7 +674,6 @@ td {
 /* ========================================
    12. ESTILOS CARD MERCADO
    ======================================== */
-
 .categories-nav {
     display: flex;
     gap: 10px;
@@ -802,7 +782,7 @@ td {
 }
 
 /* ========================================
-   13. MEDIA QUERIES AGRUPADAS POR TAMAÑO
+   13. MEDIA QUERIES
    ======================================== */
 @media (max-width: 1000px) {
     .sidebar {
@@ -824,9 +804,7 @@ td {
     .main-footer {
         margin-left: 0;
     }
-}
 
-@media (max-width: 1000px) {
     .cart-sidebar {
         width: 100%;
         right: -100%;
@@ -845,82 +823,40 @@ td {
     }
 }
 
-
-
 /* ========================================
    14. SISTEMAS DE INVENTARIO Y FACTURACIÓN
-   Estilos unificados y optimizados (DRY)
+   UNIFICADOS Y OPTIMIZADOS
    ======================================== */
 
-/* ----------------------------------------
-   14.1 COMPONENTES COMPARTIDOS
-   Usados por AMBOS sistemas
-   ---------------------------------------- */
-
-/* Header */
-.invoice-header,
-.inventory-header {
+/* ----- Cabeceras de sección (única clase) ----- */
+.inventory-header,
+.invoice-header {
     display: flex;
     flex-wrap: wrap;
-    display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2rem;
-    color: black;
     border-radius: 12px 12px 0 0;
     margin-bottom: 25px;
 }
 
-.inventory-header h2,
+.inventory-header h1,
 .invoice-header h2 {
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--text-main, #1f2937);
+    color: var(--text-main);
     display: flex;
     align-items: center;
     gap: 12px;
     margin: 0;
 }
 
-.inventory-header h2 i,
+.inventory-header h1 i,
 .invoice-header h2 i {
-    color: var(--blue-primary, #3b82f6);
+    color: var(--blue-primary);
 }
 
-/* Tabs de filtro */
-.tabs {
-    display: flex;
-    padding: 1rem 2rem;
-    background: white;
-    border-bottom: 1px solid var(--border-color, #e5e7eb);
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.tab-btn {
-    padding: 0.5rem 1.25rem;
-    border: none;
-    background: transparent;
-    color: var(--text-muted, #6b7280);
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 20px;
-    transition: all 0.3s ease;
-}
-
-
-.tab-btn:hover {
-    background: #f3f4f6;
-    color: var(--text-main, #1f2937);
-}
-
-.tab-btn.active {
-    background: var(--blue-primary, #3b82f6);
-    color: white;
-}
-
-/* Stats y Summary Cards */
+/* ----- Estadísticas y tarjetas (comunes) ----- */
 .stats-container,
 .summary-cards {
     display: grid;
@@ -931,19 +867,19 @@ td {
 
 .stat-card,
 .summary-card {
-    background: var(--white, #ffffff);
+    background: var(--white);
     padding: 1.3rem;
     border-radius: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     text-align: center;
     transition: all 0.3s ease;
-    border: 1px solid var(--border-color, #e5e7eb);
+    border: 1px solid var(--border-color);
 }
 
 .stat-card:hover,
 .summary-card:hover {
     transform: translateY(-3px);
-    border-color: var(--blue-primary, #3b82f6);
+    border-color: var(--blue-primary);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -951,18 +887,39 @@ td {
 .summary-value {
     font-size: 2.2rem;
     font-weight: bold;
-    color: var(--blue-primary, #3b82f6);
+    color: var(--blue-primary);
     margin-bottom: 0.3rem;
 }
 
 .stat-label,
 .summary-label {
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
-/* Search Bar (compartido) */
+.summary-card {
+    text-align: left;
+    border-left: 4px solid var(--blue-primary);
+}
+
+.summary-card:hover {
+    transform: translateX(5px);
+}
+
+.summary-card .summary-label {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.summary-card .summary-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+/* ----- Barra de búsqueda (común) ----- */
 .search-bar {
     position: relative;
     margin-bottom: 1.5rem;
@@ -972,7 +929,7 @@ td {
     width: 100%;
     max-width: 400px;
     padding: 0.75rem 1rem 0.75rem 2.8rem;
-    border: 2px solid var(--border-color, #e5e7eb);
+    border: 2px solid var(--border-color);
     border-radius: 12px;
     font-size: 0.9rem;
     background: #f9fafb url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%236b7280"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>') no-repeat 0.75rem center;
@@ -982,12 +939,12 @@ td {
 
 .search-input:focus {
     outline: none;
-    border-color: var(--blue-primary, #3b82f6);
+    border-color: var(--blue-primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     background-color: #ffffff;
 }
 
-/* Modal System (compartido) */
+/* ----- Modal (común) ----- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1007,7 +964,7 @@ td {
 }
 
 .modal {
-    background: var(--white, #ffffff);
+    background: var(--white);
     border-radius: 20px;
     width: 90%;
     max-width: 500px;
@@ -1019,7 +976,7 @@ td {
 
 .modal-header {
     padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1061,7 +1018,7 @@ td {
     padding: 1.5rem;
 }
 
-/* Form System (compartido) */
+/* ----- Formularios (común) ----- */
 .form-group {
     margin-bottom: 1.25rem;
 }
@@ -1070,24 +1027,24 @@ td {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: var(--text-main, #1f2937);
+    color: var(--text-main);
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid var(--border-color, #e5e7eb);
+    border: 2px solid var(--border-color);
     border-radius: 10px;
     font-size: 0.9rem;
     transition: all 0.3s ease;
-    background: var(--white, #ffffff);
+    background: var(--white);
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: var(--blue-primary, #3b82f6);
+    border-color: var(--blue-primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -1098,7 +1055,7 @@ td {
     margin-top: 2rem;
 }
 
-/* Button System (compartido) */
+/* ----- Botones (común) ----- */
 .btn-primary,
 .btn-secondary,
 .btn-new-product,
@@ -1118,19 +1075,20 @@ td {
 .btn-primary,
 .btn-new-product,
 .btn-new-invoice {
-    background: var(--blue-primary, #3b82f6);
+    background: var(--blue-primary);
     color: white;
 }
 
 .btn-primary:hover,
-.btn-new-product .btn-new-invoice:hover {
-    background: var(--blue-hover, #2563eb);
+.btn-new-product:hover,
+.btn-new-invoice:hover {
+    background: var(--blue-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-secondary {
-    background: var(--text-muted, #6b7280);
+    background: var(--text-muted);
     color: white;
 }
 
@@ -1139,49 +1097,14 @@ td {
     transform: translateY(-2px);
 }
 
-/* Table System (compartido) */
-.table-wrapper {
-    padding: 1.5rem 2rem;
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--white, #ffffff);
-    min-width: 600px;
-}
-
-thead {
-    background: #f8f9fa;
-    border-bottom: 2px solid var(--border-color, #e5e7eb);
-}
-
-th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--text-main, #1f2937);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color, #e5e7eb);
-    color: var(--text-main, #1f2937);
-    font-size: 0.9rem;
-}
-
-/* Action Buttons (compartido) */
+/* ----- Botones de acción en tablas (común) ----- */
 .action-btn {
     background: none;
     border: none;
     padding: 0.5rem;
     margin: 0 0.25rem;
     cursor: pointer;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
     font-size: 1rem;
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -1206,11 +1129,16 @@ td {
     transform: scale(1.1);
 }
 
-/* Empty State (compartido) */
+.view-btn:hover {
+    color: #2563eb;
+    transform: scale(1.1);
+}
+
+/* ----- Estado vacío (común) ----- */
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
 }
 
 .empty-state i {
@@ -1219,7 +1147,7 @@ td {
     opacity: 0.5;
 }
 
-/* Notifications (compartido) */
+/* ----- Notificaciones (común) ----- */
 .notification {
     position: fixed;
     top: 20px;
@@ -1232,72 +1160,32 @@ td {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.notification-success {
-    background: #10b981;
-}
+.notification-success { background: #10b981; }
+.notification-error { background: #ef4444; }
+.notification-info { background: #3b82f6; }
 
-.notification-error {
-    background: #ef4444;
-}
+/* ----- Badges de categorías (inventario) ----- */
+.badge-construcción { background: #e3f2fd; color: #1976d2; }
+.badge-metales { background: #fce4ec; color: #c2185b; }
+.badge-acabados { background: #f3e5f5; color: #7b1fa2; }
+.badge-plomería { background: #e8f5e9; color: #388e3c; }
+.badge-herramientas { background: #fff3e0; color: #f57c00; }
 
-.notification-info {
-    background: #3b82f6;
-}
+/* ----- Badges de estado (facturación) ----- */
+.badge-pagadas { background: #e3f2fd; color: #1976d2; }
+.badge-pendientes { background: #fff3e0; color: #f57c00; }
+.badge-vencidas { background: #fce4ec; color: #c2185b; }
+.badge-reembolsadas { background: #e8f5e9; color: #388e3c; }
 
-/* ----------------------------------------
-   14.2 SISTEMA DE INVENTARIO
-   Scope: .system-inventory
-   ---------------------------------------- */
+/* ----- Estados de stock (inventario) ----- */
+.low-stock { color: #ef4444; font-weight: 600; }
+.medium-stock { color: #f59e0b; font-weight: 500; }
+.high-stock { color: #10b981; }
 
-
-
-
-
-/* Badges de categorías */
-.badge-construcción {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.badge-metales {
-    background: #fce4ec;
-    color: #c2185b;
-}
-
-.badge-acabados {
-    background: #f3e5f5;
-    color: #7b1fa2;
-}
-
-.badge-plomería {
-    background: #e8f5e9;
-    color: #388e3c;
-}
-
-.badge-herramientas {
-    background: #fff3e0;
-    color: #f57c00;
-}
-
-/* Estados de stock */
-.low-stock {
-    color: #ef4444;
-    font-weight: 600;
-}
-
-.medium-stock {
-    color: #f59e0b;
-    font-weight: 500;
-}
-
-.high-stock {
-    color: #10b981;
-}
-
-/* Detalles del producto (en modal) */
+/* ----- Detalles de producto (modal inventario) ----- */
 .product-details p {
     padding: 0.75rem;
-    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    border-bottom: 1px solid var(--border-color);
     margin: 0;
 }
 
@@ -1306,151 +1194,32 @@ td {
 }
 
 .product-details strong {
-    color: var(--text-main, #1f2937);
+    color: var(--text-main);
     margin-right: 1rem;
 }
 
-/* Links en tabla */
-.order-id {
-    color: var(--blue-primary, #3b82f6);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.order-id:hover {
-    color: #764ba2;
-    text-decoration: underline;
-}
-
-
-/* ----------------------------------------
-   14.3 SISTEMA DE FACTURACIÓN Y PAGOS
-   Scope: .system-invoice
-   ---------------------------------------- */
-
-
-
-
-/* Summary Cards específicas */
-.summary-card {
-    text-align: left;
-    border-left: 4px solid var(--blue-primary, #3b82f6);
-}
-
-.summary-card:hover {
-    transform: translateX(5px);
-}
-
-.summary-card .summary-label {
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 0.85rem;
-}
-
-.summary-card .summary-sub {
-    font-size: 0.75rem;
-    color: var(--text-muted, #6b7280);
-    margin-top: 0.5rem;
-}
-
-/* Filter Tabs */
-.filter-tabs {
-    display: flex;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--border-color, #e5e7eb);
-}
-
-
-
-/* Status Badges */
-.badge {
-    padding: 6px 14px;
-    border-radius: 25px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    display: inline-block;
-}
-
-.badge-pagadas {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.badge-pendientes {
-    background: #fff3e0;
-    color: #f57c00;
-}
-
-.badge-vencidas {
-    background: #fce4ec;
-    color: #c2185b;
-}
-
-.badge-reembolsadas {
-    background: #e8f5e9;
-    color: #388e3c;
-}
-
-/* Hover de tabla específico */
+/* Hover de filas (genérico) */
 tbody tr:hover {
-    background: #eff6ff;
-    /* var(--blue-soft) equivalente */
+    background: var(--blue-soft);
 }
 
-
-/* ----------------------------------------
-   14.4 ANIMACIONES (Globales, usar solo UNA VEZ)
-   ---------------------------------------- */
+/* ----- Animaciones (una sola vez) ----- */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-10px);
-    }
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
 }
-
-/* ========================================
-   FIN DE ESTILOS DE SISTEMAS
-   ======================================== */
