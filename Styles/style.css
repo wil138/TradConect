@@ -121,7 +121,8 @@ body {
 .main-header {
     background: var(--white);
     padding: 15px 0;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #3162a1;
+    border-radius: 10px;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -129,6 +130,7 @@ body {
 
 .header-top {
     display: flex;
+    padding: 10px;
     justify-content: space-between;
     align-items: center;
 }

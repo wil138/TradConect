@@ -3,11 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Commerce Connect </title>
+    <title>Trad Connect </title>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <!-- libreria de iconos -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!--  Fuente -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- estilo-->
@@ -16,14 +17,14 @@
 </head>
 
 <body>
-    <!-- 🧭 Sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="institucion">
             <div class="logo">
                 <div class="logocolor">
-                    <span class="iniciallogo">CC</span>
+                    <span class="iniciallogo">TC</span>
                 </div>
-                <span class="nombrelogo">Commerce</span>
+                <span class="nombrelogo">Trad</span>
                 <span class="nombrelogo">Conect</span>
             </div>
         </div>
@@ -36,17 +37,17 @@
     <!-- Overlay para móvil -->
     <div class="overlay" onclick="toggleMenu()"></div>
 
-    <!-- 📊 Main Content -->
+    <!-- Main Content -->
     <div class="main">
-        <!-- 🔝 Header Principal -->
+        <!-- Header Principal -->
         <header class="main-header">
             <div class="header-top">
 
-                <button class="menu-btn" id="renderMenu" onclick="toggleMenu()">☰</button>
+                <button class="menu-btn" id="renderMenu" onclick="toggleMenu()"><i class="fa-solid fa-bars"></i></button>
 
                 <div class="search-container">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar en Commerce Connect...">
+                    <input type="text" placeholder="Buscar en Trad Connect...">
                 </div>
 
                 <div class="user-actions">
@@ -68,7 +69,7 @@
                 <div class="OperacionesKPI">
 
                     <div class="encabesado1">
-                        <span class="encabesado2">📊</span>
+                        <span class="encabesado2"></span>
                         <h2 class="encabesado3">Monitor de Operaciones</h2>
                         <span class="encabesado4">Real-time SQL</span>
                     </div>
@@ -103,13 +104,13 @@
                     </div>
                 </div>
 
-                <!-- 🔵 Operación -->
+                <!-- Operación -->
                 <div class="card">
                     <h3>Flujo de Pedidos por Hora</h3>
                     <canvas id="transChart"></canvas>
                 </div>
 
-                <!-- 🟣 BI -->
+                <!-- BI -->
                 <h3 class="section-title">Crecimiento Estratégico</h3>
 
                 <div class="grid">
