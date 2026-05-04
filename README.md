@@ -1,148 +1,203 @@
-# #  TradConnect
+# TradConnect - SPA
 
-**Dashboard de gestión comercial B2B** para suministros de construcción.  
-Visualiza operaciones, administra inventarios, facturación y pedidos con una interfaz moderna de dos roles (Proveedor y Cliente).  
+**Plataforma comercial B2B** para suministros de construcción.
+Aplicación de Página Única (SPA) con sistema de roles (Cliente/Proveedor),
+marketplace con carrito, gestión de inventario, facturación, pedidos y análisis.
 Desarrollado como prototipo frontend con simulación de datos.
 
----
+## Características Principales
 
-##  Características
-
-- 📊 **Dashboard operacional** con KPIs (ventas, pedidos, stock, clientes) y gráficos interactivos.
-- 🛒 **Marketplace** de productos de construcción con carrito de compras lateral.
-- 📦 **Gestión de inventario** (CRUD de productos, filtros por categoría, búsqueda, alertas de stock bajo).
-- 🧾 **Facturación** con estados (pagadas, pendientes, vencidas, reembolsadas) y filtros.
-- 📋 **Pedidos** con seguimiento de estados (pendiente, enviado, entregado, cancelado).
-- 👥 **Sistema de roles** intercambiable (Proveedor / Cliente) que modifica menús y funcionalidades.
-- 📱 **Diseño responsive** (sidebar adaptable, menú móvil).
-- 🎨 UI limpia con **Inter** como tipografía, colores corporativos y sombras suaves.
-
----
+- Arquitectura SPA: Navegación sin recargas, shell persistente.
+- Marketplace con productos, categorías, búsqueda, ofertas y descuentos.
+- Carrito de compras lateral con cálculo de subtotales, descuentos y total.
+- Sistema de roles intercambiable (Cliente / Proveedor).
+- Gestión de inventario (CRUD de productos, filtros, stock bajo).
+- Facturación con estados (pagadas, pendientes, vencidas, reembolsadas).
+- Pedidos con seguimiento de estados.
+- Dashboard con KPIs y gráficos interactivos (Chart.js).
+- Diseño responsive (sidebar adaptable, menú hamburguesa).
+- Persistencia de estado en localStorage.
 
 ## Tecnologías
 
 | Capa          | Herramientas / Librerías                         |
 |---------------|--------------------------------------------------|
-| **Frontend**  | HTML5, CSS3, JavaScript (Vanilla)                |
-| **Estilos**   | CSS Custom Properties, Flexbox, Grid, Animaciones|
-| **Gráficos**  | [Chart.js](https://www.chartjs.org/) 4.x         |
-| **Iconos**    | [Font Awesome 6](https://fontawesome.com/)       |
-| **Fuente**    | [Google Fonts - Inter](https://fonts.google.com/specimen/Inter) |
-| **Simulación**| Datos estáticos en JavaScript                    |
-
-> **Nota:** No requiere backend. Los datos se generan localmente y se reinician al recargar la página.
-
----
+| Arquitectura  | SPA con router propio                            |
+| Frontend      | HTML5, CSS3, JavaScript (Vanilla ES6+)           |
+| Estilos       | CSS Custom Properties, Flexbox, Grid             |
+| Gráficos      | Chart.js 4.x                                     |
+| Iconos        | Font Awesome 6                                   |
+| Fuente        | Google Fonts - Inter                             |
+| Simulación    | Datos estáticos en JavaScript                    |
+| Persistencia  | localStorage                                     |
 
 ## Estructura del Proyecto
+![alt text](/img/image.png)
 
-Tradconnect/
-├── index.html # Dashboard principal (KPIs + gráficos)
-├── marketplace.html # Tienda de suministros con carrito
-├── inventory.html # Gestión de inventario
-├── invoices.html # Facturación y pagos
-├── orders.html # Seguimiento de pedidos
-├── analytics.html # Análisis de rendimiento
-├── profile.html # Perfil de usuario
-│
-├── Styles/
-│ └── style.css # Hoja de estilos completa
-│
-├── javascripts/
-│ ├── rolusuario.js # Lógica de roles, menú dinámico y sidebar
-│ ├── Datasimulation.js # Simulación de datos del dashboard
-│ ├── analytics.js # Gráfico de análisis
-│ ├── inventory.js # CRUD y filtros de inventario
-│ ├── invoices.js # Gestión de facturas
-│ ├── marketplace.js # Productos y carrito
-│ ├── orders.js # Filtrado de pedidos
-│ └── profile.js # Formulario de perfil
-│
-└── README.md
+## Arquitectura SPA - Cómo Funciona
+
+Flujo de Navegacion:
+
+1. Usuario abre index.html
+2. router.js se inicializa
+3. Lee rol y ultimo modulo de localStorage
+4. Carga el fragmento correspondiente
+5. Inyecta el HTML en <main id="main-view">
+6. Ejecuta los scripts del fragmento (init())
+7. El contenido se renderiza sin recargar
+
+Persistencia al Recargar:
+- El modulo actual se guarda en localStorage (currentModule)
+- Al recargar (F5), se restaura el mismo modulo
+- El carrito persiste con clave marketplaceCart
+
+## Roles de Usuario
+
+| Rol         | Modulos disponibles                                    |
+|-------------|--------------------------------------------------------|
+| Cliente     | Marketplace, Mis Pedidos, Mis Facturas, Mi Perfil      |
+| Proveedor   | Dashboard, Mi Inventario, Pedidos Recibidos, Facturacion, Analisis |
+
+## Carrito de Compras
+
+Funcionalidades:
+- Anadir productos desde el marketplace
+- Selector de cantidad por producto
+- Precios con descuentos visibles
+- Calculo de subtotal por producto, ahorro, total general
+- Persistencia en localStorage
+- Solo visible en modo Cliente
+
+Visualizacion en Carrito:
 
 
----
+![alt text](/img/image-1.png)
 
-## 👥 Roles de Usuario
+## Como Ejecutar
 
-El sistema permite cambiar entre dos modos pulsando el selector en la barra lateral:
+Opcion 1 - Live Server (recomendada):
+1. Instalar extension "Live Server" en VS Code
+2. Click derecho en index.html -> "Open with Live Server"
 
-- **🔵 Proveedor** (por defecto)  
-  Accede a: Dashboard, Inventario, Pedidos Recibidos, Facturación y Análisis.
+Opcion 2 - Python:
+python -m http.server 8080
+Abrir http://localhost:8080
 
-- **🟢 Cliente**  
-  Accede a: Marketplace, Mis Pedidos, Mis Facturas y Mi Perfil.
+Opcion 3 - Node.js:
+npx serve .
 
-El rol actual se guarda en `localStorage`, por lo que persiste al recargar la página.
+## Personalizacion
 
----
+### Colores y estilos
+Modificar :root en styles/style.css
 
-## 🚀 Cómo Ejecutar
+### Datos simulados
+- marketplace.js: Array products
+- inventory.js: Array defaultInventory
+- invoices.js: Array invoicesData
+- orders.js: Array ordersData
 
-1. Clona este repositorio o descarga los archivos.
-2. Abre cualquiera de los archivos `.html` en tu navegador (preferiblemente **index.html** para empezar).
-3. No necesitas servidor local; funciona directamente desde el sistema de archivos.
-   > *Opcional:* Si prefieres un entorno más profesional, puedes usar la extensión **Live Server** de VS Code.
+### Menu de navegacion
+Editar const menus en rolusuario.js
 
----
+### Productos del marketplace
+Editar array products en marketplace.js
 
-## 🎨 Personalización
+## Funcionalidades por Modulo
 
-- **Colores y estilos:** Modifica las variables CSS en `:root` dentro de `style.css`.
-- **Datos simulados:** Cada archivo JavaScript (ej. `inventory.js`, `invoices.js`) contiene los datos de prueba al inicio. Cambia los arrays para adaptarlos a tus necesidades.
-- **Menú de navegación:** Las opciones por rol se definen en `rolusuario.js` dentro del objeto `menus`.
-- **Productos del marketplace:** Edita el array `products` en `marketplace.js`.
+### Marketplace
+- Tarjetas de producto con imagen, precio, vendedor
+- Ofertas con descuento visible
+- Filtros por categoria
+- Busqueda instantanea
+- Selector de cantidad
+- Carrito lateral completo
 
----
+### Dashboard (Proveedor)
+- KPIs: ventas, pedidos urgentes, stock critico, nuevos clientes
+- Grafico de barras: transacciones por hora
+- Grafico de lineas: tendencia de crecimiento
+- Grafico de dona: ventas por region
+- Grafico de lineas: proyeccion
 
-## 📈 Funcionalidades Destacadas
+### Inventario (Proveedor)
+- Tabla con codigo, nombre, categoria, stock, precio
+- Indicadores de stock (bajo, medio, alto)
+- CRUD de productos (modales)
+- Filtros por categoria
+- Busqueda
+- Resumen de metricas
 
-### Dashboard (`index.html`)
-- KPIs en tiempo real (simulado) con mensajes de comparación.
-- Gráfico de barras de flujo de pedidos por hora.
-- Gráficos de tendencia histórica, ventas por zona (dona) y proyección.
+### Facturacion
+- Listado de facturas
+- Estados con badges de colores
+- Filtros por estado
+- Busqueda por numero
+- Crear nueva factura
+- Ver detalles
 
-### Inventario (`inventory.html`)
-- Alta, edición y eliminación de productos con modal.
-- Filtros por categoría y búsqueda textual.
-- Indicadores de stock (bajo, medio, alto) y resumen de métricas.
+### Pedidos
+- Tabla con ID, cliente, fecha, items, total, estado
+- Filtros por estado
+- Avatar con iniciales
 
-### Facturación (`invoices.html`)
-- Visualización de facturas con estados visuales (badges de colores).
-- Filtros por estado y búsqueda por número de factura.
-- Modal para nueva factura y vista rápida de detalles.
+### Perfil
+- Formulario de usuario
+- Actualizacion simulada
 
-### Marketplace (`marketplace.html`)
-- Tarjetas de producto con imágenes, precio y categoría.
-- Filtros por categoría y búsqueda instantánea.
-- Carrito lateral con contador, cantidades y total dinámico.
+### Analisis
+- Grafico de lineas: ventas vs pedidos
 
-### Órdenes (`orders.html`)
-- Tabla con avatar del cliente, ID de pedido y estados.
-- Filtros por pestañas (Pendiente, Enviado, Entregado, Cancelado).
+## Responsive Design
 
----
+Desktop (>1000px):
+- Sidebar fijo izquierda (260px)
+- Contenido con margin-left: 260px
+- Carrito lateral 400px
 
-##  Responsive Design
+Tablet / Movil (<1000px):
+- Sidebar oculto con transform
+- Boton hamburguesa
+- Overlay semitransparente
+- Carrito 100% ancho
 
-- **Desktop:** Menú lateral fijo (260px) + área de contenido principal.
-- **Tablet/Móvil:** Menú lateral se oculta y se despliega con botón hamburguesa. Overlay semitransparente.
-- El carrito en móvil ocupa el 100% del ancho.
+## Depuracion
 
----
+Ver logs en Consola (F12):
+- Router: Inicializando
+- Router: Cargando modulo marketplace
+- Marketplace: Inicializando
 
-##  Licencia
+Errores comunes:
+| Error                      | Solucion                                   |
+|----------------------------|--------------------------------------------|
+| 404 en fragmento           | Verificar ruta en fragments/               |
+| XXX is not defined         | Verificar funciones globales               |
+| Carrito no abre            | Definir window.toggleCart en index.html    |
+| Al recargar vuelve atras   | router debe guardar currentModule          |
+| Descuentos no se ven       | Verificar originalPrice e isOffer          |
 
-Este proyecto se comparte con fines educativos y de demostración.  
-Puedes utilizarlo y modificarlo libremente para tus propios proyectos.
+## Extensiones Futuras Posibles
 
----
+- Autenticacion de usuarios
+- Conexion a backend real
+- Base de datos
+- Pasarela de pagos
+- Notificaciones push
+- Exportar facturas a PDF
+- Chat entre clientes y proveedores
+- Valoraciones y reseñas
+- Modo oscuro
 
-##  Autor
+## Licencia
 
-Desarrollado como prototipo frontend de un sistema de gestión comercial.  
-Si tienes sugerencias o mejoras, ¡las contribuciones son bienvenidas!
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
 
----
+## Autor
 
-**TradConnect** – *Conecta tus suministros, impulsa tus resultados* 
+Desarrollado como prototipo frontend de un sistema de gestion comercial con arquitectura SPA.
+
+
+TradConnect - Conecta tus suministros, impulsa tus resultados
