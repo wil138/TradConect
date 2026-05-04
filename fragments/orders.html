@@ -1,0 +1,33 @@
+<!-- fragments/orders.html -->
+ <div class="card">
+
+<div class="container">
+    <header class="header">
+        <h1><i class="fas fa-truck blue "></i> Gestión de Pedidos</h1>
+        <p>Monitorea y procesa las solicitudes de tus clientes.</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-filter="todos">Todos</button>
+        <button class="tab-btn" data-filter="Pendiente">Pendientes</button>
+        <button class="tab-btn" data-filter="Enviado">Enviados</button>
+        <button class="tab-btn" data-filter="Entregado">Completados</button>
+        <button class="tab-btn" data-filter="Cancelado">Cancelados</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>ID Pedido</th><th>Cliente</th><th>Fecha</th><th>Items</th><th>Total</th><th>Estado</th></tr>
+            </thead>
+            <tbody id="orders-table-body"></tbody>
+        </table>
+    </div>
+</div>
+</div>
+<script>
+    if (window.orders && window.orders.init) {
+        window.orders.init();
+    }
+</script>
+

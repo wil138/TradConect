@@ -1,0 +1,50 @@
+<!-- fragments/marketplace.html -->
+<div class="card">
+    <div class="container">
+        <!-- Hero Banner -->
+        <section class="hero-section">
+            <h1><i class="fas fa-heart" style="color: #fbbf24;"></i> Marketplace de Suministros</h1>
+            <p>Materiales de construcción con entrega inmediata. Apoya a productores locales.</p>
+
+            <div class="hero-controls">
+                <div class="sub-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="productSearch" placeholder="¿Qué buscas para tu obra?">
+                </div>
+                <button class="btn-filter">
+                    <i class="fas fa-sliders"></i> Filtros
+                </button>
+            </div>
+        </section>
+
+        <!-- Ofertas Banner -->
+        <div class="offers-banner">
+            <h3><i class="fas fa-fire"></i> 🔥 OFERTAS DE LA SEMANA</h3>
+            <span>Hasta 30% OFF</span>
+        </div>
+
+        <!-- Categorías -->
+        <div class="section-title">
+            <i class="fas fa-th-large"></i>
+            <span>Categorías</span>
+        </div>
+        <div class="categories-grid" id="categoriesGrid"></div>
+
+        <!-- Productos -->
+        <div class="section-title">
+            <i class="fas fa-store"></i>
+            <span>Todos los Productos</span>
+        </div>
+        <section class="products-grid" id="productsGrid"></section>
+
+
+    </div>
+</div>
+<script>
+    // Inicializar el marketplace cuando el fragmento se inyecta
+    if (typeof window.marketplace !== 'undefined' && window.marketplace.init) {
+        window.marketplace.init();
+    } else {
+        console.error('Marketplace module not loaded');
+    }
+</script>

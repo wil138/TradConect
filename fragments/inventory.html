@@ -1,0 +1,63 @@
+<!-- fragments/inventory.html -->
+<div class="card">
+    <div class="inventory-container">
+        <div class="inventory-header">
+            <h1><i class="fas fa-boxes"></i> Inventario</h1>
+            <button class="btn-new-product" id="newProductBtn">
+                <i class="fas fa-plus-circle"></i> Nuevo Producto
+            </button>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="totalProducts">0</div>
+                <div class="stat-label">Total Productos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalStock">0</div>
+                <div class="stat-label">Unidades en Stock</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="lowStock">0</div>
+                <div class="stat-label">Stock Bajo (&lt;20)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="categories">0</div>
+                <div class="stat-label">Categorías</div>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar por código, nombre o categoría...">
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-btn active" data-filter="todos"><i class="fas fa-list"></i> Todos</button>
+                <button class="tab-btn" data-filter="construcción"><i class="fas fa-hard-hat"></i> Construcción</button>
+                <button class="tab-btn" data-filter="plomería"><i class="fas fa-wrench"></i> Plomería</button>
+                <button class="tab-btn" data-filter="acabados"><i class="fas fa-paint-brush"></i> Acabados</button>
+                <button class="tab-btn" data-filter="herramientas"><i class="fas fa-tools"></i> Herramientas</button>
+                <button class="tab-btn" data-filter="metales"><i class="fas fa-cog"></i> Metales</button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    if (window.inventory && window.inventory.init) {
+        window.inventory.init();
+    }
+</script>

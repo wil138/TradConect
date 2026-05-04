@@ -3,56 +3,52 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Commerce Connect </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradConnect | SPA</title>
 
-    <!-- Chart.js -->
+    <!-- CSS Globales -->
+
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Librerías globales -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!--  Fuente -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- estilo-->
-    <link rel="stylesheet" href="/Styles/style.css ">
-
+    <script src="javascripts/utils/cart.js"></script>
 </head>
 
 <body>
-    <!-- 🧭 Sidebar -->
+    <!-- SIDEBAR PERSISTENTE -->
     <div class="sidebar">
         <div class="institucion">
             <div class="logo">
-                <div class="logocolor">
-                    <span class="iniciallogo">CC</span>
-                </div>
-                <span class="nombrelogo">Commerce</span>
-                <span class="nombrelogo">Conect</span>
+                <div class="logocolor"><span class="iniciallogo">TD</span></div>
+                <span class="nombrelogo">Tradconnect</span>
             </div>
         </div>
         <div class="rol-selector" onclick="ToggleRole()">
-            <span id="role-text">modo: proveedor</span>
+            <span id="role-text">Modo: Cliente</span>
         </div>
         <div id="menu"></div>
     </div>
 
-    <!-- Overlay para móvil -->
-    <div class="overlay" onclick="toggleMenu()"></div>
+    <div class="overlay" onclick="closeAll()"></div>
 
-    <!-- 📊 Main Content -->
+    <!-- MAIN CONTENT -->
     <div class="main">
-        <!-- 🔝 Header Principal -->
         <header class="main-header">
             <div class="header-top">
-
-                <button class="menu-btn" id="renderMenu" onclick="toggleMenu()">☰</button>
-
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
                 <div class="search-container">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar en Commerce Connect...">
+                    <input type="text" id="globalSearch" placeholder="Buscar productos...">
                 </div>
-
                 <div class="user-actions">
-
+                    <div class="cart-icon-wrapper" id="cartToggle" onclick="window.toggleCart() ">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cartCount">0</span>
+                    </div>
                     <i class="far fa-bell"></i>
-
                     <div class="user-profile">
                         <div class="user-info-text">
                             <span class="user-name">Juan Pérez</span>
@@ -63,124 +59,185 @@
                 </div>
             </div>
         </header>
-        <div class="card">
-            <!-- KPI -->
-                <div class="OperacionesKPI">
 
-                    <div class="encabesado1">
-                        <span class="encabesado2">📊</span>
-                        <h2 class="encabesado3">Monitor de Operaciones</h2>
-                        <span class="encabesado4">Real-time SQL</span>
-                    </div>
+        <!-- CONTENEDOR DINÁMICO SPA -->
+        <main id="main-view">
+            <div class="loader">Cargando aplicación...</div>
+        </main>
 
-
-                    <div class="kpis">
-
-                        <div class="card kpi">
-                            <h5>Ventas del Día</h5>
-                            <h2 id="ventas"></h2>
-                            <p id="vs"></p>
-                        </div>
-
-                        <div class="card kpi">
-                            <h5>Pedidos Pendientes</h5>
-                            <h2 id="pedidos"></h2>
-                            <p id="urge"></p>
-                        </div>
-
-                        <div class="card kpi">
-                            <h5>Stock Crítico</h5>
-                            <h2 id="stock"></h2>
-                            <p id="critic"></p>
-                        </div>
-
-                        <div class="card kpi">
-                            <h5>Nuevos Clientes</h5>
-                            <h2 id="clientes"></h2>
-                            <p id="newc"></p>
-                        </div>
-
+        <footer class="modern-footer">
+        <div class="footer-container">
+            
+            <!-- GRID PRINCIPAL -->
+            <div class="footer-grid">
+                
+                <!-- Columna 1: Brand + Newsletter -->
+                <div class="footer-section footer-brand">
+                    <div class="logo">TradConnect</div>
+                    <p class="footer-description">
+                        Transformando el comercio tradicional con tecnología innovadora. 
+                        Conectamos tradición y futuro desde 2024.
+                    </p>
+                    
+                    <div class="newsletter-wrapper">
+                        <input 
+                            type="email" 
+                            class="newsletter-input" 
+                            placeholder="Recibe ofertas exclusivas..."
+                            aria-label="Email para newsletter"
+                        >
+                        <button class="newsletter-btn" aria-label="Suscribirse">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
-                <!-- 🔵 Operación -->
-                <div class="card">
-                    <h3>Flujo de Pedidos por Hora</h3>
-                    <canvas id="transChart"></canvas>
+                <!-- Columna 2: Producto -->
+                <div class="footer-section">
+                    <h3 class="footer-heading">Producto</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Características</a></li>
+                        <li>
+                            <a href="#">Marketplace 
+                                <span class="badge-new">Nuevo</span>
+                            </a>
+                        </li>
+                        <li><a href="#">Precios</a></li>
+                        <li>
+                            <a href="#">API 
+                                <span class="badge-soon">Próximo</span>
+                            </a>
+                        </li>
+                        <li><a href="#">Integraciones</a></li>
+                    </ul>
                 </div>
 
-                <!-- 🟣 BI -->
-                <h3 class="section-title">Crecimiento Estratégico</h3>
-
-                <div class="grid">
-
-                    <div class="card">
-                        <h3>Tendencia Histórica</h3>
-                        <canvas id="growthChart"></canvas>
-                    </div>
-
-                    <div class="card">
-                        <h3>Ventas por Zona</h3>
-                        <canvas id="regionChart"></canvas>
-                    </div>
-
-                    <div class="card">
-                        <h3>Proyección</h3>
-                        <canvas id="forecastChart"></canvas>
-                    </div>
-                    <div class="card">
-                        <h3>Prediccion</h3>
-                        <canvas id="forecastChart"></canvas>
-                    </div>
-
+                <!-- Columna 3: Empresa -->
+                <div class="footer-section">
+                    <h3 class="footer-heading">Empresa</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Sobre nosotros</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Partners</a></li>
+                        <li><a href="#">Contacto</a></li>
+                    </ul>
                 </div>
 
+                <!-- Columna 4: Soporte + Redes -->
+                <div class="footer-section">
+                    <h3 class="footer-heading">Contacto</h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span>hello@tradconnect.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+                            </svg>
+                            <span>+1 (555) 123-4567</span>
+                        </div>
+                    </div>
+
+                    <!-- Redes Sociales Mejoradas -->
+                    <div class="social-section">
+                        <!-- Twitter/X -->
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- LinkedIn -->
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- Instagram -->
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- Facebook -->
+                        <a href="#" class="social-link" aria-label="Facebook">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- YouTube -->
+                        <a href="#" class="social-link" aria-label="YouTube">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARRA INFERIOR -->
+            <div class="footer-bottom">
+                <div class="copyright">
+                    <span>© 2026 TradConnect</span>
+                    <span class="heart">❤️</span>
+                    <span>Hecho con pasión</span>
+                </div>
+                
+                <div class="footer-legal-links">
+                    <a href="#">Privacidad</a>
+                    <a href="#">Términos</a>
+                    <a href="#">Cookies</a>
+                    <select class="language-selector" aria-label="Seleccionar idioma">
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="en">🇺🇸 English</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                    </select>
+                </div>
+            </div>
         </div>
+    </footer>
 
     </div>
+
+    <!-- CARRITO GLOBAL -->
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2><i class="fas fa-shopping-bag"></i> Mi Carrito</h2><button class="close-btn"
+                onclick="toggleCart()">&times;</button>
+        </div>
+        <div id="cartItems" class="cart-items-container">
+            <div class="empty-state">Tu carrito está vacío</div>
+        </div>
+        <div class="cart-footer">
+            <div class="total-row"><span>Total:</span><span id="cartTotal">$0.00</span></div><button
+                class="btn-checkout" onclick="checkout()"><i class="fas fa-credit-card"></i> Procesar Pedido</button>
+        </div>
+    </aside>
+
+    <!-- ======================================== -->
+    <!-- SCRIPTS GLOBALES - CON RUTAS CORRECTAS -->
+    <!-- ======================================== -->
+    <!-- Los scripts globales -->
+    <script src="javascripts/utils/router.js"></script>
+    <script src="javascripts/utils/table.js"></script>
+    <script src="javascripts/utils/rolusuario.js"></script>
+    <script src="javascripts/marketplace.js"></script>
+    <script src="javascripts/inventory.js"></script>
+    <script src="javascripts/orders.js"></script>
+    <script src="javascripts/invoices.js"></script>
+    <script src="javascripts/profile.js"></script>
+    <script src="javascripts/analytics.js"></script>
+    <script src="javascripts/Datasimulation.js"></script> <!-- Este ahora es window.dashboard -->
 </body>
-<footer class="main-footer">
-    <div class="footer-left">
-        <a href="/" class="logo-link">
-            <svg class="bi" width="30" height="24" fill="currentColor" viewBox="0 0 16 16">
-                <path
-                    d="M12 11.2C12 12.55 10.9 13.6 9.55 13.6C8.2 13.6 7.1 12.55 7.1 11.2C7.1 9.85 8.2 8.8 9.55 8.8C10.9 8.8 12 9.85 12 11.2Z" />
-            </svg>
-        </a>
-        <span class="copyright">© 2026 TradConnec</span>
-    </div>
-
-    <ul class="social-links">
-        <li>
-            <a href="#" title="Twitter">
-                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                    <path
-                        d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" />
-                </svg>
-            </a>
-        </li>
-        <li>
-            <a href="#" title="Instagram">
-                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                    <path
-                        d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z" />
-                </svg>
-            </a>
-        </li>
-        <li>
-            <a href="#" title="Facebook">
-                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                    <path
-                        d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.748V6.273c0-2.007 1.193-3.122 3.028-3.122.88 0 1.804.157 1.804.157v1.986h-1.013c-.993 0-1.304.617-1.304 1.243v1.513h2.215l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z" />
-                </svg>
-            </a>
-        </li>
-    </ul>
-</footer>
-
-<!--javascript-->
-<script src="/javascripts/Datasimulation.js"></script>
-<script src="/javascripts/rolusuario.js"></script>
-
 
 </html>

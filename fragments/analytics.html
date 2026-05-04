@@ -1,0 +1,22 @@
+<div id="app-sidebar"></div>
+<div id="app-overlay"></div>
+<div class="card"><div class="main">
+
+
+
+    <div class="card">
+        <h2>Análisis de Rendimiento</h2>
+        <p style="color: var(--text-muted);">Visualiza el crecimiento de tu negocio en el último mes.</p>
+        <div style="height: 400px; margin-top: 20px;">
+            <canvas id="analyticsChart"></canvas>
+        </div>
+    </div>
+    
+</div></div>
+
+<script>
+    if (window.analytics && window.analytics.init) {
+        window.analytics.init();
+    }
+</script>
+
