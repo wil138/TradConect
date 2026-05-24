@@ -1,4 +1,4 @@
-// router.js - Motor de carga dinámica SPA (CON PERSISTENCIA DE MÓDULO)
+/// router.js - Motor de carga dinámica SPA (PURIFICADO)
 
 window.router = {
     config: {
@@ -6,52 +6,34 @@ window.router = {
         containerId: 'main-view'
     },
     
-    // Cache de fragmentos cargados
     cache: {},
-    
-    // Módulo actualmente cargado
     currentModule: null,
     
-    // Inicializar router
     init: function() {
         console.log("Router: Inicializando");
         
-        // Escuchar eventos de navegación del menú (se disparan desde rolusuario)
         window.addEventListener('moduleChange', (e) => {
             this.cargarModulo(e.detail.module);
         });
         
-        // 🔴 CAMBIO IMPORTANTE: Cargar el último módulo visitado, no el del rol
         const ultimoModulo = localStorage.getItem('currentModule');
         const rol = localStorage.getItem('userRole') || 'client';
         
-        // Determinar módulo a cargar
         let moduloInicial;
-        
-        if (ultimoModulo) {
-            // Si hay un módulo guardado, usarlo
+        if (ultimoModulo && this.validarModuloSegunRol(ultimoModulo, rol)) {
             moduloInicial = ultimoModulo;
             console.log(`Router: Restaurando último módulo: ${moduloInicial}`);
         } else {
-            // Si es la primera vez, usar el módulo por defecto según el rol
             moduloInicial = rol === 'client' ? 'marketplace' : 'dashboard';
-            console.log(`Router: Primera vez, módulo por defecto: ${moduloInicial}`);
-        }
-        
-        // Verificar que el módulo existe y es compatible con el rol actual
-        const moduloValido = this.validarModuloSegunRol(moduloInicial, rol);
-        if (!moduloValido) {
-            moduloInicial = rol === 'client' ? 'marketplace' : 'dashboard';
-            console.log(`Router: Módulo inválido para el rol, usando: ${moduloInicial}`);
+            console.log(`Router: Módulo por defecto: ${moduloInicial}`);
         }
         
         this.cargarModulo(moduloInicial);
     },
     
-    // Validar que un módulo sea accesible según el rol
     validarModuloSegunRol: function(modulo, rol) {
         const modulosCliente = ['marketplace', 'orders', 'invoices', 'profile'];
-        const modulosProveedor = ['dashboard', 'inventory', 'orders', 'invoices', 'analytics'];
+        const modulosProveedor = ['dashboard', 'inventory', 'orders', 'invoices', 'analytics', 'profile'];
         
         if (rol === 'client') {
             return modulosCliente.includes(modulo);
@@ -60,21 +42,31 @@ window.router = {
         }
     },
     
-    // Cargar un módulo
     cargarModulo: function(modulo) {
         const container = document.getElementById(this.config.containerId);
-        if (!container) return;
+        if (!container) {
+            console.warn(`Router: Contenedor #${this.config.containerId} no encontrado.`);
+            setTimeout(() => {
+                if (document.getElementById(this.config.containerId)) {
+                    this.cargarModulo(modulo);
+                }
+            }, 100);
+            return;
+        }
+        
+        // Validar según rol actual
+        const rol = localStorage.getItem('userRole') || 'client';
+        if (!this.validarModuloSegunRol(modulo, rol)) {
+            console.warn(`Módulo ${modulo} no permitido para rol ${rol}`);
+            modulo = rol === 'client' ? 'marketplace' : 'dashboard';
+        }
         
         console.log(`Router: Cargando módulo ${modulo}`);
         
-        // Guardar módulo actual en memoria y localStorage
         this.currentModule = modulo;
         localStorage.setItem('currentModule', modulo);
-        
-        // También guardar la URL en el hash para que el navegador guarde en el historial
         window.location.hash = modulo;
         
-        // Mapeo de módulo a archivo
         const archivos = {
             'marketplace': 'marketplace.html',
             'dashboard': 'dashboard.html',
@@ -92,18 +84,14 @@ window.router = {
         }
         
         const url = this.config.fragmentsPath + archivo;
-        
-        // Mostrar loader
         container.innerHTML = '<div class="loader">Cargando...</div>';
         
-        // Verificar caché
         if (this.cache[url]) {
             console.log(`Router: Usando caché para ${modulo}`);
             this.injectContent(this.cache[url], modulo);
             return;
         }
         
-        // Fetch del fragmento
         fetch(url)
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -119,7 +107,7 @@ window.router = {
                     <div class="error-container">
                         <h3>⚠️ Error al cargar ${modulo}</h3>
                         <p>No se pudo cargar el contenido solicitado.</p>
-                        <button onclick="window.router.cargarModulo('marketplace')">
+                        <button onclick="window.router.cargarModulo('marketplace')" class="btn-primary">
                             Volver al Marketplace
                         </button>
                     </div>
@@ -127,21 +115,16 @@ window.router = {
             });
     },
     
-    // Inyectar contenido y ejecutar scripts
     injectContent: function(html, modulo) {
         const container = document.getElementById(this.config.containerId);
         if (!container) return;
         
         console.log(`Router: Inyectando contenido para ${modulo}`);
-        
         container.innerHTML = html;
         
-        // Ejecutar scripts dentro del fragmento
+        // Ejecutar scripts
         const scripts = container.querySelectorAll('script');
-        console.log(`Router: Ejecutando ${scripts.length} script(s)`);
-        
-        scripts.forEach((oldScript, index) => {
-            console.log(`Router: Script ${index + 1} - ${oldScript.src || 'inline'}`);
+        scripts.forEach((oldScript) => {
             const newScript = document.createElement('script');
             if (oldScript.src) {
                 newScript.src = oldScript.src;
@@ -154,7 +137,6 @@ window.router = {
             oldScript.parentNode.replaceChild(newScript, oldScript);
         });
         
-        // Actualizar título
         const titulos = {
             'marketplace': 'Marketplace | TradConnect',
             'dashboard': 'Dashboard | TradConnect',
@@ -166,14 +148,10 @@ window.router = {
         };
         document.title = titulos[modulo] || 'TradConnect';
         
-        // Actualizar clase active en el menú
         this.actualizarMenuActivo(modulo);
-        
-        // Disparar evento de módulo cargado
         window.dispatchEvent(new CustomEvent('moduleLoaded', { detail: { module: modulo } }));
     },
     
-    // Actualizar la clase active en el menú
     actualizarMenuActivo: function(modulo) {
         const menuItems = document.querySelectorAll('[data-module]');
         menuItems.forEach(item => {
@@ -183,31 +161,13 @@ window.router = {
                 item.classList.remove('active');
             }
         });
-    },
-    
-    // Recuperar módulo desde el hash de la URL (para compartir enlaces)
-    getModuloDesdeURL: function() {
-        const hash = window.location.hash.substring(1); // quita el #
-        const modulosValidos = ['marketplace', 'dashboard', 'inventory', 'orders', 'invoices', 'analytics', 'profile'];
-        
-        if (modulosValidos.includes(hash)) {
-            return hash;
-        }
-        return null;
     }
 };
 
-// Iniciar router cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOMContentLoaded: Iniciando router");
-    window.router.init();
-});
-
-// Manejar botón de "Atrás" / "Adelante" del navegador
-window.addEventListener('popstate', () => {
-    const modulo = window.router.getModuloDesdeURL();
-    if (modulo && modulo !== window.router.currentModule) {
-        console.log(`popstate: Navegando a ${modulo}`);
-        window.router.cargarModulo(modulo);
-    }
-});
+// Inicializar solo si estamos en SPA (contiene main-view)
+if (document.getElementById('main-view')) {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOMContentLoaded: Iniciando router");
+        window.router.init();
+    });
+}

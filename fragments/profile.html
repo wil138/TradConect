@@ -1,35 +1,88 @@
-<!-- fragments/profile.html -->
-<div class="card">
-    <div class="card" style="max-width: 600px; margin: 0 auto;">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div
-                style="width: 100px; height: 100px; background: var(--blue-soft); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem; color: var(--blue-primary);">
-                <i class="fa-solid fa-user"></i>
+<div class="card" style="max-width: 700px; margin: 2rem auto;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <img id="profileAvatar" class="profile-avatar-large" src="https://via.placeholder.com/100" alt="Avatar">
+        <h2>Mi Perfil</h2>
+        <p id="profileRole" class="badge" style="background:var(--blue-soft); color:var(--blue-primary);">Cargando...</p>
+    </div>
+
+    <form id="profileForm">
+        <div class="profile-section">
+            <h3><i class="fas fa-user-circle"></i> Datos personales</h3>
+            <div class="form-group">
+                <label>Nombre completo</label>
+                <input type="text" id="profileName" required>
             </div>
-            <h2>Configuración de Perfil</h2>
+            <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="email" id="profileEmail" required>
+            </div>
         </div>
 
-        <form id="profileForm">
+        <div class="profile-section">
+            <h3><i class="fas fa-building"></i> Datos de la empresa</h3>
             <div class="form-group">
-                <label>Nombre Completo</label>
-                <input type="text" id="profileName" value="Juan Pérez" required>
+                <label>Razón social</label>
+                <input type="text" id="profileEmpresa">
             </div>
             <div class="form-group">
-                <label>Correo Electrónico</label>
-                <input type="email" id="profileEmail" value="juan.perez@ejemplo.com" required>
+                <label>RUC / NIT</label>
+                <input type="text" id="profileRuc">
             </div>
             <div class="form-group">
-                <label>Empresa</label>
-                <input type="text" value="Suministros Pro S.A." disabled>
+                <label>Teléfono / WhatsApp</label>
+                <input type="tel" id="profilePhone">
             </div>
-            <button type="submit" class="rol-selector" style="width: 100%; margin-top: 10px; border: none;">
-                <i class="fas fa-save"></i> Guardar Cambios
+            <div class="form-group">
+                <label>Dirección fiscal</label>
+                <input type="text" id="profileAddress">
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h3><i class="fas fa-lock"></i> Seguridad</h3>
+            <button type="button" class="btn-secondary" id="changePasswordBtn">
+                <i class="fas fa-key"></i> Cambiar contraseña
             </button>
-        </form>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width:100%; margin-top: 2rem;">
+            <i class="fas fa-save"></i> Guardar cambios
+        </button>
+    </form>
+
+    <div id="profileStats" class="profile-section"></div>
+</div>
+
+<!-- Modal para cambio de contraseña -->
+<div id="passwordModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Cambiar contraseña</h3>
+            <button class="modal-close" onclick="document.getElementById('passwordModal').classList.remove('active')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="passwordChangeForm">
+                <div class="form-group">
+                    <label>Contraseña actual</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Nueva contraseña</label>
+                    <input type="password" id="newPassword" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label>Confirmar nueva contraseña</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('passwordModal').classList.remove('active')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
 <script>
-    if (window.profile && window.profile.init) {
-        window.profile.init();
-    }
+    if (window.profile && window.profile.init) window.profile.init();
 </script>
