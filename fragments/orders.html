@@ -1,33 +1,81 @@
 <!-- fragments/orders.html -->
- <div class="card">
+<div class="card">
+    <div class="container">
+        <div class="inventory-header">
+            <h1><i class="fas fa-truck blue"></i> Gestión de Pedidos</h1>
+            <button class="btn-new-product" id="newOrderBtn">
+                <i class="fas fa-plus-circle"></i> Nuevo Pedido
+            </button>
+        </div>
 
-<div class="container">
-    <header class="header">
-        <h1><i class="fas fa-truck blue "></i> Gestión de Pedidos</h1>
-        <p>Monitorea y procesa las solicitudes de tus clientes.</p>
-    </header>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            Monitorea y procesa las solicitudes de tus clientes.
+        </p>
 
-    <div class="tabs">
-        <button class="tab-btn active" data-filter="todos">Todos</button>
-        <button class="tab-btn" data-filter="Pendiente">Pendientes</button>
-        <button class="tab-btn" data-filter="Enviado">Enviados</button>
-        <button class="tab-btn" data-filter="Entregado">Completados</button>
-        <button class="tab-btn" data-filter="Cancelado">Cancelados</button>
-    </div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="totalOrders">0</div>
+                <div class="stat-label">Total Pedidos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingOrders">0</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="sentOrders">0</div>
+                <div class="stat-label">Enviados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="deliveredOrders">0</div>
+                <div class="stat-label">Entregados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="cancelledOrders">0</div>
+                <div class="stat-label">Cancelados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalValue">$0</div>
+                <div class="stat-label">Valor Total</div>
+            </div>
+        </div>
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr><th>ID Pedido</th><th>Cliente</th><th>Fecha</th><th>Items</th><th>Total</th><th>Estado</th></tr>
-            </thead>
-            <tbody id="orders-table-body"></tbody>
-        </table>
+        <div class="search-bar">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="searchOrders"
+                placeholder="Buscar por número de pedido, cliente o sucursal...">
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-filter="todos">Todos</button>
+            <button class="tab-btn" data-filter="Pendiente">Pendientes</button>
+            <button class="tab-btn" data-filter="Enviado">Enviados</button>
+            <button class="tab-btn" data-filter="Entregado">Entregados</button>
+            <button class="tab-btn" data-filter="Cancelado">Cancelados</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Pedido</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">Cargando pedidos...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-</div>
+
 <script>
-    if (window.orders && window.orders.init) {
-        window.orders.init();
-    }
+    if (window.orders && window.orders.init) window.orders.init();
 </script>
-

@@ -1,35 +1,160 @@
 <!-- fragments/profile.html -->
-<div class="card">
-    <div class="card" style="max-width: 600px; margin: 0 auto;">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div
-                style="width: 100px; height: 100px; background: var(--blue-soft); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem; color: var(--blue-primary);">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <h2>Configuración de Perfil</h2>
+<!-- fragments/profile.html -->
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <i class="fas fa-store"></i>
         </div>
+        <h2>Configuración de Perfil</h2>
+        <p>Gestiona tu información personal y sucursales</p>
+    </div>
 
+    <!-- Tabs -->
+    <div class="profile-tabs">
+        <button class="tab-btn active" data-tab="personal">
+            <i class="fas fa-user"></i> Datos Personales
+        </button>
+        <button class="tab-btn" data-tab="company">
+            <i class="fas fa-building"></i> Datos de Empresa
+        </button>
+        <button class="tab-btn" data-tab="branches">
+            <i class="fas fa-store"></i> Sucursales
+        </button>
+    </div>
+
+    <!-- Tab: Datos Personales -->
+    <div id="personalTab" class="tab-content active">
         <form id="profileForm">
             <div class="form-group">
-                <label>Nombre Completo</label>
-                <input type="text" id="profileName" value="Juan Pérez" required>
+                <label><i class="fas fa-user"></i> Nombre Completo</label>
+                <input type="text" id="profileName" placeholder="Ingresa tu nombre completo" required>
             </div>
             <div class="form-group">
-                <label>Correo Electrónico</label>
-                <input type="email" id="profileEmail" value="juan.perez@ejemplo.com" required>
+                <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                <input type="email" id="profileEmail" placeholder="correo@ejemplo.com" required>
             </div>
             <div class="form-group">
-                <label>Empresa</label>
-                <input type="text" value="Suministros Pro S.A." disabled>
+                <label><i class="fas fa-phone"></i> Teléfono</label>
+                <input type="tel" id="profilePhone" placeholder="+505 XXXX XXXX">
             </div>
-            <button type="submit" class="rol-selector" style="width: 100%; margin-top: 10px; border: none;">
+            <button type="submit" class="btn-save">
                 <i class="fas fa-save"></i> Guardar Cambios
             </button>
         </form>
     </div>
+
+    <!-- Tab: Datos de Empresa -->
+    <div id="companyTab" class="tab-content">
+        <form id="companyForm">
+            <div class="form-group">
+                <label><i class="fas fa-building"></i> Razón Social</label>
+                <input type="text" id="companyRazonSocial" placeholder="Razón social de la empresa">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-id-card"></i> RUC</label>
+                <input type="text" id="companyRUC" placeholder="RUC de la empresa">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-phone-alt"></i> Teléfono Empresa</label>
+                <input type="tel" id="companyPhone" placeholder="Teléfono de la empresa">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Correo Empresa</label>
+                <input type="email" id="companyEmail" placeholder="correo@empresa.com">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-map-marker-alt"></i> Dirección Fiscal</label>
+                <textarea id="companyAddress" rows="3" placeholder="Dirección fiscal completa"></textarea>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-image"></i> Logo URL</label>
+                <input type="url" id="companyLogoUrl" placeholder="https://...">
+            </div>
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Guardar Datos Empresa
+            </button>
+        </form>
+    </div>
+
+    <!-- Tab: Sucursales -->
+    <div id="branchesTab" class="tab-content">
+        <div class="branches-header">
+            <h3><i class="fas fa-store"></i> Mis Sucursales</h3>
+            <button class="btn-add-branch" id="openBranchModalBtn">
+                <i class="fas fa-plus"></i> Agregar Sucursal
+            </button>
+        </div>
+
+        <div id="branchesList" class="branches-grid">
+            <div class="empty-state">
+                <i class="fas fa-store-slash"></i>
+                <p>No tienes sucursales registradas</p>
+                <button class="btn-primary" onclick="document.getElementById('openBranchModalBtn').click()">
+                    Agregar tu primera sucursal
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Modal para agregar/editar sucursal -->
+<div id="branchModal" class="branch-modal">
+    <div class="branch-modal-content">
+        <div class="branch-modal-header">
+            <h3 id="branchModalTitle"><i class="fas fa-store"></i> Nueva Sucursal</h3>
+            <span class="branch-modal-close">&times;</span>
+        </div>
+        <form id="branchForm">
+            <input type="hidden" id="branchId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-store"></i> Nombre Sucursal *</label>
+                    <input type="text" id="branchName" required placeholder="Ej: Sucursal Managua">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-map-pin"></i> Municipio *</label>
+                    <input type="text" id="branchMunicipio" required placeholder="Ej: Managua">
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-location-dot"></i> Dirección Exacta *</label>
+                <textarea id="branchAddress" rows="2" required placeholder="Dirección exacta de la sucursal"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Teléfono Sucursal</label>
+                    <input type="tel" id="branchPhone" placeholder="+505 XXXX XXXX">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Horario Atención</label>
+                    <input type="text" id="branchSchedule" placeholder="Lun-Vie: 8am-5pm">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="branchIsWarehouse">
+                        <span><i class="fas fa-warehouse"></i> ¿Es Bodega?</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-flag-checkered"></i> Estado</label>
+                <select id="branchStatus">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+            <div class="branch-modal-buttons">
+                <button type="button" class="btn-cancel" id="cancelBranchBtn">Cancelar</button>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Guardar Sucursal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-    if (window.profile && window.profile.init) {
-        window.profile.init();
-    }
+    if (window.profile && window.profile.init) window.profile.init();
 </script>

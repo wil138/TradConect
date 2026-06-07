@@ -1,4 +1,4 @@
-# Reglas de Desarrollo AI - TradConnect
+# Reglas de Desarrollo  - TradConnect
 
 ## Stack Tecnológico
 - **Lenguaje**: JavaScript (ES6+) para la lógica del lado del cliente.

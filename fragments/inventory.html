@@ -29,7 +29,8 @@
 
         <div class="search-bar">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" id="searchInput" placeholder="Buscar por código, nombre o categoría...">
+            <input type="text" class="search-input" id="searchInput"
+                placeholder="Buscar por código, nombre o categoría...">
         </div>
 
         <div class="tabs-container">
@@ -42,17 +43,24 @@
                 <button class="tab-btn" data-filter="metales"><i class="fas fa-cog"></i> Metales</button>
             </div>
         </div>
-
-        <div class="table-wrapper">
-            <table id="inventoryTable">
-                <thead>
-                    <tr>
-                        <th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio</th><th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryTableBody"></tbody>
-            </table>
+        <div class="card">
+            <div class="table-wrapper">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody"></tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 </div>
 
