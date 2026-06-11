@@ -3,82 +3,192 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradConnect </title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>TradConnect | Marketplace para Restaurantes</title>
     <!-- CSS Globales -->
-
     <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap"
+        rel="stylesheet">
 
     <!-- Librerías globales -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="javascripts/utils/cart.js"></script>
 </head>
 
 <body>
-    <!-- SIDEBAR PERSISTENTE -->
-    <div class="sidebar">
-        <div class="institucion">
-            <div class="logo">
-                <div class="logocolor"><span class="iniciallogo">TD</span></div>
-                <span class="nombrelogo">Tradconnect</span>
+
+    <!-- ==================== LANDING PAGE ==================== -->
+    <div id="landing-wrapper">
+        <nav class="navbar">
+            <div class="logo">TradConnect</div>
+            <div class="nav-links">
+                <a href="#inicio">Inicio</a>
+                <a href="#historia">Historia</a>
+                <a href="#beneficios">Beneficios</a>
+                <a href="#productos">Productos</a>
+                <a href="#faq">FAQ</a>
+                <a href="#contacto">Contacto</a>
+                <button class="btn-outline" id="loginBtnLanding">Iniciar sesión</button>
             </div>
-        </div>
-        <div class="rol-selector" onclick="ToggleRole()">
-            <span id="role-text">Modo: Cliente</span>
-        </div>
-        <div id="menu"></div>
-    </div>
-
-    <div class="overlay" onclick="closeAll()"></div>
-
-    <!-- MAIN CONTENT -->
-    <div class="main">
-        <header class="main-header">
-            <div class="header-top">
-                <button class="menu-btn" onclick="toggleMenu()">☰</button>
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="globalSearch" placeholder="Buscar productos...">
-                </div>
-                <div class="user-actions">
-                    <div class="cart-icon-wrapper" id="cartToggle" onclick="window.toggleCart() ">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span id="cartCount">0</span>
-                    </div>
-                    <i class="far fa-bell"></i>
-                    <div class="user-profile">
-                        <div class="user-info-text">
-                            <span class="user-name">Juan Pérez</span>
-                            <span class="user-status">Premium</span>
+        </nav>
+        <main>
+            <div class="container">
+                <!-- Hero -->
+                <div class="hero" id="inicio">
+                    <div class="hero-content">
+                        <h1>Conectamos <span>proveedores</span> con restaurantes y comederos en Nicaragua</h1>
+                        <p>La plataforma B2B que optimiza tu cadena de suministro, reduce costos y apoya la economía
+                            local.</p>
+                        <div class="hero-buttons">
+                            <button class="btn-primary" id="openRegisterBtnHero">Regístrate gratis</button>
                         </div>
-                        <div class="user-avatar">JP</div>
+                    </div>
+                    <div class="hero-image">
+                        <i class="fas fa-handshake"></i> <i class="fas fa-truck-fast"></i> <i
+                            class="fas fa-utensils"></i>
                     </div>
                 </div>
-            </div>
-        </header>
 
-        <!-- CONTENEDOR DINÁMICO SPA -->
-        <main id="main-view">
-            <div class="loader">Cargando aplicación...</div>
+                <!-- Historia -->
+                <section id="historia" class="section">
+                    <h2 class="section-title-landing">Nuestra historia</h2>
+                    <div class="text-block">
+                        <p>TradConnect nació en 2023 en Managua, impulsada por la necesidad de digitalizar la cadena de
+                            suministro entre pequeños productores y el sector gastronómico.</p>
+                        <p style="margin-top:1.5rem;">En apenas dos años, hemos reducido los tiempos de entrega en un
+                            <strong>40%</strong> y los costos de adquisición en un <strong>25%</strong>.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Beneficios -->
+                <section id="beneficios" class="section">
+                    <h2 class="section-title-landing">Beneficios clave</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-item"><i class="fas fa-clock"></i>
+                            <h3>Ahorro de tiempo</h3>
+                            <p>Pedidos en minutos, entregas en horas.</p>
+                        </div>
+                        <div class="benefit-item"><i class="fas fa-chart-line"></i>
+                            <h3>Reducción de costos</h3>
+                            <p>Hasta un 30% menos en tus compras.</p>
+                        </div>
+                        <div class="benefit-item"><i class="fas fa-leaf"></i>
+                            <h3>Sostenibilidad</h3>
+                            <p>Apoya a productores locales.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cómo empezar -->
+                <section class="section">
+                    <h2 class="section-title-landing">Cómo empezar</h2>
+                    <div class="steps-grid">
+                        <div class="step-item"><span>1</span>
+                            <h3>Regístrate gratis</h3>
+                            <p>Crea tu cuenta en menos de 2 minutos.</p>
+                        </div>
+                        <div class="step-item"><span>2</span>
+                            <h3>Explora el marketplace</h3>
+                            <p>Encuentra productos de proveedores verificados.</p>
+                        </div>
+                        <div class="step-item"><span>3</span>
+                            <h3>Realiza tu pedido</h3>
+                            <p>Selecciona productos y elige tu sucursal.</p>
+                        </div>
+                        <div class="step-item"><span>4</span>
+                            <h3>Recibe y ahorra</h3>
+                            <p>Entregas rápidas y seguimiento en tiempo real.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Productos -->
+                <section id="productos" class="section">
+                    <h3 class="section-title-landing">Lo que ofrecemos</h3>
+                    <p>Categorías para restaurantes y comederos</p>
+                    <div class="steps-grid">
+                        <div class="step-item"><i class="fas fa-carrot"></i>
+                            <h4>Alimentos frescos</h4>
+                            <p></p>
+                        </div>
+                        <div class="step-item"><i class="fas fa-utensils"></i>
+                            <h4>Utensilios de cocina</h4>
+                            <p></p>
+                        </div>
+                        <div class="step-item"><i class="fas fa-wine-bottle"></i>
+                            <h4>Bebidas</h4>
+                            <p></p>
+                        </div>
+                        <div class="step-item"><i class="fas fa-tshirt"></i>
+                            <h4>Textiles</h4>
+                            <p></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Estadísticas -->
+                <div class="stats-inline">
+                    <div><span class="stat-number">+450</span><br>Negocios conectados</div>
+                    <div><span class="stat-number">+12k</span><br>Pedidos realizados</div>
+                    <div><span class="stat-number">98%</span><br>Satisfacción</div>
+                </div>
+
+                <!-- Testimonios -->
+                <section id="testimonios" class="section">
+                    <h2 class="section-title-landing">Lo que dicen de nosotros</h2>
+                    <div class="two-columns">
+                        <div class="testimonial">"TradConnect redujo nuestro tiempo de compra de 3 días a solo 12
+                            horas."<br><strong>— María González</strong></div>
+                        <div class="testimonial">"Como productor, ahora tengo visibilidad y ventas
+                            aseguradas."<br><strong>— Carlos López</strong></div>
+                    </div>
+                </section>
+
+                <!-- FAQ -->
+                <section id="faq" class="section">
+                    <h2 class="section-title-landing">Preguntas frecuentes</h2>
+                    <div class="faq-container">
+                        <div class="faq-item">
+                            <div class="faq-question">¿Cómo me registro? <i class="fas fa-chevron-down"></i></div>
+                            <div class="faq-answer">Solo necesitas un correo electrónico y crear una contraseña.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">¿Qué costo tiene la plataforma? <i
+                                    class="fas fa-chevron-down"></i></div>
+                            <div class="faq-answer">El registro es gratuito. Solo pagas los productos.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">¿Cómo son las entregas? <i class="fas fa-chevron-down"></i></div>
+                            <div class="faq-answer">Entregas en 24-48 horas en Managua.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Contacto -->
+                <section id="contacto" class="section">
+                    <h2 class="section-title-landing">¿Listo para crecer?</h2>
+                    <form class="contact-form">
+                        <div class="contact">
+                        <input class="newsletter-input" type="text" placeholder="Nombre">
+                        <input class="newsletter-input" type="email" placeholder="Correo">
+                        <textarea class="newsletter-input" placeholder="Mensaje" rows="3"></textarea>
+                    </div>
+                        <button type="submit" class="btn-primary">Enviar mensaje</button>
+                    </form>
+                </section>
+            </div>
         </main>
-      <div class="card">
+
+        <!-- FOOTER COMPLETO (coincide con el CSS unificado) -->
         <footer class="modern-footer">
             <div class="footer-container">
-
-                <!-- GRID PRINCIPAL -->
                 <div class="footer-grid">
-
-                    <!-- Columna 1: Brand + Newsletter -->
                     <div class="footer-section footer-brand">
                         <div class="logo">TradConnect</div>
-                        <p class="footer-description">
-                            Transformando el comercio tradicional con tecnología innovadora.
-                            Conectamos tradición y futuro desde 2026.
-                        </p>
-
+                        <p class="footer-description">Transformando el comercio tradicional con tecnología innovadora.
+                            Conectamos tradición y futuro desde 2026.</p>
                         <div class="newsletter-wrapper">
                             <input type="email" class="newsletter-input" placeholder="Recibe ofertas exclusivas..."
                                 aria-label="Email para newsletter">
@@ -90,28 +200,16 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Columna 2: Producto -->
                     <div class="footer-section">
                         <h3 class="footer-heading">Producto</h3>
                         <ul class="footer-links">
                             <li><a href="#">Características</a></li>
-                            <li>
-                                <a href="#">Marketplace
-                                    <span class="badge-new">Nuevo</span>
-                                </a>
-                            </li>
+                            <li><a href="#">Marketplace <span class="badge-new">Nuevo</span></a></li>
                             <li><a href="#">Precios</a></li>
-                            <li>
-                                <a href="#">API
-                                    <span class="badge-soon">Próximo</span>
-                                </a>
-                            </li>
+                            <li><a href="#">API <span class="badge-soon">Próximo</span></a></li>
                             <li><a href="#">Integraciones</a></li>
                         </ul>
                     </div>
-
-                    <!-- Columna 3: Empresa -->
                     <div class="footer-section">
                         <h3 class="footer-heading">Empresa</h3>
                         <ul class="footer-links">
@@ -122,8 +220,6 @@
                             <li><a href="#">Contacto</a></li>
                         </ul>
                     </div>
-
-                    <!-- Columna 4: Soporte + Redes -->
                     <div class="footer-section">
                         <h3 class="footer-heading">Contacto</h3>
                         <div class="contact-info">
@@ -144,60 +240,21 @@
                                 <span>+1 (555) 123-4567</span>
                             </div>
                         </div>
-
-                        <!-- Redes Sociales Mejoradas -->
                         <div class="social-section">
-                            <!-- Twitter/X -->
-                            <a href="#" class="social-link" aria-label="Twitter">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                                </svg>
-                            </a>
-
-                            <!-- LinkedIn -->
-                            <a href="#" class="social-link" aria-label="LinkedIn">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                                </svg>
-                            </a>
-
-                            <!-- Instagram -->
-                            <a href="#" class="social-link" aria-label="Instagram">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                                </svg>
-                            </a>
-
-                            <!-- Facebook -->
-                            <a href="#" class="social-link" aria-label="Facebook">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                                </svg>
-                            </a>
-
-                            <!-- YouTube -->
-                            <a href="#" class="social-link" aria-label="YouTube">
-                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                </svg>
-                            </a>
+                            <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-link" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                         </div>
                     </div>
                 </div>
-
-                <!-- BARRA INFERIOR -->
                 <div class="footer-bottom">
                     <div class="copyright">
                         <span>© 2026 TradConnect</span>
                         <span class="heart">❤️</span>
                         <span>Hecho con pasión</span>
                     </div>
-
                     <div class="footer-legal-links">
                         <a href="#">Privacidad</a>
                         <a href="#">Términos</a>
@@ -214,36 +271,212 @@
         </footer>
     </div>
 
+    <!-- ==================== SPA WRAPPER ==================== -->
+    <div id="spa-wrapper" style="display: none;">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="institucion">
+                <div class="logo">
+                    <div class="logocolor"><span class="iniciallogo">TD</span></div>
+                    <span class="nombrelogo">Tradconnect</span>
+                </div>
+            </div>
+            <div id="menu"></div>
+            <button id="logoutBtnSidebar" class="menu-item" style="margin-top:auto; color:#dc2626;">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+
+        <div class="overlay" onclick="closeAll()"></div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main">
+            <header class="main-header">
+                <div class="header-top">
+                    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="globalSearch" placeholder="Buscar productos...">
+                    </div>
+                    <div class="user-actions">
+                        <div class="cart-icon-wrapper" id="cartToggle" onclick="window.toggleCart()">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span id="cartCount">0</span>
+                        </div>
+                        <i class="far fa-bell"></i>
+                        <div class="user-profile">
+                            <div class="user-info-text">
+                                <span class="user-name" id="spaUserName">Cargando...</span>
+                                <span class="user-status" id="spaUserRole">Cliente</span>
+                            </div>
+                            <div class="user-avatar" id="spaUserAvatar">U</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main id="main-view">
+                <div class="loader">Cargando aplicación...</div>
+            </main>
+
+            <footer class="spa-footer">
+                <div class="copyright">© 2026 TradConnect</div>
+            </footer>
+        </div>
+
+        <!-- CARRITO -->
+        <aside class="cart-sidebar" id="cartSidebar">
+            <div class="cart-header">
+                <h2><i class="fas fa-shopping-bag"></i> Mi Carrito</h2>
+                <button class="close-btn" onclick="toggleCart()">&times;</button>
+            </div>
+            <div id="cartItems" class="cart-items-container">
+                <div class="empty-state">Tu carrito está vacío</div>
+            </div>
+            <div class="cart-footer">
+                <div class="total-row"><span>Total:</span><span id="cartTotal">$0.00</span></div>
+                <button class="btn-checkout" onclick="checkout()"><i class="fas fa-credit-card"></i> Procesar
+                    Pedido</button>
+            </div>
+        </aside>
     </div>
 
-    <!-- CARRITO GLOBAL -->
-    <aside class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h2><i class="fas fa-shopping-bag"></i> Mi Carrito</h2><button class="close-btn"
-                onclick="toggleCart()">&times;</button>
+    <!-- ==================== MODALES ==================== -->
+    <!-- Modal Login -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModalBtn">&times;</span>
+            <h3>Iniciar sesión</h3>
+            <form id="loginFormModal">
+                <input type="text" id="loginUsernameModal" placeholder="Usuario o correo electrónico"
+                    autocomplete="username" required>
+                <div class="pass-wrapper">
+                    <input type="password" id="loginPasswordModal" placeholder="Contraseña"
+                        autocomplete="current-password" required>
+                    <i class="fas fa-eye-slash toggle-pass" data-target="loginPasswordModal"></i>
+                </div>
+                <button type="submit" class="btn-primary">Ingresar</button>
+                <div class="modal-link">
+                    ¿No tienes cuenta? <a href="#" id="switchToRegisterLink">Regístrate aquí</a>
+                </div>
+            </form>
         </div>
-        <div id="cartItems" class="cart-items-container">
-            <div class="empty-state">Tu carrito está vacío</div>
+    </div>
+
+    <!-- Modal Registro -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeRegisterModalBtn">&times;</span>
+            <h3>Crear cuenta</h3>
+            <form id="registerFormModal">
+                <div class="form-row">
+                    <input type="text" id="regNameModal" placeholder="Nombre completo" required>
+                    <input type="email" id="regEmailModal" placeholder="Correo electrónico" required>
+                </div>
+                <div class="form-row">
+                    <input type="tel" id="regPhoneModal" placeholder="Teléfono">
+                    <select id="regTypeModal" required>
+                        <option value="">Perfil</option>
+                        <option value="restaurant">Restaurante / Comedor</option>
+                        <option value="provider">Proveedor</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="pass-wrapper">
+                        <input type="password" id="regPasswordModal" placeholder="Contraseña" required>
+                        <i class="fas fa-eye-slash toggle-pass" data-target="regPasswordModal"></i>
+                    </div>
+                    <div class="pass-wrapper">
+                        <input type="password" id="regConfirmModal" placeholder="Confirmar" required>
+                        <i class="fas fa-eye-slash toggle-pass" data-target="regConfirmModal"></i>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="regRucModal" placeholder="RUC (opcional)">
+                    <input type="text" id="regAddressModal" placeholder="Dirección fiscal (opcional)">
+                </div>
+                <button type="submit" class="btn-primary">Crear cuenta</button>
+            </form>
         </div>
-        <div class="cart-footer">
-            <div class="total-row"><span>Total:</span><span id="cartTotal">$0.00</span></div><button
-                class="btn-checkout" onclick="checkout()"><i class="fas fa-credit-card"></i> Procesar Pedido</button>
-        </div>
-    </aside>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastMessage" class="toast"><i class="fas fa-circle-check"></i> <span id="toastText"></span></div>
+
+
 
     <!-- ======================================== -->
-    <!-- SCRIPTS GLOBALES - RUTAS CORRECTAS -->
+    <!-- SCRIPTS - Orden correcto -->
     <!-- ======================================== -->
-    <script src="javascripts/utils/router.js"></script>
-    <script src="javascripts/utils/table.js"></script>
+    <script src="javascripts/utils/api.js"></script>
     <script src="javascripts/utils/rolusuario.js"></script>
+    <script src="javascripts/utils/router.js"></script>
+    <script src="javascripts/utils/landing_spa.js"></script>
+    <script src="javascripts/utils/cart.js"></script>
+    <script src="javascripts/utils/table.js"></script>
     <script src="javascripts/marketplace.js"></script>
     <script src="javascripts/inventory.js"></script>
     <script src="javascripts/orders.js"></script>
     <script src="javascripts/invoices.js"></script>
     <script src="javascripts/profile.js"></script>
     <script src="javascripts/analytics.js"></script>
+    <script src="javascripts/dashboard.js"></script>
     <script src="javascripts/Datasimulation.js"></script>
+
+    <script>
+        function toggleMenu() {
+            document.querySelector('.sidebar')?.classList.toggle('active');
+            document.querySelector('.overlay')?.classList.toggle('active');
+        }
+
+        function closeAll() {
+            document.querySelector('.sidebar')?.classList.remove('active');
+            document.querySelector('.overlay')?.classList.remove('active');
+            document.getElementById('cartSidebar')?.classList.remove('open');
+        }
+
+        window.toggleCart = function () {
+            document.getElementById('cartSidebar')?.classList.toggle('open');
+        };
+
+        window.checkout = function () {
+            if (window.marketplace?.checkout) window.marketplace.checkout();
+            else window.showToast('Función no disponible', true);
+        };
+
+        // Mostrar/ocultar contraseña
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.toggle-pass').forEach(icon => {
+                icon.addEventListener('click', function () {
+                    const target = document.getElementById(this.dataset.target);
+                    if (target) {
+                        if (target.type === 'password') {
+                            target.type = 'text';
+                            this.classList.replace('fa-eye-slash', 'fa-eye');
+                        } else {
+                            target.type = 'password';
+                            this.classList.replace('fa-eye', 'fa-eye-slash');
+                        }
+                    }
+                });
+            });
+
+            // FAQ acordeón
+            document.querySelectorAll('.faq-question').forEach(q => {
+                q.addEventListener('click', () => {
+                    const answer = q.nextElementSibling;
+                    const icon = q.querySelector('i');
+                    if (answer.style.display === 'block') {
+                        answer.style.display = 'none';
+                        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                    } else {
+                        answer.style.display = 'block';
+                        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

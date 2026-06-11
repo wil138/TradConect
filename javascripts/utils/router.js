@@ -1,213 +1,70 @@
-// router.js - Motor de carga dinámica SPA (CON PERSISTENCIA DE MÓDULO)
-
-window.router = {
-    config: {
-        fragmentsPath: 'fragments/',
-        containerId: 'main-view'
+// javascripts/utils/router.js
+const router = {
+    routes: {
+        'marketplace': 'fragments/marketplace.html',
+        'dashboard': 'fragments/dashboard.html',
+        'profile': 'fragments/profile.html',
+        'orders': 'fragments/orders.html',
+        'invoices': 'fragments/invoices.html',
+        'inventory': 'fragments/inventory.html',
+        'analytics': 'fragments/analytics.html'
     },
-    
-    // Cache de fragmentos cargados
-    cache: {},
-    
-    // Módulo actualmente cargado
     currentModule: null,
-    
-    // Inicializar router
-    init: function() {
-        console.log("Router: Inicializando");
-        
-        // Escuchar eventos de navegación del menú (se disparan desde rolusuario)
-        window.addEventListener('moduleChange', (e) => {
-            this.cargarModulo(e.detail.module);
+    async loadModule(moduleName) {
+        if (!this.routes[moduleName]) {
+            const role = localStorage.getItem('userRole');
+            moduleName = role === 'client' ? 'marketplace' : 'dashboard';
+        }
+        this.currentModule = moduleName;
+        localStorage.setItem('currentModule', moduleName);
+        document.querySelectorAll('.menu-item').forEach(item => {
+            const module = item.getAttribute('data-module');
+            if (module === moduleName) item.classList.add('active');
+            else item.classList.remove('active');
         });
-        
-        // 🔴 CAMBIO IMPORTANTE: Cargar el último módulo visitado, no el del rol
-        const ultimoModulo = localStorage.getItem('currentModule');
-        const rol = localStorage.getItem('userRole') || 'client';
-        
-        // Determinar módulo a cargar
-        let moduloInicial;
-        
-        if (ultimoModulo) {
-            // Si hay un módulo guardado, usarlo
-            moduloInicial = ultimoModulo;
-            console.log(`Router: Restaurando último módulo: ${moduloInicial}`);
-        } else {
-            // Si es la primera vez, usar el módulo por defecto según el rol
-            moduloInicial = rol === 'client' ? 'marketplace' : 'dashboard';
-            console.log(`Router: Primera vez, módulo por defecto: ${moduloInicial}`);
-        }
-        
-        // Verificar que el módulo existe y es compatible con el rol actual
-        const moduloValido = this.validarModuloSegunRol(moduloInicial, rol);
-        if (!moduloValido) {
-            moduloInicial = rol === 'client' ? 'marketplace' : 'dashboard';
-            console.log(`Router: Módulo inválido para el rol, usando: ${moduloInicial}`);
-        }
-        
-        this.cargarModulo(moduloInicial);
-    },
-    
-    // Validar que un módulo sea accesible según el rol
-    validarModuloSegunRol: function(modulo, rol) {
-        const modulosCliente = ['marketplace', 'orders', 'invoices', 'profile'];
-        const modulosProveedor = ['dashboard', 'inventory', 'orders', 'invoices', 'analytics'];
-        
-        if (rol === 'client') {
-            return modulosCliente.includes(modulo);
-        } else {
-            return modulosProveedor.includes(modulo);
-        }
-    },
-    
-    // Cargar un módulo
-    cargarModulo: function(modulo) {
-        const container = document.getElementById(this.config.containerId);
-        if (!container) return;
-        
-        console.log(`Router: Cargando módulo ${modulo}`);
-        
-        // Guardar módulo actual en memoria y localStorage
-        this.currentModule = modulo;
-        localStorage.setItem('currentModule', modulo);
-        
-        // También guardar la URL en el hash para que el navegador guarde en el historial
-        window.location.hash = modulo;
-        
-        // Mapeo de módulo a archivo
-        const archivos = {
-            'marketplace': 'marketplace.html',
-            'dashboard': 'dashboard.html',
-            'inventory': 'inventory.html',
-            'orders': 'orders.html',
-            'invoices': 'invoices.html',
-            'analytics': 'analytics.html',
-            'profile': 'profile.html'
-        };
-        
-        const archivo = archivos[modulo];
-        if (!archivo) {
-            container.innerHTML = '<div class="error-container">Módulo no encontrado</div>';
-            return;
-        }
-        
-        const url = this.config.fragmentsPath + archivo;
-        
-        // Mostrar loader
-        container.innerHTML = '<div class="loader">Cargando...</div>';
-        
-        // Verificar caché
-        if (this.cache[url]) {
-            console.log(`Router: Usando caché para ${modulo}`);
-            this.injectContent(this.cache[url], modulo);
-            return;
-        }
-        
-        // Fetch del fragmento
-        fetch(url)
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.text();
-            })
-            .then(html => {
-                this.cache[url] = html;
-                this.injectContent(html, modulo);
-            })
-            .catch(error => {
-                console.error('Error cargando módulo:', error);
-                container.innerHTML = `
-                    <div class="error-container">
-                        <h3>⚠️ Error al cargar ${modulo}</h3>
-                        <p>No se pudo cargar el contenido solicitado.</p>
-                        <button onclick="window.router.cargarModulo('marketplace')">
-                            Volver al Marketplace
-                        </button>
-                    </div>
-                `;
-            });
-    },
-    
-    // Inyectar contenido y ejecutar scripts
-    injectContent: function(html, modulo) {
-        const container = document.getElementById(this.config.containerId);
-        if (!container) return;
-        
-        console.log(`Router: Inyectando contenido para ${modulo}`);
-        
-        container.innerHTML = html;
-        
-        // Ejecutar scripts dentro del fragmento
-        const scripts = container.querySelectorAll('script');
-        console.log(`Router: Ejecutando ${scripts.length} script(s)`);
-        
-        scripts.forEach((oldScript, index) => {
-            console.log(`Router: Script ${index + 1} - ${oldScript.src || 'inline'}`);
-            const newScript = document.createElement('script');
-            if (oldScript.src) {
-                newScript.src = oldScript.src;
-                newScript.async = false;
-            } else {
+        try {
+            const response = await fetch(this.routes[moduleName]);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const html = await response.text();
+            const mainView = document.getElementById('main-view');
+            if (mainView) mainView.innerHTML = html;
+            const scripts = mainView.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
                 newScript.textContent = oldScript.textContent;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+            if (window[moduleName] && typeof window[moduleName].init === 'function') {
+                window[moduleName].init();
             }
-            if (oldScript.id) newScript.id = oldScript.id;
-            if (oldScript.type) newScript.type = oldScript.type;
-            oldScript.parentNode.replaceChild(newScript, oldScript);
-        });
-        
-        // Actualizar título
-        const titulos = {
-            'marketplace': 'Marketplace | TradConnect',
-            'dashboard': 'Dashboard | TradConnect',
-            'inventory': 'Mi Inventario | TradConnect',
-            'orders': 'Mis Pedidos | TradConnect',
-            'invoices': 'Facturación | TradConnect',
-            'analytics': 'Análisis | TradConnect',
-            'profile': 'Mi Perfil | TradConnect'
-        };
-        document.title = titulos[modulo] || 'TradConnect';
-        
-        // Actualizar clase active en el menú
-        this.actualizarMenuActivo(modulo);
-        
-        // Disparar evento de módulo cargado
-        window.dispatchEvent(new CustomEvent('moduleLoaded', { detail: { module: modulo } }));
-    },
-    
-    // Actualizar la clase active en el menú
-    actualizarMenuActivo: function(modulo) {
-        const menuItems = document.querySelectorAll('[data-module]');
-        menuItems.forEach(item => {
-            if (item.getAttribute('data-module') === modulo) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
+        } catch (error) {
+            console.error("Error al cargar el módulo:", error);
+            const mainView = document.getElementById('main-view');
+            if (mainView) {
+                mainView.innerHTML = `<div class="error-state"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar el contenido: ${error.message}</p><button onclick="router.loadModule('${moduleName}')">Reintentar</button></div>`;
             }
-        });
-    },
-    
-    // Recuperar módulo desde el hash de la URL (para compartir enlaces)
-    getModuloDesdeURL: function() {
-        const hash = window.location.hash.substring(1); // quita el #
-        const modulosValidos = ['marketplace', 'dashboard', 'inventory', 'orders', 'invoices', 'analytics', 'profile'];
-        
-        if (modulosValidos.includes(hash)) {
-            return hash;
         }
-        return null;
+    },
+    init() {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        window.addEventListener('popstate', (event) => {
+            const module = event.state?.module || localStorage.getItem('currentModule');
+            if (module && this.routes[module]) this.loadModule(module);
+        });
+        const savedModule = localStorage.getItem('currentModule');
+        const role = localStorage.getItem('userRole');
+        if (savedModule && this.routes[savedModule]) this.loadModule(savedModule);
+        else if (role === 'client') this.loadModule('marketplace');
+        else if (role === 'provider') this.loadModule('dashboard');
+        else this.loadModule('marketplace');
+    },
+    navigateTo(moduleName) {
+        if (this.routes[moduleName]) {
+            history.pushState({ module: moduleName }, '', `#${moduleName}`);
+            this.loadModule(moduleName);
+        }
     }
 };
-
-// Iniciar router cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOMContentLoaded: Iniciando router");
-    window.router.init();
-});
-
-// Manejar botón de "Atrás" / "Adelante" del navegador
-window.addEventListener('popstate', () => {
-    const modulo = window.router.getModuloDesdeURL();
-    if (modulo && modulo !== window.router.currentModule) {
-        console.log(`popstate: Navegando a ${modulo}`);
-        window.router.cargarModulo(modulo);
-    }
-});
+window.router = router;

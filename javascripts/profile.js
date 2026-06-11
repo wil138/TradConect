@@ -1,301 +1,185 @@
 // javascripts/profile.js
 window.profile = {
-    currentUserId: null,
     currentUser: null,
+    currentCompany: null,
     branches: [],
     
-    init: function() {
+    init: async function() {
         console.log("Profile: Inicializando");
-        this.loadUserData();
-        this.setupForm();
-        this.setupCompanyForm();
-        this.setupBranchForm();
+        this.loadAllData();
         this.setupTabs();
-        this.setupModal();
-        this.loadBranches();
+        this.setupForms();
+        this.setupBranchModal();
     },
     
-    loadUserData: function() {
-        // Cargar usuario actual desde localStorage
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const currentUserEmail = localStorage.getItem('currentUser');
-        
-        if (currentUserEmail) {
-            this.currentUser = users.find(u => u.email === currentUserEmail);
-            if (this.currentUser) {
-                this.currentUserId = this.currentUser.id;
-                this.loadPersonalData();
-                this.loadCompanyData();
-            }
-        }
-    },
-    
-    loadPersonalData: function() {
-        if (this.currentUser) {
-            document.getElementById('profileName').value = this.currentUser.name || '';
-            document.getElementById('profileEmail').value = this.currentUser.email || '';
-            document.getElementById('profilePhone').value = this.currentUser.phone || '';
-        }
-    },
-    
-    loadCompanyData: function() {
-        const companies = JSON.parse(localStorage.getItem('companies') || '[]');
-        const userCompany = companies.find(c => c.usuarioId === this.currentUserId);
-        
-        if (userCompany) {
-            document.getElementById('companyRazonSocial').value = userCompany.razonSocial || '';
-            document.getElementById('companyRUC').value = userCompany.ruc || '';
-            document.getElementById('companyPhone').value = userCompany.telefono || '';
-            document.getElementById('companyEmail').value = userCompany.correoEmpresa || '';
-            document.getElementById('companyAddress').value = userCompany.direccionFiscal || '';
-            document.getElementById('companyLogoUrl').value = userCompany.logoUrl || '';
-        }
-    },
-    
-    setupForm: function() {
-        const form = document.getElementById('profileForm');
-        if (form) {
-            form.addEventListener('submit', (e) => this.updateProfile(e));
-        }
-    },
-    
-    setupCompanyForm: function() {
-        const form = document.getElementById('companyForm');
-        if (form) {
-            form.addEventListener('submit', (e) => this.updateCompany(e));
-        }
-    },
-    
-    updateProfile: function(event) {
-        event.preventDefault();
-        
-        const name = document.getElementById('profileName')?.value;
-        const email = document.getElementById('profileEmail')?.value;
-        const phone = document.getElementById('profilePhone')?.value;
-        
-        if (this.currentUser) {
-            this.currentUser.name = name;
-            this.currentUser.email = email;
-            this.currentUser.phone = phone;
-            
-            // Actualizar en localStorage
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const index = users.findIndex(u => u.id === this.currentUserId);
-            if (index !== -1) {
-                users[index] = this.currentUser;
-                localStorage.setItem('users', JSON.stringify(users));
-                localStorage.setItem('currentUser', email);
-            }
-            
-            this.showToast("Perfil actualizado correctamente", "success");
-            
-            // Actualizar nombre en header
-            if (window.updateHeaderUser) {
-                window.updateHeaderUser(this.currentUser);
-            }
-        }
-    },
-    
-    updateCompany: function(event) {
-        event.preventDefault();
-        
-        const companyData = {
-            usuarioId: this.currentUserId,
-            razonSocial: document.getElementById('companyRazonSocial')?.value,
-            ruc: document.getElementById('companyRUC')?.value,
-            telefono: document.getElementById('companyPhone')?.value,
-            correoEmpresa: document.getElementById('companyEmail')?.value,
-            direccionFiscal: document.getElementById('companyAddress')?.value,
-            logoUrl: document.getElementById('companyLogoUrl')?.value,
-            estado: 'Activo'
-        };
-        
-        let companies = JSON.parse(localStorage.getItem('companies') || '[]');
-        const existingIndex = companies.findIndex(c => c.usuarioId === this.currentUserId);
-        
-        if (existingIndex !== -1) {
-            companyData.id = companies[existingIndex].id;
-            companies[existingIndex] = companyData;
+    loadAllData: function() {
+        const userStr = localStorage.getItem('user');
+        if (userStr) this.currentUser = JSON.parse(userStr);
+        const companyStr = localStorage.getItem('company');
+        if (companyStr) this.currentCompany = JSON.parse(companyStr);
+        const branchesStr = localStorage.getItem('sucursales');
+        if (branchesStr) {
+            this.branches = JSON.parse(branchesStr);
+            window.userBranches = this.branches;
         } else {
-            companyData.id = Date.now();
-            companies.push(companyData);
+            this.branches = [];
         }
-        
-        localStorage.setItem('companies', JSON.stringify(companies));
-        this.showToast("Datos de empresa guardados correctamente", "success");
+        this.renderBranches();
+        this.renderPersonalData();
+        this.renderCompanyData();
     },
     
-    // MÉTODOS PARA SUCURSALES
+    renderPersonalData: function() {
+        if (this.currentUser) {
+            this.setValue('profileName', this.currentUser.nombreusuario || '');
+            this.setValue('profileEmail', this.currentUser.correoelectronico || '');
+        }
+    },
+    
+    renderCompanyData: function() {
+        if (this.currentCompany) {
+            this.setValue('companyRazonSocial', this.currentCompany.razonsocial || '');
+            this.setValue('companyRUC', this.currentCompany.ruc || '');
+            this.setValue('companyPhone', this.currentCompany.telefono || '');
+            this.setValue('companyEmail', this.currentCompany.correoempresa || '');
+            this.setValue('companyAddress', this.currentCompany.direccionfiscal || '');
+            this.setValue('companyLogoUrl', this.currentCompany.logourl || '');
+        } else {
+            ['companyRazonSocial','companyRUC','companyPhone','companyEmail','companyAddress','companyLogoUrl'].forEach(id => this.setValue(id, ''));
+        }
+    },
+    
+    setValue: function(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.value = value || '';
+    },
+    
+    getValue: function(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    },
+    
+    setupForms: function() {
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) profileForm.addEventListener('submit', (e) => { e.preventDefault(); this.updateProfile(); });
+        const companyForm = document.getElementById('companyForm');
+        if (companyForm) companyForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.updateCompany(); });
+        const branchForm = document.getElementById('branchForm');
+        if (branchForm) branchForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.saveBranch(); });
+    },
+    
+    updateProfile: function() {
+        this.showToast("Los datos personales se actualizan desde la empresa", "info");
+    },
+    
+    updateCompany: async function() {
+        if (!this.currentCompany) {
+            this.showToast("No hay datos de empresa para actualizar", "error");
+            return;
+        }
+        const companyData = {
+            razonsocial: this.getValue('companyRazonSocial'),
+            ruc: this.getValue('companyRUC'),
+            telefono: this.getValue('companyPhone'),
+            correoempresa: this.getValue('companyEmail'),
+            direccionfiscal: this.getValue('companyAddress'),
+            logourl: this.getValue('companyLogoUrl'),
+            estado: true
+        };
+        const result = await api.updateCompany(this.currentCompany.id, companyData);
+        if (result.success) {
+            this.currentCompany = result.data;
+            localStorage.setItem('company', JSON.stringify(this.currentCompany));
+            this.showToast("Datos de empresa actualizados", "success");
+        } else {
+            this.showToast(result.error || "Error al actualizar", "error");
+        }
+    },
+    
     loadBranches: function() {
-        const allBranches = JSON.parse(localStorage.getItem('branches') || '[]');
-        this.branches = allBranches.filter(b => b.empresaId === this.currentUserId);
+        const branchesStr = localStorage.getItem('sucursales');
+        this.branches = branchesStr ? JSON.parse(branchesStr) : [];
         this.renderBranches();
-        
-        // Guardar sucursales globalmente para que el carrito pueda acceder
         window.userBranches = this.branches;
     },
     
     renderBranches: function() {
         const container = document.getElementById('branchesList');
         if (!container) return;
-        
-        if (this.branches.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-store-slash"></i>
-                    <p>No tienes sucursales registradas</p>
-                    <button class="btn-primary" onclick="document.getElementById('openBranchModalBtn').click()">
-                        Agregar tu primera sucursal
-                    </button>
-                </div>
-            `;
+        if (!this.branches.length) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-store-slash"></i><p>No tienes sucursales registradas</p><button class="btn-primary" onclick="document.getElementById('openBranchModalBtn').click()">Agregar tu primera sucursal</button></div>`;
             return;
         }
-        
         container.innerHTML = this.branches.map(branch => `
             <div class="branch-card" data-id="${branch.id}">
                 <div class="branch-card-header">
-                    <h4><i class="fas fa-store"></i> ${this.escapeHtml(branch.nombreSucursal)}</h4>
-                    <span class="branch-status ${branch.estado === 'Activo' ? 'activo' : 'inactivo'}">
-                        ${branch.estado || 'Activo'}
-                    </span>
+                    <h4><i class="fas fa-store"></i> ${this.escapeHtml(branch.nombresucursal || branch.nombre)}</h4>
+                    <span class="branch-status ${branch.estado === 'Activo' ? 'activo' : 'inactivo'}">${branch.estado === 'Activo' ? 'Activo' : 'Inactivo'}</span>
                 </div>
-                <div class="branch-detail">
-                    <i class="fas fa-map-pin"></i>
-                    <span><strong>Municipio:</strong> ${this.escapeHtml(branch.municipio)}</span>
-                </div>
-                <div class="branch-detail">
-                    <i class="fas fa-location-dot"></i>
-                    <span><strong>Dirección:</strong> ${this.escapeHtml(branch.direccionExacta)}</span>
-                </div>
-                ${branch.telefonoSucursal ? `
-                <div class="branch-detail">
-                    <i class="fas fa-phone"></i>
-                    <span><strong>Teléfono:</strong> ${this.escapeHtml(branch.telefonoSucursal)}</span>
-                </div>
-                ` : ''}
-                ${branch.horarioAtencion ? `
-                <div class="branch-detail">
-                    <i class="fas fa-clock"></i>
-                    <span><strong>Horario:</strong> ${this.escapeHtml(branch.horarioAtencion)}</span>
-                </div>
-                ` : ''}
-                ${branch.esBodega ? `
-                <div class="branch-detail">
-                    <i class="fas fa-warehouse"></i>
-                    <span><strong>Bodega:</strong> Sí</span>
-                </div>
-                ` : ''}
-                <div class="branch-actions">
-                    <button class="btn-edit" onclick="profile.editBranch(${branch.id})">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button class="btn-delete" onclick="profile.deleteBranch(${branch.id})">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                </div>
+                <div class="branch-detail"><i class="fas fa-map-pin"></i><span><strong>Municipio:</strong> ${this.escapeHtml(branch.municipio || branch.municipioid?.nombre || 'N/A')}</span></div>
+                <div class="branch-detail"><i class="fas fa-location-dot"></i><span><strong>Dirección:</strong> ${this.escapeHtml(branch.direccionexacta || branch.direccion || '')}</span></div>
+                ${branch.telefonosucursal || branch.telefono ? `<div class="branch-detail"><i class="fas fa-phone"></i><span><strong>Teléfono:</strong> ${this.escapeHtml(branch.telefonosucursal || branch.telefono)}</span></div>` : ''}
+                <div class="branch-actions"><button class="btn-edit" onclick="profile.editBranch(${branch.id})"><i class="fas fa-edit"></i> Editar</button><button class="btn-delete" onclick="profile.deleteBranch(${branch.id})"><i class="fas fa-trash"></i> Eliminar</button></div>
             </div>
         `).join('');
     },
     
-    setupBranchForm: function() {
-        const form = document.getElementById('branchForm');
-        if (form) {
-            form.addEventListener('submit', (e) => this.saveBranch(e));
-        }
-    },
-    
-    saveBranch: function(event) {
-        event.preventDefault();
-        
-        const branchId = document.getElementById('branchId')?.value;
-        const fechaRegistro = new Date().toISOString();
-        
+    saveBranch: async function() {
+        const branchId = this.getValue('branchId');
         const branchData = {
-            empresaId: this.currentUserId,
-            nombreSucursal: document.getElementById('branchName')?.value,
-            municipio: document.getElementById('branchMunicipio')?.value,
-            direccionExacta: document.getElementById('branchAddress')?.value,
-            telefonoSucursal: document.getElementById('branchPhone')?.value,
-            horarioAtencion: document.getElementById('branchSchedule')?.value,
-            esBodega: document.getElementById('branchIsWarehouse')?.checked,
-            estado: document.getElementById('branchStatus')?.value,
-            fechaRegistro: fechaRegistro
+            nombresucursal: this.getValue('branchName'),
+            municipioid: parseInt(this.getValue('branchMunicipio')) || 1,
+            direccionexacta: this.getValue('branchAddress'),
+            telefonosucursal: this.getValue('branchPhone'),
+            estado: this.getValue('branchStatus') === 'Activo' ? 'Activo' : 'Inactivo'
         };
-        
-        let branches = JSON.parse(localStorage.getItem('branches') || '[]');
-        
-        if (branchId) {
-            // Actualizar sucursal existente
-            const index = branches.findIndex(b => b.id == branchId);
-            if (index !== -1) {
-                branchData.id = parseInt(branchId);
-                branchData.fechaRegistro = branches[index].fechaRegistro;
-                branches[index] = branchData;
-                this.showToast("Sucursal actualizada correctamente", "success");
-            }
+        let result;
+        if (branchId) result = await api.updateBranch(branchId, branchData);
+        else result = await api.createBranch(branchData);
+        if (result.success) {
+            this.showToast(branchId ? "Sucursal actualizada" : "Sucursal creada", "success");
+            this.loadBranches();
+            this.closeBranchModal();
         } else {
-            // Nueva sucursal
-            branchData.id = Date.now();
-            branches.push(branchData);
-            this.showToast("Sucursal agregada correctamente", "success");
+            this.showToast(result.error || "Error al guardar", "error");
         }
-        
-        localStorage.setItem('branches', JSON.stringify(branches));
-        this.loadBranches();
-        this.closeBranchModal();
     },
     
     editBranch: function(branchId) {
         const branch = this.branches.find(b => b.id === branchId);
         if (branch) {
-            document.getElementById('branchId').value = branch.id;
-            document.getElementById('branchName').value = branch.nombreSucursal;
-            document.getElementById('branchMunicipio').value = branch.municipio;
-            document.getElementById('branchAddress').value = branch.direccionExacta;
-            document.getElementById('branchPhone').value = branch.telefonoSucursal || '';
-            document.getElementById('branchSchedule').value = branch.horarioAtencion || '';
-            document.getElementById('branchIsWarehouse').checked = branch.esBodega || false;
-            document.getElementById('branchStatus').value = branch.estado || 'Activo';
-            
+            this.setValue('branchId', branch.id);
+            this.setValue('branchName', branch.nombresucursal || branch.nombre);
+            this.setValue('branchMunicipio', branch.municipioid?.id || branch.municipio || '');
+            this.setValue('branchAddress', branch.direccionexacta || branch.direccion || '');
+            this.setValue('branchPhone', branch.telefonosucursal || branch.telefono || '');
+            this.setValue('branchStatus', branch.estado === 'Activo' ? 'Activo' : 'Inactivo');
             document.getElementById('branchModalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Sucursal';
             this.openBranchModal();
         }
     },
     
-    deleteBranch: function(branchId) {
-        if (confirm('¿Estás seguro de que deseas eliminar esta sucursal?')) {
-            let branches = JSON.parse(localStorage.getItem('branches') || '[]');
-            branches = branches.filter(b => b.id !== branchId);
-            localStorage.setItem('branches', JSON.stringify(branches));
-            this.loadBranches();
-            this.showToast("Sucursal eliminada correctamente", "success");
+    deleteBranch: async function(branchId) {
+        if (confirm('¿Eliminar esta sucursal?')) {
+            const result = await api.deleteBranch(branchId);
+            if (result.success) {
+                this.showToast("Sucursal eliminada", "success");
+                this.loadBranches();
+            } else {
+                this.showToast(result.error || "Error al eliminar", "error");
+            }
         }
     },
     
-    setupModal: function() {
+    setupBranchModal: function() {
         const modal = document.getElementById('branchModal');
         const openBtn = document.getElementById('openBranchModalBtn');
         const closeBtn = document.querySelector('.branch-modal-close');
         const cancelBtn = document.getElementById('cancelBranchBtn');
-        
-        if (openBtn) {
-            openBtn.onclick = () => this.openBranchModal();
-        }
-        
-        if (closeBtn) {
-            closeBtn.onclick = () => this.closeBranchModal();
-        }
-        
-        if (cancelBtn) {
-            cancelBtn.onclick = () => this.closeBranchModal();
-        }
-        
-        window.onclick = (event) => {
-            if (event.target === modal) {
-                this.closeBranchModal();
-            }
-        };
+        if (openBtn) openBtn.onclick = () => this.openBranchModal();
+        if (closeBtn) closeBtn.onclick = () => this.closeBranchModal();
+        if (cancelBtn) cancelBtn.onclick = () => this.closeBranchModal();
+        window.onclick = (event) => { if (event.target === modal) this.closeBranchModal(); };
     },
     
     openBranchModal: function() {
@@ -304,6 +188,7 @@ window.profile = {
             this.resetBranchForm();
             document.getElementById('branchModalTitle').innerHTML = '<i class="fas fa-store"></i> Nueva Sucursal';
             modal.classList.add('show');
+            modal.style.display = 'flex';
         }
     },
     
@@ -311,48 +196,34 @@ window.profile = {
         const modal = document.getElementById('branchModal');
         if (modal) {
             modal.classList.remove('show');
+            modal.style.display = 'none';
             this.resetBranchForm();
         }
     },
     
     resetBranchForm: function() {
-        const form = document.getElementById('branchForm');
-        if (form) {
-            form.reset();
-            document.getElementById('branchId').value = '';
-        }
+        this.setValue('branchId', '');
+        this.setValue('branchName', '');
+        this.setValue('branchMunicipio', '');
+        this.setValue('branchAddress', '');
+        this.setValue('branchPhone', '');
+        this.setValue('branchStatus', 'Activo');
+        const checkbox = document.getElementById('branchIsWarehouse');
+        if (checkbox) checkbox.checked = false;
     },
     
     setupTabs: function() {
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                this.switchTab(tabId);
-            });
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+            tab.addEventListener('click', () => this.switchTab(tab.getAttribute('data-tab')));
         });
     },
     
     switchTab: function(tabId) {
-        // Actualizar botones
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-        
-        // Actualizar contenido
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        
-        if (tabId === 'personal') {
-            document.getElementById('personalTab').classList.add('active');
-        } else if (tabId === 'company') {
-            document.getElementById('companyTab').classList.add('active');
-        } else if (tabId === 'branches') {
-            document.getElementById('branchesTab').classList.add('active');
-            this.loadBranches();
-        }
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.tab-btn[data-tab="${tabId}"]`)?.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(`${tabId}Tab`)?.classList.add('active');
+        if (tabId === 'branches') this.loadBranches();
     },
     
     showToast: function(message, type = 'success') {
@@ -362,12 +233,8 @@ window.profile = {
             toastText.textContent = message;
             toast.className = `toast ${type}`;
             toast.style.display = 'flex';
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
-        } else {
-            alert(message);
-        }
+            setTimeout(() => toast.style.display = 'none', 3000);
+        } else alert(message);
     },
     
     escapeHtml: function(text) {
@@ -377,10 +244,3 @@ window.profile = {
         return div.innerHTML;
     }
 };
-
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.profile && window.profile.init) {
-        window.profile.init();
-    }
-});
