@@ -1,10 +1,10 @@
-// marketplace.js - Módulo de marketplace que consume el endpoint público
+// marketplace.js
 window.marketplace = {
     products: [],
     categories: [],
     currentCategory: "Todos",
     searchTerm: "",
-    
+
     init: async function() {
         console.log('Marketplace: Inicializando');
         await this.loadProducts();
@@ -12,7 +12,7 @@ window.marketplace = {
         this.renderProducts();
         this.setupEvents();
     },
-    
+
     loadProducts: async function() {
         try {
             const response = await fetch('http://127.0.0.1:8000/api/marketplace/');
@@ -38,25 +38,12 @@ window.marketplace = {
             this.products = [];
         }
     },
-    
+
     getCategoryIcon: function(cat) {
-        const icons = {
-            'Todos': 'fa-th-large',
-            'Construcción': 'fa-hard-hat',
-            'Alimentos': 'fa-utensils',
-            'Artesanías': 'fa-hand-sparkles',
-            'Textiles': 'fa-tshirt',
-            'Acabados': 'fa-paint-roller',
-            'Herramientas': 'fa-tools',
-            'Plomería': 'fa-wrench',
-            'Belleza': 'fa-leaf',
-            'Bebidas': 'fa-wine-bottle',
-            'Muebles': 'fa-couch',
-            'Joyería': 'fa-gem'
-        };
+        const icons = { 'Todos': 'fa-th-large', 'Construcción': 'fa-hard-hat', 'Alimentos': 'fa-utensils', 'Artesanías': 'fa-hand-sparkles', 'Textiles': 'fa-tshirt', 'Acabados': 'fa-paint-roller', 'Herramientas': 'fa-tools', 'Plomería': 'fa-wrench', 'Belleza': 'fa-leaf', 'Bebidas': 'fa-wine-bottle', 'Muebles': 'fa-couch', 'Joyería': 'fa-gem' };
         return icons[cat] || 'fa-tag';
     },
-    
+
     renderCategories: function() {
         const grid = document.getElementById('categoriesGrid');
         if (!grid) return;
@@ -71,17 +58,15 @@ window.marketplace = {
             card.addEventListener('click', () => this.filterByCategory(card.getAttribute('data-category')));
         });
     },
-    
+
     filterByCategory: function(category) {
         this.currentCategory = category;
         this.renderCategories();
         this.renderProducts();
     },
-    
+
     renderProducts: function() {
-        let filtered = this.currentCategory === "Todos"
-            ? [...this.products]
-            : this.products.filter(p => p.category === this.currentCategory);
+        let filtered = this.currentCategory === "Todos" ? [...this.products] : this.products.filter(p => p.category === this.currentCategory);
         if (this.searchTerm.trim()) {
             const term = this.searchTerm.toLowerCase();
             filtered = filtered.filter(p => p.name.toLowerCase().includes(term) || p.vendor.toLowerCase().includes(term));
@@ -93,27 +78,18 @@ window.marketplace = {
             return;
         }
         grid.innerHTML = filtered.map(p => {
-            const offerHtml = p.isOffer ? `
-                <div class="offer-badge"><i class="fas fa-fire"></i> Oferta</div>
-                <div class="discount-badge">-${p.discount}%</div>
-            ` : '';
-            const priceHtml = p.isOffer ? `
-                <span class="original-price">$${p.originalPrice.toFixed(2)}</span>
-                <span class="offer-price">$${p.price.toFixed(2)}</span>
-            ` : `<span>$${p.price.toFixed(2)}</span>`;
+            const offerHtml = p.isOffer ? `<div class="offer-badge"><i class="fas fa-fire"></i> Oferta</div><div class="discount-badge">-${p.discount}%</div>` : '';
+            const priceHtml = p.isOffer ? `<span class="original-price">$${p.originalPrice.toFixed(2)}</span><span class="offer-price">$${p.price.toFixed(2)}</span>` : `<span>$${p.price.toFixed(2)}</span>`;
             return `
                 <div class="product-card" data-id="${p.id}">
-                    <div class="product-image">
-                        <img src="${p.img}" alt="${p.name}" loading="lazy">
-                        ${offerHtml}
-                    </div>
+                    <div class="product-image"><img src="${p.img}" alt="${p.name}" loading="lazy">${offerHtml}</div>
                     <div class="product-info">
                         <div class="product-vendor">${p.vendor}</div>
                         <div class="product-title">${p.name}</div>
                         <div class="product-origin"><i class="fas fa-map-marker-alt"></i> ${p.origin}</div>
                         <div class="product-price">${priceHtml}</div>
-                        <div style="margin-top: 10px;">
-                            <div class="quantity-selector" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="margin-top:10px;">
+                            <div class="quantity-selector" style="display:flex; justify-content:space-between; align-items:center;">
                                 <button class="qty-btn" data-id="${p.id}" data-delta="-1">-</button>
                                 <span id="qty-${p.id}">1</span>
                                 <button class="qty-btn" data-id="${p.id}" data-delta="1">+</button>
@@ -126,7 +102,6 @@ window.marketplace = {
                 </div>
             `;
         }).join('');
-        // Eventos de cantidad
         document.querySelectorAll('.qty-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -151,28 +126,18 @@ window.marketplace = {
                     vendor: btn.dataset.vendor,
                     img: btn.dataset.img
                 };
-                if (window.CartModule && window.CartModule.addToCart) {
-                    window.CartModule.addToCart(product, quantity);
-                } else {
-                    window.showToast('Carrito no disponible', true);
-                }
+                if (window.CartModule?.addToCart) window.CartModule.addToCart(product, quantity);
+                else window.showToast('Carrito no disponible', true);
             });
         });
     },
-    
+
     setupEvents: function() {
         const searchInput = document.getElementById('productSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.searchTerm = e.target.value;
-                this.renderProducts();
-            });
-        }
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'userRole') this.renderProducts();
-        });
+        if (searchInput) searchInput.addEventListener('input', (e) => { this.searchTerm = e.target.value; this.renderProducts(); });
+        window.addEventListener('storage', (e) => { if (e.key === 'userRole') this.renderProducts(); });
     },
-    
+
     showToast: function(message, isErr = false) {
         const toast = document.getElementById('toastMessage');
         const text = document.getElementById('toastText');
@@ -183,8 +148,6 @@ window.marketplace = {
             setTimeout(() => toast.style.display = 'none', 3000);
         } else alert(message);
     },
-    
-    destroy: function() {
-        console.log('Marketplace: Destruido');
-    }
+
+    destroy: function() { console.log('Marketplace: Destruido'); }
 };

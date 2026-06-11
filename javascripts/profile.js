@@ -13,10 +13,15 @@ window.profile = {
     },
     
     loadAllData: function() {
+        // Usuario desde localStorage
         const userStr = localStorage.getItem('user');
         if (userStr) this.currentUser = JSON.parse(userStr);
+        
+        // Empresa desde localStorage
         const companyStr = localStorage.getItem('company');
         if (companyStr) this.currentCompany = JSON.parse(companyStr);
+        
+        // Sucursales desde localStorage
         const branchesStr = localStorage.getItem('sucursales');
         if (branchesStr) {
             this.branches = JSON.parse(branchesStr);
@@ -62,8 +67,10 @@ window.profile = {
     setupForms: function() {
         const profileForm = document.getElementById('profileForm');
         if (profileForm) profileForm.addEventListener('submit', (e) => { e.preventDefault(); this.updateProfile(); });
+        
         const companyForm = document.getElementById('companyForm');
         if (companyForm) companyForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.updateCompany(); });
+        
         const branchForm = document.getElementById('branchForm');
         if (branchForm) branchForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.saveBranch(); });
     },
@@ -138,7 +145,7 @@ window.profile = {
         else result = await api.createBranch(branchData);
         if (result.success) {
             this.showToast(branchId ? "Sucursal actualizada" : "Sucursal creada", "success");
-            this.loadBranches();
+            this.loadBranches(); // Recarga desde localStorage actualizado
             this.closeBranchModal();
         } else {
             this.showToast(result.error || "Error al guardar", "error");

@@ -1,9 +1,7 @@
-// utils/table.js
+// table.js
 function setupTableFilters({ containerSelector, tabSelector, searchInputSelector, filterCallback }) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
-
-    // Eventos de pestañas
     container.querySelectorAll(tabSelector).forEach(btn => {
         btn.addEventListener('click', () => {
             container.querySelectorAll(tabSelector).forEach(b => b.classList.remove('active'));
@@ -11,12 +9,8 @@ function setupTableFilters({ containerSelector, tabSelector, searchInputSelector
             filterCallback();
         });
     });
-
-    // Búsqueda
     const searchInput = container.querySelector(searchInputSelector);
-    if (searchInput) {
-        searchInput.addEventListener('input', filterCallback);
-    }
+    if (searchInput) searchInput.addEventListener('input', filterCallback);
 }
 
 function getActiveFilter(containerSelector, tabSelector) {
@@ -28,4 +22,3 @@ function getSearchTerm(containerSelector, searchInputSelector) {
     const input = document.querySelector(`${containerSelector} ${searchInputSelector}`);
     return input ? input.value.toLowerCase() : '';
 }
-

@@ -1,4 +1,4 @@
-// rolusuario.js - Menú dinámico según rol, sin selector visual
+// rolusuario.js
 function toggleMenu() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.querySelector(".overlay");
@@ -17,13 +17,13 @@ function closeAll() {
 }
 
 const menus = {
-    client: [   // Restaurante
+    client: [
         { label: "Marketplace", module: "marketplace", icon: "fa-shop" },
         { label: "Mis Pedidos", module: "orders", icon: "fa-box" },
         { label: "Mis Facturas", module: "invoices", icon: "fa-file-invoice" },
         { label: "Mi Perfil", module: "profile", icon: "fa-user" }
     ],
-    provider: [ // Proveedor
+    provider: [
         { label: "Dashboard", module: "dashboard", icon: "fa-chart-line" },
         { label: "Mi Inventario", module: "inventory", icon: "fa-warehouse" },
         { label: "Pedidos Recibidos", module: "orders", icon: "fa-clipboard-list" },
@@ -33,13 +33,16 @@ const menus = {
 };
 
 function getCurrentRole() {
-    return localStorage.getItem('userRole') || "client";
+    const role = localStorage.getItem('userRole') || "client";
+    console.log("📌 getCurrentRole() devuelve:", role);
+    return role;
 }
 
 function renderMenu() {
     const menuContainer = document.getElementById("menu");
     if (!menuContainer) return;
     const role = getCurrentRole();
+    console.log("🎨 Renderizando menú para rol:", role);
     const items = menus[role];
     menuContainer.innerHTML = "";
     items.forEach(item => {
@@ -54,18 +57,14 @@ function renderMenu() {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             link.classList.add('active');
             closeAll();
-            if (window.router && window.router.loadModule) {
-                window.router.loadModule(item.module);
-            }
+            if (window.router && window.router.loadModule) window.router.loadModule(item.module);
         });
         menuContainer.appendChild(link);
     });
     const moduloActual = localStorage.getItem('currentModule');
     if (moduloActual) {
         document.querySelectorAll('.menu-item').forEach(link => {
-            if (link.getAttribute('data-module') === moduloActual) {
-                link.classList.add('active');
-            }
+            if (link.getAttribute('data-module') === moduloActual) link.classList.add('active');
         });
     }
 }
@@ -85,12 +84,12 @@ function updateRoleFromStorage() {
     updateConditionalElements();
     const currentMod = localStorage.getItem('currentModule');
     const role = getCurrentRole();
-    const allowed = (role === 'client') 
+    const allowed = (role === 'client')
         ? ['marketplace','orders','invoices','profile']
         : ['dashboard','inventory','orders','invoices','analytics'];
     if (currentMod && !allowed.includes(currentMod)) {
         const defaultMod = role === 'client' ? 'marketplace' : 'dashboard';
-        if (window.router && window.router.loadModule) window.router.loadModule(defaultMod);
+        if (window.router?.loadModule) window.router.loadModule(defaultMod);
     }
 }
 

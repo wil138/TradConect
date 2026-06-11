@@ -1,4 +1,4 @@
-// javascripts/utils/router.js
+// router.js
 const router = {
     routes: {
         'marketplace': 'fragments/marketplace.html',
@@ -10,6 +10,7 @@ const router = {
         'analytics': 'fragments/analytics.html'
     },
     currentModule: null,
+
     async loadModule(moduleName) {
         if (!this.routes[moduleName]) {
             const role = localStorage.getItem('userRole');
@@ -46,6 +47,7 @@ const router = {
             }
         }
     },
+
     init() {
         const token = localStorage.getItem('access_token');
         if (!token) return;
@@ -60,6 +62,7 @@ const router = {
         else if (role === 'provider') this.loadModule('dashboard');
         else this.loadModule('marketplace');
     },
+
     navigateTo(moduleName) {
         if (this.routes[moduleName]) {
             history.pushState({ module: moduleName }, '', `#${moduleName}`);

@@ -9,8 +9,8 @@ const api = {
         const config = { ...options, headers };
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-            // Si es 401 y no es dump-all (que ya incluye credenciales)
             if (response.status === 401 && endpoint !== '/auth/dump-all/') {
+                // Si hay 401 y no es dump-all, intentamos refrescar (opcional, puedes comentar si no tienes refresh)
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
                     const newToken = localStorage.getItem('access_token');
@@ -54,7 +54,7 @@ const api = {
         }
     },
 
-    // 🔥 LOGIN usando dump_all_data
+    // 🔥 LOGIN usando dump_all_data (ya no usa /login aparte)
     async login(usernameOrEmail, password) {
         const result = await this.request('/auth/dump-all/', {
             method: 'POST',
@@ -62,15 +62,32 @@ const api = {
         });
         if (result.success) {
             const data = result.data;
+            // Guardar tokens
             localStorage.setItem('access_token', data.tokens.access);
             localStorage.setItem('refresh_token', data.tokens.refresh);
+            // Guardar usuario y empresa
             localStorage.setItem('user', JSON.stringify(data.usuario));
             localStorage.setItem('company', JSON.stringify(data.empresa));
             localStorage.setItem('userName', data.usuario.nombreusuario);
             localStorage.setItem('userEmail', data.usuario.correoelectronico);
-            // Mapeo de rol: 'Proveedor' -> provider, 'Restaurante' -> client
-            const role = data.usuario.rolid?.nombrerol === 'Proveedor' ? 'provider' : 'client';
+
+            // 🔥 DETECCIÓN DEL ROL (CORREGIDA)
+            // Ahora usamos 'rol_nombre' que viene en el objeto usuario
+            const rolNombre = data.usuario.rol_nombre;
+            console.log("🔍 Rol recibido del backend:", rolNombre);
+            let role = 'client'; // por defecto Restaurante
+            if (rolNombre && rolNombre.toLowerCase() === 'proveedor') {
+                role = 'provider';
+            } else if (rolNombre && rolNombre.toLowerCase() === 'restaurante') {
+                role = 'client';
+            } else {
+                console.warn("⚠️ Rol no reconocido, se asigna client por defecto:", rolNombre);
+            }
+            console.log("✅ Rol asignado:", role);
             localStorage.setItem('userRole', role);
+            // ---------------------------------------------
+
+            // Guardar catálogos y datos de la empresa (si existen)
             localStorage.setItem('catalogos', JSON.stringify(data.catalogos));
             if (data.empresa) {
                 localStorage.setItem('sucursales', JSON.stringify(data.sucursales || []));
@@ -86,20 +103,20 @@ const api = {
         return result;
     },
 
-    // 🔥 REGISTRO + dump_all_data automático
+    // Registro y luego login automático
     async register(userData) {
         const regResult = await this.request('/auth/register/', {
             method: 'POST',
             body: JSON.stringify(userData)
         });
         if (regResult.success) {
-            // Después de registrar, hacemos login para obtener todos los datos
+            // Tras registrar, hacemos login con las mismas credenciales para obtener el dump completo
             return await this.login(userData.correo, userData.contrasena);
         }
         return regResult;
     },
 
-    // Métodos para escritura (actualizaciones)
+    // Operaciones de escritura (actualizar empresa, sucursales)
     async updateCompany(companyId, companyData) {
         const result = await this.request(`/empresas/${companyId}/`, {
             method: 'PUT',
