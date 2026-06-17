@@ -391,7 +391,12 @@ Características:
 
 # 👨‍💻 Autor
 
-**Wilton Hernández**
+**Whilton Junior Verrio Carballo**
+**Deyling Alejandra Espinoza Montoya**
+**Katerin Jimena Flores Amador**
+**Junice Abigail Salazar Sanchez**
+**Luis Marcos Acosta Sequeira**
+
 
 Proyecto académico y profesional enfocado en la transformación digital de la cadena de suministro gastronómica en Nicaragua.
 
