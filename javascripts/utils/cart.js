@@ -727,3 +727,4 @@ if (document.readyState === 'loading') {
     }
 }
 console.log('✅ CartModule loaded (mejorado)');
+

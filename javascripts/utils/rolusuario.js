@@ -26,6 +26,7 @@ const menus = {
         { label: "Dashboard", module: "dashboard", icon: "fa-chart-line" },
         { label: "Mi Inventario", module: "inventory", icon: "fa-warehouse" },
         { label: "Pedidos Recibidos", module: "orders", icon: "fa-clipboard-list" },
+         { label: "Mi Perfil", module: "profile", icon: "fa-user" },
         { label: "Análisis", module: "analytics", icon: "fa-microchip" }
     ]
 };

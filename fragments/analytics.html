@@ -1,135 +1,75 @@
-<div class="card">
-    <div class="analytics-wrapper">
-        <div class="container">
-            <!-- Header con botones de acción -->
-            <div class="inventory-header">
-                <h2>
-                    <i class="fas fa-chart-pie"></i>
-                    Analytics & Business Intelligence
-                </h2>
-                <div class="header-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <button class="btn-filter" onclick="window.analytics.refreshAll()">
-                        <i class="fas fa-sync-alt"></i> Actualizar Datos
-                    </button>
-                    <button class="btn-filter" onclick="window.analytics.exportData()">
-                        <i class="fas fa-download"></i> Exportar Reporte
-                    </button>
-                    <button class="btn-filter" onclick="window.analytics.printCharts()">
-                        <i class="fas fa-print"></i> Imprimir
-                    </button>
-                </div>
+<!-- fragments/analytics.html -->
+<div class="analytics-dashboard">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-chart-pie"></i> Panel de Análisis</h1>
+        <div class="filters">
+            <div class="filter-group">
+                <label>Desde:</label>
+                <input type="date" id="analyticsStartDate" />
             </div>
-
-            <!-- KPIs Principales -->
-            <div class="kpis" id="analyticsKpis">
-                <div class="kpi">
-                    <div class="card">
-                        <h5>💰 Capital Total en Inventario</h5>
-                        <h2 id="totalCapital">$0</h2>
-                        <p id="capitalTrend">Cargando...</p>
-                    </div>
-                </div>
-                <div class="kpi">
-                    <div class="card">
-                        <h5>📦 Total Productos</h5>
-                        <h2 id="totalProducts">0</h2>
-                        <p>Unidades en catálogo</p>
-                    </div>
-                </div>
-                <div class="kpi">
-                    <div class="card">
-                        <h5>⚠️ Productos en Riesgo</h5>
-                        <h2 id="productsAtRisk">0</h2>
-                        <p>Stock menor a 20 unid.</p>
-                    </div>
-                </div>
-                <div class="kpi">
-                    <div class="card">
-                        <h5>📊 Valor Promedio</h5>
-                        <h2 id="avgValue">$0</h2>
-                        <p>Por producto</p>
-                    </div>
-                </div>
+            <div class="filter-group">
+                <label>Hasta:</label>
+                <input type="date" id="analyticsEndDate" />
             </div>
-
-            <!-- Grid de Gráficos 2x2 -->
-            <div class="analytics-grid">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3><i class="fas fa-chart-pie"></i> Capital por Categoría</h3>
-                        <span class="chart-subtitle">Distribución financiera</span>
-                    </div>
-                    <div class="chart-body">
-                        <canvas id="chartCategorias"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3><i class="fas fa-heartbeat"></i> Salud del Stock</h3>
-                        <span class="chart-subtitle">Niveles de inventario</span>
-                    </div>
-                    <div class="chart-body">
-                        <canvas id="chartStock"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3><i class="fas fa-tags"></i> Segmentación de Precios</h3>
-                        <span class="chart-subtitle">Rangos de precio</span>
-                    </div>
-                    <div class="chart-body">
-                        <canvas id="chartPrecios"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3><i class="fas fa-trophy"></i> Top 10 Productos</h3>
-                        <span class="chart-subtitle">Mayor valor en inventario</span>
-                    </div>
-                    <div class="chart-body">
-                        <canvas id="chartTop10"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabla de Resumen por Categoría -->
-            <div class="card" style="margin-top: 2rem;">
-                <div class="chart-header">
-                    <h3><i class="fas fa-table"></i> Resumen Detallado por Categoría</h3>
-                </div>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Categoría</th>
-                                <th>Productos</th>
-                                <th>Stock Total</th>
-                                <th>Valor Total</th>
-                                <th>% del Capital</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="analyticsTableBody">
-                            <tr>
-                                <td colspan="6" style="text-align: center; padding: 2rem;">
-                                    <i class="fas fa-spinner fa-spin"></i> Cargando datos...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <button id="analyticsRefreshBtn" class="btn-primary"><i class="fas fa-sync-alt"></i> Actualizar</button>
         </div>
     </div>
 
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <span class="kpi-label">Total Ventas</span>
+            <span class="kpi-value" id="kpiTotalSales">$0.00</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Nº Pedidos</span>
+            <span class="kpi-value" id="kpiTotalOrders">0</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Productos Vendidos</span>
+            <span class="kpi-value" id="kpiTotalItems">0</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Ticket Promedio</span>
+            <span class="kpi-value" id="kpiAvgTicket">$0.00</span>
+        </div>
     </div>
 
-    <script>
-        if (window.analytics && window.analytics.init) {
-            window.analytics.init();
-        }
-    </script>
+    <!-- Gráficos y tablas -->
+    <div class="chart-row">
+        <div class="chart-box">
+            <h3>Ventas por Mes</h3>
+            <canvas id="salesChart" width="400" height="250"></canvas>
+        </div>
+        <div class="chart-box">
+            <h3>Distribución de Pedidos</h3>
+            <canvas id="statusChart" width="400" height="250"></canvas>
+        </div>
+    </div>
+
+    <div class="data-row">
+        <div class="data-box">
+            <h3>🏆 Top 5 Productos</h3>
+            <div id="topProductsList"><p class="loading">Cargando...</p></div>
+        </div>
+        <div class="data-box">
+            <h3>Ventas por Categoría</h3>
+            <div id="categoryList"><p class="loading">Cargando...</p></div>
+        </div>
+    </div>
+
+    <div class="data-box full-width">
+        <h3>Ventas por Empresa</h3>
+        <div id="companyList"><p class="loading">Cargando...</p></div>
+    </div>
 </div>
+
+<script>
+    // El script se ejecutará cuando el fragmento sea inyectado
+    // Llamamos al módulo analytics para que se inicialice
+    if (window.analytics && typeof window.analytics.init === 'function') {
+        window.analytics.init();
+    } else {
+        console.warn('Módulo analytics no disponible');
+    }
+</script>

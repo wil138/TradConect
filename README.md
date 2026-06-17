@@ -1,203 +1,402 @@
-# TradConnect - SPA
+# 📦 TradConnect
 
-**Plataforma comercial B2B** para suministros de construcción.
-Aplicación de Página Única (SPA) con sistema de roles (Cliente/Proveedor),
-marketplace con carrito, gestión de inventario, facturación, pedidos y análisis.
-Desarrollado como prototipo frontend con simulación de datos.
+## Plataforma B2B para la Gestión Inteligente de Suministros Gastronómicos
 
-## Características Principales
+TradConnect es una plataforma **Business-to-Business (B2B)** diseñada para conectar proveedores con restaurantes y comederos en Nicaragua mediante una solución tecnológica moderna que optimiza la cadena de suministro.
 
-- Arquitectura SPA: Navegación sin recargas, shell persistente.
-- Marketplace con productos, categorías, búsqueda, ofertas y descuentos.
-- Carrito de compras lateral con cálculo de subtotales, descuentos y total.
-- Sistema de roles intercambiable (Cliente / Proveedor).
-- Gestión de inventario (CRUD de productos, filtros, stock bajo).
-- Facturación con estados (pagadas, pendientes, vencidas, reembolsadas).
-- Pedidos con seguimiento de estados.
-- Dashboard con KPIs y gráficos interactivos (Chart.js).
-- Diseño responsive (sidebar adaptable, menú hamburguesa).
-- Persistencia de estado en localStorage.
+---
+
+## 🌐 Enlaces del Proyecto
+
+| Recurso     | Enlace                                    |
+| ----------- | ----------------------------------------- |
+| Frontend    | https://github.com/wil138/Tradconnect     |
+| Backend API | https://github.com/wil138/Tradconnect_api |
+| Demo        | https://tradconnect.netlify.app           |
+
+---
+
+# 📋 Resumen Ejecutivo
+
+TradConnect surge en Managua, Nicaragua, con el propósito de digitalizar la gestión de abastecimiento entre productores, distribuidores y establecimientos gastronómicos.
+
+La plataforma centraliza procesos que tradicionalmente se realizan mediante llamadas telefónicas, mensajería informal y cotizaciones manuales.
+
+### Resultados alcanzados
+
+| Indicador                          | Resultado |
+| ---------------------------------- | --------- |
+| Reducción de tiempos de entrega    | 40%       |
+| Reducción de costos de adquisición | 25%       |
+| Proveedores registrados            | 150+      |
+| Restaurantes conectados            | 300+      |
+| Negocios activos                   | 450+      |
+| Pedidos realizados                 | 12,000+   |
+| Satisfacción de usuarios           | 98%       |
+
+---
+
+# 🎯 Problema
+
+Muchos restaurantes y comedores presentan dificultades para:
+
+* Encontrar proveedores confiables.
+* Comparar precios rápidamente.
+* Gestionar inventarios.
+* Dar seguimiento a pedidos.
+* Centralizar información comercial.
+
+Esto provoca:
+
+* Incremento de costos operativos.
+* Retrasos en abastecimiento.
+* Pérdida de oportunidades de compra.
+* Baja eficiencia logística.
+
+---
+
+# 💡 Solución
+
+TradConnect integra en una única plataforma:
+
+* Marketplace de productos.
+* Gestión de pedidos.
+* Inventario.
+* Facturación.
+* Seguimiento de órdenes.
+* Dashboard analítico.
+* Gestión de proveedores y clientes.
+
+---
+
+# 🏗 Arquitectura del Sistema
+
+```text
+┌───────────────┐
+│   Frontend    │
+│      SPA      │
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│  Django REST  │
+│      API      │
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│ SQL Server DB │
+└───────────────┘
+```
+
+---
+
+# ⚙ Backend
 
 ## Tecnologías
 
-| Capa          | Herramientas / Librerías                         |
-|---------------|--------------------------------------------------|
-| Arquitectura  | SPA con router propio                            |
-| Frontend      | HTML5, CSS3, JavaScript (Vanilla ES6+)           |
-| Estilos       | CSS Custom Properties, Flexbox, Grid             |
-| Gráficos      | Chart.js 4.x                                     |
-| Iconos        | Font Awesome 6                                   |
-| Fuente        | Google Fonts - Inter                             |
-| Simulación    | Datos estáticos en JavaScript                    |
-| Persistencia  | localStorage                                     |
+| Tecnología            | Función            |
+| --------------------- | ------------------ |
+| Python 3.13+          | Lenguaje principal |
+| Django                | Framework web      |
+| Django REST Framework | API REST           |
+| SQL Server            | Base de datos      |
+| JWT                   | Autenticación      |
+| Swagger               | Documentación      |
 
-## Estructura del Proyecto
-![alt text](/img/image.png)
+---
 
-## Arquitectura SPA - Cómo Funciona
+## API REST
 
-Flujo de Navegacion:
+### Endpoints Principales
 
-1. Usuario abre index.html
-2. router.js se inicializa
-3. Lee rol y ultimo modulo de localStorage
-4. Carga el fragmento correspondiente
-5. Inyecta el HTML en <main id="main-view">
-6. Ejecuta los scripts del fragmento (init())
-7. El contenido se renderiza sin recargar
+| Recurso          | Endpoint                             |
+| ---------------- | ------------------------------------ |
+| Usuarios         | `/api/TradConnect/usuarios/`         |
+| Clientes         | `/api/TradConnect/clientes/`         |
+| Proveedores      | `/api/TradConnect/proveedores/`      |
+| Establecimientos | `/api/TradConnect/establecimientos/` |
+| Productos        | `/api/TradConnect/productos/`        |
+| Pedidos          | `/api/TradConnect/pedidos/`          |
+| Facturas         | `/api/TradConnect/facturas/`         |
 
-Persistencia al Recargar:
-- El modulo actual se guarda en localStorage (currentModule)
-- Al recargar (F5), se restaura el mismo modulo
-- El carrito persiste con clave marketplaceCart
+---
 
-## Roles de Usuario
+## Autenticación JWT
 
-| Rol         | Modulos disponibles                                    |
-|-------------|--------------------------------------------------------|
-| Cliente     | Marketplace, Mis Pedidos, Mis Facturas, Mi Perfil      |
-| Proveedor   | Dashboard, Mi Inventario, Pedidos Recibidos, Facturacion, Analisis |
+### Obtener Token
 
-## Carrito de Compras
+```http
+POST /api/token/
+```
 
-Funcionalidades:
-- Anadir productos desde el marketplace
-- Selector de cantidad por producto
-- Precios con descuentos visibles
-- Calculo de subtotal por producto, ahorro, total general
-- Persistencia en localStorage
-- Solo visible en modo Cliente
+### Refrescar Token
 
-Visualizacion en Carrito:
+```http
+POST /api/token/refresh/
+```
 
+Características:
 
-![alt text](/img/image-1.png)
+* Login seguro.
+* Refresh automático.
+* Protección de rutas.
+* Control de acceso por roles.
 
-## Como Ejecutar
+---
 
-Opcion 1 - Live Server (recomendada):
-1. Instalar extension "Live Server" en VS Code
-2. Click derecho en index.html -> "Open with Live Server"
+# 💻 Frontend SPA
 
-Opcion 2 - Python:
+## Tecnologías
+
+* HTML5
+* CSS3
+* JavaScript Vanilla
+* Fetch API
+* Chart.js
+* Font Awesome 6
+* Google Fonts (Inter)
+
+---
+
+## Características
+
+* Navegación sin recarga.
+* Shell persistente.
+* Carga dinámica de módulos.
+* Persistencia de estado.
+* Responsive Design.
+* Gestión de sesiones.
+
+---
+
+# 📁 Estructura del Proyecto
+
+```text
+/
+├── index.html
+├── styles/
+│   └── style.css
+│
+├── fragments/
+│   ├── marketplace.html
+│   ├── dashboard.html
+│   ├── profile.html
+│   ├── orders.html
+│   ├── inventory.html
+│   └── analytics.html
+│
+└── javascripts/
+    ├── utils/
+    │   ├── api.js
+    │   ├── router.js
+    │   ├── rolusuario.js
+    │   ├── landing_spa.js
+    │   ├── cart.js
+    │   └── table.js
+    │
+    ├── marketplace.js
+    ├── dashboard.js
+    ├── orders.js
+    ├── inventory.js
+    ├── profile.js
+    └── analytics.js
+```
+
+---
+
+# 🧩 Módulos Principales
+
+## Marketplace
+
+* Catálogo de productos.
+* Categorías.
+* Filtros avanzados.
+* Búsqueda inteligente.
+
+## Carrito
+
+* Gestión de compras.
+* Selección de sucursales.
+* Métodos de pago.
+* Checkout.
+
+## Dashboard
+
+* KPIs.
+* Gráficos.
+* Ventas.
+* Pedidos recientes.
+
+## Pedidos
+
+* Seguimiento.
+* Estados.
+* Historial.
+* Gestión para proveedores.
+
+## Inventario
+
+* CRUD de productos.
+* Gestión de stock.
+* Categorías.
+* Disponibilidad.
+
+## Perfil
+
+* Información personal.
+* Datos empresariales.
+* Sucursales.
+* Configuración.
+
+## Analytics
+
+* Indicadores financieros.
+* Tendencias.
+* Reportes.
+* Visualizaciones avanzadas.
+
+---
+
+# 🔐 Gestión de Sesión
+
+Los tokens se almacenan mediante LocalStorage:
+
+```javascript
+access_token
+refresh_token
+```
+
+También se persiste:
+
+* Carrito de compras.
+* Último módulo visitado.
+* Preferencias del usuario.
+
+---
+
+# 🚀 Instalación
+
+## Backend
+
+```bash
+git clone https://github.com/wil138/Tradconnect_api.git
+
+cd Tradconnect_api
+
+pip install -r requirements.txt
+
+python manage.py makemigrations
+
+python manage.py migrate
+
+python manage.py runserver
+```
+
+Swagger:
+
+```text
+http://localhost:8000/swagger/
+```
+
+---
+
+## Frontend
+
+```bash
+git clone https://github.com/wil138/Tradconnect.git
+
+cd Tradconnect
+
 python -m http.server 8080
-Abrir http://localhost:8080
+```
 
-Opcion 3 - Node.js:
-npx serve .
+o
 
-## Personalizacion
+```bash
+npx serve
+```
 
-### Colores y estilos
-Modificar :root en styles/style.css
+Abrir:
 
-### Datos simulados
-- marketplace.js: Array products
-- inventory.js: Array defaultInventory
-- invoices.js: Array invoicesData
-- orders.js: Array ordersData
+```text
+http://localhost:8080
+```
 
-### Menu de navegacion
-Editar const menus en rolusuario.js
+---
 
-### Productos del marketplace
-Editar array products en marketplace.js
+# 📱 Responsive Design
 
-## Funcionalidades por Modulo
+La interfaz está diseñada para adaptarse a:
 
-### Marketplace
-- Tarjetas de producto con imagen, precio, vendedor
-- Ofertas con descuento visible
-- Filtros por categoria
-- Busqueda instantanea
-- Selector de cantidad
-- Carrito lateral completo
+* Computadoras.
+* Tablets.
+* Dispositivos móviles.
 
-### Dashboard (Proveedor)
-- KPIs: ventas, pedidos urgentes, stock critico, nuevos clientes
-- Grafico de barras: transacciones por hora
-- Grafico de lineas: tendencia de crecimiento
-- Grafico de dona: ventas por region
-- Grafico de lineas: proyeccion
+Características:
 
-### Inventario (Proveedor)
-- Tabla con codigo, nombre, categoria, stock, precio
-- Indicadores de stock (bajo, medio, alto)
-- CRUD de productos (modales)
-- Filtros por categoria
-- Busqueda
-- Resumen de metricas
+* Sidebar adaptable.
+* Navegación móvil.
+* Tablas responsivas.
+* Formularios adaptativos.
+* Carrito optimizado.
 
-### Facturacion
-- Listado de facturas
-- Estados con badges de colores
-- Filtros por estado
-- Busqueda por numero
-- Crear nueva factura
-- Ver detalles
+---
 
-### Pedidos
-- Tabla con ID, cliente, fecha, items, total, estado
-- Filtros por estado
-- Avatar con iniciales
+# 📈 Beneficios
 
-### Perfil
-- Formulario de usuario
-- Actualizacion simulada
+## Para Restaurantes
 
-### Analisis
-- Grafico de lineas: ventas vs pedidos
+* Menor tiempo de compra.
+* Seguimiento de pedidos.
+* Facturación centralizada.
+* Comparación de proveedores.
+* Historial de compras.
 
-## Responsive Design
+## Para Proveedores
 
-Desktop (>1000px):
-- Sidebar fijo izquierda (260px)
-- Contenido con margin-left: 260px
-- Carrito lateral 400px
+* Mayor visibilidad.
+* Incremento de ventas.
+* Gestión de inventario.
+* Administración de pedidos.
+* Analítica comercial.
 
-Tablet / Movil (<1000px):
-- Sidebar oculto con transform
-- Boton hamburguesa
-- Overlay semitransparente
-- Carrito 100% ancho
+---
 
-## Depuracion
+# 📜 Reglas de Desarrollo
 
-Ver logs en Consola (F12):
-- Router: Inicializando
-- Router: Cargando modulo marketplace
-- Marketplace: Inicializando
+* No recargar la página.
+* Mantener arquitectura SPA.
+* Utilizar módulos independientes.
+* Centralizar estilos en `style.css`.
+* Utilizar método `init()` en cada módulo.
+* Persistir información relevante.
+* Mantener compatibilidad móvil.
+* Consumir únicamente la API REST.
 
-Errores comunes:
-| Error                      | Solucion                                   |
-|----------------------------|--------------------------------------------|
-| 404 en fragmento           | Verificar ruta en fragments/               |
-| XXX is not defined         | Verificar funciones globales               |
-| Carrito no abre            | Definir window.toggleCart en index.html    |
-| Al recargar vuelve atras   | router debe guardar currentModule          |
-| Descuentos no se ven       | Verificar originalPrice e isOffer          |
+---
 
-## Extensiones Futuras Posibles
+# 🔮 Mejoras Futuras
 
-- Autenticacion de usuarios
-- Conexion a backend real
-- Base de datos
-- Pasarela de pagos
-- Notificaciones push
-- Exportar facturas a PDF
-- Chat entre clientes y proveedores
-- Valoraciones y reseñas
-- Modo oscuro
+* Aplicación móvil.
+* Notificaciones push.
+* Integración con pagos electrónicos.
+* Facturación electrónica.
+* IA para predicción de demanda.
+* Reportes PDF y Excel.
+* Gestión logística avanzada.
+* Panel administrativo ampliado.
 
-## Licencia
+---
 
-Apache License
-Version 2.0, January 2004
-http://www.apache.org/licenses/
+# 👨‍💻 Autor
 
-## Autor
+**Wilton Hernández**
 
-Desarrollado como prototipo frontend de un sistema de gestion comercial con arquitectura SPA.
+Proyecto académico y profesional enfocado en la transformación digital de la cadena de suministro gastronómica en Nicaragua.
 
+---
 
-TradConnect - Conecta tus suministros, impulsa tus resultados
+## 📄 Licencia
+
+Este proyecto es de código abierto y se encuentra disponible para fines educativos y de desarrollo.

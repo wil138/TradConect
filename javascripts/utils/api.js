@@ -1,4 +1,4 @@
-// javascripts/utils/api.js - VERSIÓN CON REFRESCO AUTOMÁTICO TRAS CRUD (usa dump-all)
+// javascripts/utils/api.js - VERSIÓN CON REFRESCO AUTOMÁTICO TRAS CRUD (dump-all)
 const API_BASE_URL = 'https://ntzjmczt-8000.use.devtunnels.ms/api';
 
 const api = {
@@ -7,24 +7,24 @@ const api = {
     // =========================================================
     async request(endpoint, options = {}) {
         const token = localStorage.getItem('access_token');
-        const headers = { 
+        const headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            ...options.headers 
+            ...options.headers
         };
-        
+
         const isPublic = endpoint === '/auth/login/' || endpoint === '/auth/register/' || endpoint === '/auth/refresh/';
         if (!isPublic && !token) {
             throw new Error('No hay token de autenticación. Inicia sesión.');
         }
-        
+
         if (token) headers['Authorization'] = `Bearer ${token}`;
-        
+
         const config = { ...options, headers };
-        
+
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-            
+
             if (response.status === 401 && !isPublic && endpoint !== '/auth/refresh/') {
                 const refreshed = await this.refreshToken();
                 if (refreshed) {
@@ -39,7 +39,7 @@ const api = {
                     throw new Error('Sesión expirada');
                 }
             }
-            
+
             const data = await response.json();
             if (!response.ok) {
                 const errorMsg = data.error || data.detail || data.message || 'Error en la petición';
@@ -66,17 +66,17 @@ const api = {
                         console.log(`📦 Usando caché para ${endpoint}`);
                         return { success: true, data, fromCache: true };
                     }
-                } catch (e) {}
+                } catch (e) { }
             }
         }
 
-        const headers = { 
+        const headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            ...options.headers 
+            ...options.headers
         };
         const config = { ...options, headers };
-        
+
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
             const data = await response.json();
@@ -96,7 +96,7 @@ const api = {
                     const { data } = JSON.parse(cached);
                     console.warn(`⚠️ Usando caché expirada para ${endpoint}`);
                     return { success: true, data, fromCache: true, expired: true };
-                } catch (e) {}
+                } catch (e) { }
             }
             return { success: false, error: error.message };
         }
@@ -111,7 +111,7 @@ const api = {
         try {
             const res = await fetch(`${API_BASE_URL}/auth/refresh/`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
@@ -138,12 +138,11 @@ const api = {
     // =========================================================
     async refreshFullData() {
         try {
-            const result = await this.request('/auth/dump-all/', { method: 'GET' });
+            const result = await this.request('/auth/dump-all/', { method: 'POST', body: JSON.stringify({}) });
             if (result.success) {
                 const data = result.data;
                 console.log("🔄 Refrescando todos los datos desde dump-all");
 
-                // Actualizar tokens (por si acaso)
                 if (data.tokens) {
                     localStorage.setItem('access_token', data.tokens.access);
                     localStorage.setItem('refresh_token', data.tokens.refresh);
@@ -184,16 +183,12 @@ const api = {
         }
     },
 
-    // =========================================================
-    // REFRESCO DE DATOS (alias de refreshFullData para mantener compatibilidad)
-    // =========================================================
     async refreshMyData() {
-        // Usamos dump-all para obtener todos los datos, incluyendo pedidos
         return await this.refreshFullData();
     },
 
     // =========================================================
-    // AUTENTICACIÓN (PÚBLICOS)
+    // AUTENTICACIÓN
     // =========================================================
     async login(usernameOrEmail, password) {
         const result = await this.publicRequest(
@@ -256,7 +251,7 @@ const api = {
     },
 
     // =========================================================
-    // MÉTODOS PRIVADOS (POST, PUT, DELETE, GET autenticados)
+    // MÉTODOS PRIVADOS
     // =========================================================
     async changePassword(oldPassword, newPassword) {
         return await this.request('/auth/change-password/', {
@@ -459,11 +454,87 @@ const api = {
     },
 
     // =========================================================
+    // NUEVOS MÉTODOS PARA ANÁLISIS (DATA WAREHOUSE)
+    // =========================================================
+    /**
+     * Obtiene ventas agrupadas por fecha (día, mes, año)
+     * @param {string} granularity - 'day', 'month', 'year'
+     * @param {string} start - fecha inicio (YYYY-MM-DD)
+     * @param {string} end - fecha fin (YYYY-MM-DD)
+     * @returns {Promise<Object>} { success, data }
+     */
+    async getSalesByDate(granularity = 'month', start = null, end = null) {
+        const params = new URLSearchParams();
+        params.append('granularity', granularity);
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const endpoint = `/dw_tradconnect/sales-by-date/?${params.toString()}`;
+        return await this.request(endpoint, { method: 'GET' });
+    },
+
+    /**
+     * Obtiene el top N de productos más vendidos
+     * @param {number} limit - cantidad de productos
+     * @param {string} start - fecha inicio
+     * @param {string} end - fecha fin
+     * @returns {Promise<Object>}
+     */
+    async getTopProducts(limit = 10, start = null, end = null) {
+        const params = new URLSearchParams();
+        params.append('limit', limit);
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const endpoint = `/dw_tradconnect/top-products/?${params.toString()}`;
+        return await this.request(endpoint, { method: 'GET' });
+    },
+
+    /**
+     * Obtiene ventas agrupadas por categoría de producto
+     * @param {string} start - fecha inicio
+     * @param {string} end - fecha fin
+     * @returns {Promise<Object>}
+     */
+    async getSalesByCategory(start = null, end = null) {
+        const params = new URLSearchParams();
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const endpoint = `/dw_tradconnect/sales-by-category/?${params.toString()}`;
+        return await this.request(endpoint, { method: 'GET' });
+    },
+
+    /**
+     * Obtiene ventas agrupadas por empresa (cliente)
+     * @param {string} start - fecha inicio
+     * @param {string} end - fecha fin
+     * @returns {Promise<Object>}
+     */
+    async getSalesByCompany(start = null, end = null) {
+        const params = new URLSearchParams();
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const endpoint = `/dw_tradconnect/sales-by-company/?${params.toString()}`;
+        return await this.request(endpoint, { method: 'GET' });
+    },
+
+    /**
+     * Obtiene la distribución de pedidos por estado
+     * @returns {Promise<Object>}
+     */
+    async getOrderStatusDistribution() {
+        const endpoint = '/dw_tradconnect/order-status-distribution/';
+        return await this.request(endpoint, { method: 'GET' });
+    },
+
+    // =========================================================
     // LOGOUT
     // =========================================================
     logout() {
         localStorage.clear();
-        window.location.href = '/login.html';
+        if (window.router && typeof window.router.redirectToLogin === 'function') {
+            window.router.redirectToLogin();
+        } else {
+            window.location.reload();
+        }
     }
 };
 

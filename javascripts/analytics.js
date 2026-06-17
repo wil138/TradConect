@@ -1,406 +1,295 @@
-// analytics.js - VERSIÓN CONECTADA A API REAL
-window.analytics = {
-    instances: {},
-    statsData: null, // se llena desde API
+// javascripts/analytics.js
+(function() {
+    'use strict';
 
-    init: function() {
-        if (typeof Chart === 'undefined') {
-            console.error('Chart.js no está cargado');
+    // Instancias de gráficos para poder destruirlas al recargar
+    let salesChartInstance = null;
+    let statusChartInstance = null;
+
+    // ============================================
+    // FUNCIONES DE RENDERIZADO
+    // ============================================
+
+    function getDateRange() {
+        const start = document.getElementById('analyticsStartDate')?.value || null;
+        const end = document.getElementById('analyticsEndDate')?.value || null;
+        return { start, end };
+    }
+
+    // Actualizar KPIs a partir de datos de ventas por fecha
+    function updateKPIs(salesData) {
+        if (!salesData || salesData.length === 0) {
+            document.getElementById('kpiTotalSales').textContent = '$0.00';
+            document.getElementById('kpiTotalOrders').textContent = '0';
+            document.getElementById('kpiTotalItems').textContent = '0';
+            document.getElementById('kpiAvgTicket').textContent = '$0.00';
             return;
         }
-        // Cargar datos desde la API
-        this.loadData();
-    },
 
-    loadData: async function() {
-        try {
-            const result = await api.getDashboardStats(); // usa /dw/stats/
-            if (result.success) {
-                this.statsData = result.data;
-                console.log("✅ Datos de analytics cargados:", this.statsData);
-                this.renderAll();
-            } else {
-                console.warn("⚠️ No se pudieron cargar datos, usando fallback local");
-                this.statsData = this.getFallbackData();
-                this.renderAll();
-            }
-        } catch (error) {
-            console.error("❌ Error cargando analytics:", error);
-            this.statsData = this.getFallbackData();
-            this.renderAll();
+        let totalSales = 0, totalOrders = 0, totalItems = 0;
+        salesData.forEach(row => {
+            totalSales += parseFloat(row.total_ventas || 0);
+            totalOrders += parseInt(row.total_pedidos || 0);
+            totalItems += parseFloat(row.cantidad_items || 0);
+        });
+        const avgTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
+
+        document.getElementById('kpiTotalSales').textContent = `$${totalSales.toFixed(2)}`;
+        document.getElementById('kpiTotalOrders').textContent = totalOrders;
+        document.getElementById('kpiTotalItems').textContent = totalItems.toFixed(0);
+        document.getElementById('kpiAvgTicket').textContent = `$${avgTicket.toFixed(2)}`;
+    }
+
+    // Gráfico de ventas por mes (barras)
+    function renderSalesChart(data) {
+        const ctx = document.getElementById('salesChart')?.getContext('2d');
+        if (!ctx) return;
+
+        if (salesChartInstance) {
+            salesChartInstance.destroy();
+            salesChartInstance = null;
         }
-    },
 
-    getFallbackData: function() {
-        // Datos de ejemplo si la API falla
-        return {
-            summary: {
-                totalCapital: 458920.50,
-                totalProducts: 156,
-                productsAtRisk: 23,
-                avgValue: 2941.80,
-                riskPercentage: 14.7
-            },
-            categories: [
-                { name: 'Construcción', count: 42, stockTotal: 1250, totalValue: 125400.00, color: '#2563eb' },
-                { name: 'Metales', count: 35, stockTotal: 890, totalValue: 98750.00, color: '#f59e0b' },
-                { name: 'Acabados', count: 28, stockTotal: 670, totalValue: 89200.00, color: '#8b5cf6' },
-                { name: 'Plomería', count: 31, stockTotal: 750, totalValue: 76550.00, color: '#10b981' },
-                { name: 'Herramientas', count: 20, stockTotal: 340, totalValue: 69020.50, color: '#ef4444' }
-            ],
-            stockHealth: { low: 23, medium: 89, high: 44 },
-            priceSegments: { economico: 48, estandar: 72, premium: 36 },
-            topProducts: [
-                { name: 'Cemento Portland 50kg', category: 'Construcción', value: 28500, stock: 150 },
-                { name: 'Varilla Corrugada 1/2"', category: 'Metales', value: 24300, stock: 200 },
-                { name: 'Tubo PVC 4"', category: 'Plomería', value: 19800, stock: 180 },
-                { name: 'Pintura Latex Blanca', category: 'Acabados', value: 17500, stock: 95 },
-                { name: 'Ladrillo Rojo', category: 'Construcción', value: 16800, stock: 500 },
-                { name: 'Perfil Aluminio 3m', category: 'Metales', value: 15200, stock: 80 },
-                { name: 'Cerámica 60x60', category: 'Acabados', value: 14100, stock: 120 },
-                { name: 'Válvula de Bola 2"', category: 'Plomería', value: 12800, stock: 65 },
-                { name: 'Taladro Industrial', category: 'Herramientas', value: 11500, stock: 25 },
-                { name: 'Yeso Construction 40kg', category: 'Construcción', value: 10200, stock: 300 }
-            ]
-        };
-    },
-
-    renderAll: function() {
-        if (!this.statsData) return;
-        this.updateKPIs();
-        this.renderCapitalPorCategoria();
-        this.renderSaludStock();
-        this.renderRangoPrecios();
-        this.renderTopValorizados();
-        this.renderDetailTable();
-        this.handleResize();
-    },
-
-    handleResize: function() {
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                Object.values(this.instances).forEach(instance => {
-                    if (instance && typeof instance.resize === 'function') {
-                        instance.resize();
-                    }
-                });
-            }, 250);
-        });
-    },
-
-    updateKPIs: function() {
-        const data = this.statsData.summary;
-        const totalCapitalEl = document.getElementById('totalCapital');
-        const totalProductsEl = document.getElementById('totalProducts');
-        const productsAtRiskEl = document.getElementById('productsAtRisk');
-        const avgValueEl = document.getElementById('avgValue');
-        const capitalTrendEl = document.getElementById('capitalTrend');
-
-        if (totalCapitalEl) totalCapitalEl.textContent = this.formatCurrency(data.totalCapital);
-        if (totalProductsEl) totalProductsEl.textContent = data.totalProducts;
-        if (productsAtRiskEl) productsAtRiskEl.textContent = data.productsAtRisk;
-        if (avgValueEl) avgValueEl.textContent = this.formatCurrency(data.avgValue);
-        
-        if (capitalTrendEl) {
-            if (data.riskPercentage > 20) {
-                capitalTrendEl.innerHTML = `⚠️ ${data.riskPercentage}% productos en riesgo`;
-                capitalTrendEl.style.color = '#ef4444';
-            } else if (data.riskPercentage > 10) {
-                capitalTrendEl.innerHTML = `⚡ ${data.riskPercentage}% productos en riesgo`;
-                capitalTrendEl.style.color = '#f59e0b';
-            } else {
-                capitalTrendEl.innerHTML = `✅ Inventario saludable`;
-                capitalTrendEl.style.color = '#10b981';
+        const labels = data.map(row => {
+            if (row.fecha__mes) {
+                const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                return `${monthNames[row.fecha__mes - 1]} ${row.fecha__año || ''}`;
             }
-        }
-    },
-
-    renderCapitalPorCategoria: function() {
-        const ctx = document.getElementById('chartCategorias');
-        if (!ctx) return;
-        if (this.instances.cat) this.instances.cat.destroy();
-
-        const categories = this.statsData.categories || [];
-        const colors = ['#2563eb', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444', '#ec4899', '#06b6d4'];
-        const categoryData = categories.map((cat, i) => ({
-            ...cat,
-            color: cat.color || colors[i % colors.length]
-        }));
-
-        this.instances.cat = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: categoryData.map(c => c.name),
-                datasets: [{
-                    data: categoryData.map(c => c.totalValue || c.ventas || 0),
-                    backgroundColor: categoryData.map(c => c.color),
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 10, usePointStyle: true, font: { size: 10 } } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const value = context.parsed;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((value / total) * 100).toFixed(1);
-                                return `${context.label}: ${window.analytics.formatCurrency(value)} (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            }
+            return row.fecha__fecha || 'N/A';
         });
-    },
+        const values = data.map(row => parseFloat(row.total_ventas || 0));
 
-    renderSaludStock: function() {
-        const ctx = document.getElementById('chartStock');
-        if (!ctx) return;
-        if (this.instances.stock) this.instances.stock.destroy();
-
-        const health = this.statsData.stockHealth || { low: 0, medium: 0, high: 0 };
-        // Mapeo: si viene pendiente/entregado/cancelado, lo convertimos a bajo/medio/alto según convenga
-        // O simplemente usamos los valores tal cual si existen
-        const low = health.low || 0;
-        const medium = health.medium || 0;
-        const high = health.high || 0;
-
-        this.instances.stock = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Bajo (< 20)', 'Medio (20-100)', 'Alto (> 100)'],
-                datasets: [{
-                    data: [low, medium, high],
-                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 10, usePointStyle: true, font: { size: 10 } } }
-                }
-            }
-        });
-    },
-
-    renderRangoPrecios: function() {
-        const ctx = document.getElementById('chartPrecios');
-        if (!ctx) return;
-        if (this.instances.precios) this.instances.precios.destroy();
-
-        const segments = this.statsData.priceSegments || { economico: 0, estandar: 0, premium: 0 };
-
-        this.instances.precios = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: ['Económico (< $10)', 'Estándar ($10-$50)', 'Premium (> $50)'],
-                datasets: [{
-                    data: [segments.economico, segments.estandar, segments.premium],
-                    backgroundColor: [
-                        'rgba(37, 99, 235, 0.6)',
-                        'rgba(139, 92, 246, 0.6)',
-                        'rgba(245, 158, 11, 0.6)'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 10, font: { size: 10 } } }
-                },
-                scales: { r: { beginAtZero: true, ticks: { display: false } } }
-            }
-        });
-    },
-
-    renderTopValorizados: function() {
-        const ctx = document.getElementById('chartTop10');
-        if (!ctx) return;
-        if (this.instances.top) this.instances.top.destroy();
-
-        const top10 = this.statsData.topProducts || [];
-        const categoryColors = {
-            'Construcción': '#2563eb',
-            'Metales': '#f59e0b',
-            'Acabados': '#8b5cf6',
-            'Plomería': '#10b981',
-            'Herramientas': '#ef4444',
-            'General': '#1e293b'
-        };
-
-        this.instances.top = new Chart(ctx, {
+        salesChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: top10.map(p => (p.name || '').substring(0, 15) + '...'),
+                labels: labels,
                 datasets: [{
-                    label: 'Valor Total ($)',
-                    data: top10.map(p => p.value || p.ventas || 0),
-                    backgroundColor: top10.map(p => categoryColors[p.category] || '#1e293b'),
-                    borderRadius: 4,
-                    borderSkipped: false
+                    label: 'Ventas ($)',
+                    data: values,
+                    backgroundColor: 'rgba(30, 74, 118, 0.6)',
+                    borderColor: '#1e4a76',
+                    borderWidth: 1
                 }]
             },
             options: {
-                indexAxis: 'y',
                 responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const item = top10[context.dataIndex];
-                                return [
-                                    `Valor: ${window.analytics.formatCurrency(item.value || item.ventas || 0)}`,
-                                    `Stock: ${item.stock || item.pedidos || 0} unidades`,
-                                    `Categoría: ${item.category || 'General'}`
-                                ];
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: { callback: function(value) { return '$' + value.toLocaleString(); }, font: { size: 9 } }
-                    },
-                    y: { ticks: { font: { size: 9 } } }
-                }
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
             }
         });
-    },
-
-    renderDetailTable: function() {
-        const tbody = document.getElementById('analyticsTableBody');
-        if (!tbody) return;
-
-        const categories = this.statsData.categories || [];
-        const grandTotal = categories.reduce((sum, cat) => sum + (cat.totalValue || cat.ventas || 0), 0);
-
-        tbody.innerHTML = categories.map(cat => {
-            const value = cat.totalValue || cat.ventas || 0;
-            const percentage = grandTotal ? ((value / grandTotal) * 100).toFixed(1) : 0;
-            const stock = cat.stockTotal || cat.count || 0;
-            const products = cat.count || 0;
-
-            let status, statusClass;
-            if (stock < 20) {
-                status = '⚠️ Crítico';
-                statusClass = 'badge-pendiente';
-            } else if (stock < 50) {
-                status = '📊 Atención';
-                statusClass = 'badge-warning';
-            } else {
-                status = '✅ Saludable';
-                statusClass = 'badge-entregado';
-            }
-
-            return `
-                <tr>
-                    <td><strong>${cat.name}</strong></td>
-                    <td>${products}</td>
-                    <td>${stock}</td>
-                    <td class="price-cell">${this.formatCurrency(value)}</td>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
-                                <div style="width: ${percentage}%; height: 100%; background: #2563eb; border-radius: 3px;"></div>
-                            </div>
-                            <span style="font-size: 0.85rem; font-weight: 600;">${percentage}%</span>
-                        </div>
-                    </td>
-                    <td><span class="badge ${statusClass}">${status}</span></td>
-                </tr>
-            `;
-        }).join('') || '<tr><td colspan="6">No hay datos</td></tr>';
-    },
-
-    formatCurrency: function(value) {
-        return new Intl.NumberFormat('es-ES', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value);
-    },
-
-    refreshAll: function() {
-        this.showNotification('Actualizando datos...', 'info');
-        this.loadData().then(() => {
-            this.showNotification('✅ Datos actualizados correctamente', 'success');
-        }).catch(() => {
-            this.showNotification('❌ Error al actualizar', 'error');
-        });
-    },
-
-    exportData: function() {
-        const exportData = {
-            exportDate: new Date().toISOString(),
-            ...this.statsData
-        };
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `analytics-report-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        this.showNotification('📥 Reporte exportado exitosamente', 'success');
-    },
-
-    printCharts: function() {
-        window.print();
-    },
-
-    showNotification: function(message, type) {
-        const existing = document.querySelector('.analytics-notification');
-        if (existing) existing.remove();
-        const notification = document.createElement('div');
-        notification.className = `analytics-notification notification-${type}`;
-        notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            z-index: 9999;
-            animation: slideInRight 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        `;
-        switch(type) {
-            case 'success': notification.style.background = '#10b981'; break;
-            case 'error': notification.style.background = '#ef4444'; break;
-            case 'info': notification.style.background = '#3b82f6'; break;
-        }
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
     }
-};
 
-// Inicializar cuando el DOM esté listo
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.analytics.init());
-} else {
-    window.analytics.init();
-}
+    // Gráfico de distribución de estados (dona)
+    function renderStatusChart(data) {
+        const ctx = document.getElementById('statusChart')?.getContext('2d');
+        if (!ctx) return;
+
+        if (statusChartInstance) {
+            statusChartInstance.destroy();
+            statusChartInstance = null;
+        }
+
+        const labels = data.map(row => row.estado_pedido__estado_nombre || 'Sin estado');
+        const counts = data.map(row => parseInt(row.cantidad_pedidos || 0));
+        const colors = ['#1e4a76', '#2e7d8a', '#4a9e6e', '#d4a843', '#c44536'];
+
+        statusChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    // Lista de top productos
+    function renderTopProducts(data) {
+        const container = document.getElementById('topProductsList');
+        if (!container) return;
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p>No hay datos.</p>';
+            return;
+        }
+        let html = '<ul class="list-group">';
+        data.forEach((item, index) => {
+            const name = item.producto__nombre_producto || 'Producto';
+            const qty = parseFloat(item.total_vendido || 0).toFixed(0);
+            const revenue = parseFloat(item.total_ingreso || 0).toFixed(2);
+            html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>#${index+1}</strong> ${name}</span>
+                    <span class="badge bg-primary">${qty} uds</span>
+                    <span class="badge bg-success">$${revenue}</span>
+                </li>
+            `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    // Ventas por categoría
+    function renderCategories(data) {
+        const container = document.getElementById('categoryList');
+        if (!container) return;
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p>No hay datos.</p>';
+            return;
+        }
+        let html = '<table class="table table-sm"><thead><tr><th>Categoría</th><th>Ventas ($)</th><th>Cantidad</th></tr></thead><tbody>';
+        data.forEach(row => {
+            const cat = row.producto__categoria || 'Sin categoría';
+            const revenue = parseFloat(row.total_ingreso || 0).toFixed(2);
+            const qty = parseFloat(row.total_cantidad || 0).toFixed(0);
+            html += `<tr><td>${cat}</td><td>$${revenue}</td><td>${qty}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // Ventas por empresa
+    function renderCompanies(data) {
+        const container = document.getElementById('companyList');
+        if (!container) return;
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p>No hay datos.</p>';
+            return;
+        }
+        let html = '<table class="table table-striped"><thead><tr><th>Empresa</th><th>RUC</th><th>Total Comprado</th><th>Pedidos</th></tr></thead><tbody>';
+        data.forEach(row => {
+            const name = row.empresa__razon_social || 'N/A';
+            const ruc = row.empresa__ruc || '';
+            const total = parseFloat(row.total_comprado || 0).toFixed(2);
+            const orders = parseInt(row.total_pedidos || 0);
+            html += `<tr><td>${name}</td><td>${ruc}</td><td>$${total}</td><td>${orders}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // ============================================
+    // CARGA PRINCIPAL DE DATOS (usando window.api)
+    // ============================================
+
+    async function loadAnalytics() {
+        // Verificar que api esté disponible
+        if (!window.api) {
+            console.error('❌ window.api no está disponible');
+            document.querySelectorAll('.data-box .loading').forEach(el => {
+                el.textContent = '❌ API no disponible';
+            });
+            return;
+        }
+
+        const { start, end } = getDateRange();
+
+        // Mostrar indicadores de carga
+        document.querySelectorAll('.loading').forEach(el => el.textContent = 'Cargando...');
+
+        try {
+            // 1. Ventas por mes (granularidad: month)
+            const salesResult = await window.api.getSalesByDate('month', start, end);
+            if (salesResult.success) {
+                const salesData = salesResult.data;
+                updateKPIs(salesData);
+                renderSalesChart(salesData);
+            } else {
+                console.warn('Error en sales-by-date:', salesResult.error);
+            }
+
+            // 2. Distribución de estados
+            const statusResult = await window.api.getOrderStatusDistribution();
+            if (statusResult.success) {
+                renderStatusChart(statusResult.data);
+            } else {
+                console.warn('Error en order-status:', statusResult.error);
+            }
+
+            // 3. Top 5 productos
+            const topResult = await window.api.getTopProducts(5, start, end);
+            if (topResult.success) {
+                renderTopProducts(topResult.data);
+            } else {
+                console.warn('Error en top-products:', topResult.error);
+            }
+
+            // 4. Ventas por categoría
+            const catResult = await window.api.getSalesByCategory(start, end);
+            if (catResult.success) {
+                renderCategories(catResult.data);
+            } else {
+                console.warn('Error en sales-by-category:', catResult.error);
+            }
+
+            // 5. Ventas por empresa
+            const compResult = await window.api.getSalesByCompany(start, end);
+            if (compResult.success) {
+                renderCompanies(compResult.data);
+            } else {
+                console.warn('Error en sales-by-company:', compResult.error);
+            }
+
+        } catch (error) {
+            console.error('Error cargando analytics:', error);
+            document.querySelectorAll('.data-box .loading').forEach(el => {
+                el.textContent = '❌ Error al cargar datos';
+            });
+        }
+    }
+
+    // ============================================
+    // EXPOSICIÓN DEL MÓDULO
+    // ============================================
+
+    window.analytics = {
+        init: function() {
+            console.log('📊 Inicializando módulo analytics');
+
+            // Establecer fechas por defecto (últimos 12 meses)
+            const now = new Date();
+            const endDate = now.toISOString().split('T')[0];
+            const startDate = new Date(now);
+            startDate.setFullYear(now.getFullYear() - 1);
+            const start = startDate.toISOString().split('T')[0];
+
+            const startInput = document.getElementById('analyticsStartDate');
+            const endInput = document.getElementById('analyticsEndDate');
+            if (startInput) startInput.value = start;
+            if (endInput) endInput.value = endDate;
+
+            // Vincular evento de refresh
+            const refreshBtn = document.getElementById('analyticsRefreshBtn');
+            if (refreshBtn) {
+                refreshBtn.removeEventListener('click', loadAnalytics); // evitar duplicados
+                refreshBtn.addEventListener('click', loadAnalytics);
+            }
+
+            // Cargar datos por primera vez
+            loadAnalytics();
+        },
+
+        destroy: function() {
+            console.log('🧹 Destruyendo módulo analytics');
+            if (salesChartInstance) {
+                salesChartInstance.destroy();
+                salesChartInstance = null;
+            }
+            if (statusChartInstance) {
+                statusChartInstance.destroy();
+                statusChartInstance = null;
+            }
+            const refreshBtn = document.getElementById('analyticsRefreshBtn');
+            if (refreshBtn) {
+                refreshBtn.removeEventListener('click', loadAnalytics);
+            }
+        }
+    };
+
+})();

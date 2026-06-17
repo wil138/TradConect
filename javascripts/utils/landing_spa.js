@@ -211,11 +211,18 @@ function openRegisterModal() {
     if (modal) modal.style.display = 'flex';
 }
 
+// ============================================================
+// 🔐 FUNCIÓN LOGOUT CORREGIDA - Vuelve al landing siempre
+// ============================================================
 function logout() {
-    if (window.api && typeof window.api.logout === 'function') {
-        window.api.logout();
+    // 1. Limpiar toda la sesión almacenada
+    localStorage.clear();
+
+    // 2. Usar el método oficial del router para mostrar el landing
+    if (window.router && typeof window.router.redirectToLogin === 'function') {
+        window.router.redirectToLogin();
     } else {
-        localStorage.clear();
+        // 3. Fallback seguro si el router no está disponible
         window.location.reload();
     }
 }
@@ -405,11 +412,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === registerModal) closeRegisterModal();
     });
 
-    // Botón cerrar sesión en el sidebar
+    // ============================================================
+    // 🟢 Botón cerrar sesión en el sidebar (corregido)
+    // ============================================================
     const logoutBtn = document.getElementById('logoutBtnSidebar');
     if (logoutBtn) {
         if (window._logoutHandler) logoutBtn.removeEventListener('click', window._logoutHandler);
-        window._logoutHandler = () => logout();
+        window._logoutHandler = () => logout(); // <--- Ahora apunta a la función corregida
         logoutBtn.addEventListener('click', window._logoutHandler);
     }
 
