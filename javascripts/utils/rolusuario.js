@@ -1,4 +1,4 @@
-// rolusuario.js
+// rolusuario.js - VERSIÓN CORREGIDA
 function toggleMenu() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.querySelector(".overlay");
@@ -20,20 +20,20 @@ const menus = {
     client: [
         { label: "Marketplace", module: "marketplace", icon: "fa-shop" },
         { label: "Mis Pedidos", module: "orders", icon: "fa-box" },
-        { label: "Mis Facturas", module: "invoices", icon: "fa-file-invoice" },
         { label: "Mi Perfil", module: "profile", icon: "fa-user" }
     ],
     provider: [
         { label: "Dashboard", module: "dashboard", icon: "fa-chart-line" },
         { label: "Mi Inventario", module: "inventory", icon: "fa-warehouse" },
         { label: "Pedidos Recibidos", module: "orders", icon: "fa-clipboard-list" },
-        { label: "Facturación", module: "invoices", icon: "fa-file-invoice-dollar" },
         { label: "Análisis", module: "analytics", icon: "fa-microchip" }
     ]
 };
 
 function getCurrentRole() {
-    const role = localStorage.getItem('userRole') || "client";
+    let role = localStorage.getItem('userRole') || "client";
+    // Normalizar: si viene 'restaurante' del backend, lo tratamos como 'client'
+    if (role === 'restaurante') role = 'client';
     console.log("📌 getCurrentRole() devuelve:", role);
     return role;
 }
@@ -44,6 +44,10 @@ function renderMenu() {
     const role = getCurrentRole();
     console.log("🎨 Renderizando menú para rol:", role);
     const items = menus[role];
+    if (!items) {
+        console.error("No hay menú para rol:", role);
+        return;
+    }
     menuContainer.innerHTML = "";
     items.forEach(item => {
         const link = document.createElement("a");
@@ -80,6 +84,7 @@ function updateConditionalElements() {
 }
 
 function updateRoleFromStorage() {
+    console.log("🔄 updateRoleFromStorage llamado");
     renderMenu();
     updateConditionalElements();
     const currentMod = localStorage.getItem('currentModule');

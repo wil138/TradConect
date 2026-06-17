@@ -11,39 +11,45 @@ function showToast(msg, isErr = false) {
     } else alert(msg);
 }
 
-async function showSpaAndInit(userName, userRole, userEmail = null) {
+async function showSpaAndInit() {
+    console.log("🔄 showSpaAndInit - Mostrando SPA");
+    
     const landingWrapper = document.getElementById('landing-wrapper');
     const spaWrapper = document.getElementById('spa-wrapper');
+    
     if (landingWrapper) landingWrapper.style.display = 'none';
     if (spaWrapper) spaWrapper.style.display = 'block';
 
-    // Guardar en localStorage
-    localStorage.setItem('userName', userName);
-    localStorage.setItem('userRole', userRole);
-    if (userEmail) localStorage.setItem('userEmail', userEmail);
+    // Leer datos ya guardados por api.js
+    const userName = localStorage.getItem('userName') || 'Usuario';
+    const userRole = localStorage.getItem('userRole') || 'client';
+    const userEmail = localStorage.getItem('userEmail') || '';
+
+    console.log("📌 Datos usuario:", { userName, userRole, userEmail });
 
     // Actualizar header del SPA
     const userNameSpan = document.getElementById('spaUserName');
     const userRoleSpan = document.getElementById('spaUserRole');
-    if (userNameSpan) userNameSpan.innerText = userName || 'Usuario';
+    if (userNameSpan) userNameSpan.innerText = userName;
     if (userRoleSpan) userRoleSpan.innerText = userRole === 'provider' ? 'Proveedor' : 'Restaurante';
 
-    // Forzar actualización del menú y elementos condicionales
+    // Renderizar menú
     if (typeof window.updateRoleFromStorage === 'function') {
         window.updateRoleFromStorage();
-    } else {
-        if (typeof renderMenu === 'function') renderMenu();
-        if (typeof updateConditionalElements === 'function') updateConditionalElements();
+    } else if (typeof renderMenu === 'function') {
+        renderMenu();
     }
 
-    // Inicializar carrito
-    if (window.CartModule && typeof window.CartModule.init === 'function') {
-        window.CartModule.init();
+    // Actualizar elementos condicionales (carrito)
+    if (typeof window.updateConditionalElements === 'function') {
+        window.updateConditionalElements();
+    } else if (typeof updateConditionalElements === 'function') {
+        updateConditionalElements();
     }
 
-    // Inicializar router
+    // Inicializar router después de un pequeño delay
     if (window.router && typeof window.router.init === 'function') {
-        setTimeout(() => window.router.init(), 100);
+        setTimeout(() => window.router.init(), 150);
     }
 }
 
@@ -60,14 +66,26 @@ async function handleLogin(usernameOrEmail, password) {
         loginBtn.disabled = true;
     }
     
+    // Usar la API real que ya maneja el rol correctamente
     let result;
     if (window.api && typeof window.api.login === 'function') {
         result = await window.api.login(usernameOrEmail, password);
     } else {
-        // Fallback a simulación local
+        // Fallback solo si no existe API
         const users = JSON.parse(localStorage.getItem('fakeUsers') || '[]');
         const user = users.find(u => (u.username === usernameOrEmail || u.email === usernameOrEmail) && u.password === password);
-        result = user ? { success: true, user: { nombreusuario: user.name, correoelectronico: user.email, rol: user.role } } : { success: false, error: 'Credenciales inválidas' };
+        if (user) {
+            result = { 
+                success: true, 
+                user: { 
+                    nombreusuario: user.name || user.username, 
+                    correoelectronico: user.email, 
+                    rol: user.role
+                }
+            };
+        } else {
+            result = { success: false, error: 'Credenciales inválidas' };
+        }
     }
     
     if (loginBtn) {
@@ -76,11 +94,11 @@ async function handleLogin(usernameOrEmail, password) {
     }
     
     if (result.success) {
-        const role = result.user.rol || result.user.role || 'client';
-        localStorage.setItem('access_token', result.token || 'fake-token');
-        await showSpaAndInit(result.user.nombreusuario || result.user.username, role, result.user.correoelectronico);
+        // api.js ya guardó todo en localStorage incluyendo el rol correcto
+        await showSpaAndInit();
         closeLoginModal();
-        showToast(`✅ Bienvenido ${result.user.nombreusuario || result.user.username}`);
+        const userName = localStorage.getItem('userName') || usernameOrEmail;
+        showToast(`✅ Bienvenido ${userName}`);
     } else {
         let errorMsg = result.error || 'Credenciales inválidas';
         if (errorMsg.includes('401') || errorMsg.includes('inválidas')) errorMsg = 'Usuario o contraseña incorrectos';
@@ -111,7 +129,7 @@ async function handleRegister(userData, isProvider) {
         razon_social: userData.razon_social,
         ruc: userData.ruc || `TEMP${Date.now()}`,
         telefono: userData.telefono || '',
-        rol: isProvider ? 'provider' : 'restaurant',
+        rol: isProvider ? 'proveedor' : 'restaurante',
         direccion_fiscal: userData.direccion_fiscal || ''
     };
     
@@ -126,12 +144,13 @@ async function handleRegister(userData, isProvider) {
     if (window.api && typeof window.api.register === 'function') {
         result = await window.api.register(data);
     } else {
-        // Fallback a simulación local
+        // Fallback local
         const users = JSON.parse(localStorage.getItem('fakeUsers') || '[]');
         if (users.find(u => u.email === data.correo || u.username === data.nombre_usuario)) {
             result = { success: false, error: 'El correo o usuario ya está registrado' };
         } else {
             const newUser = {
+                id: users.length + 1,
                 name: data.razon_social,
                 email: data.correo,
                 username: data.nombre_usuario,
@@ -150,10 +169,11 @@ async function handleRegister(userData, isProvider) {
     }
     
     if (result.success) {
-        localStorage.setItem('access_token', result.token || 'fake-token');
-        await showSpaAndInit(result.user.nombreusuario, result.user.rol, result.user.correoelectronico);
+        // Después del registro, el api.register ya hace login automático
+        await showSpaAndInit();
         closeRegisterModal();
-        showToast(`✅ Registro exitoso como ${isProvider ? 'Proveedor' : 'Restaurante'}`);
+        const roleName = isProvider ? 'Proveedor' : 'Restaurante';
+        showToast(`✅ Registro exitoso como ${roleName}`);
     } else {
         let errorMsg = result.error || 'Error en el registro';
         if (errorMsg.includes('unique') || errorMsg.includes('already exists'))
@@ -162,23 +182,28 @@ async function handleRegister(userData, isProvider) {
     }
 }
 
-// Funciones para modales (con los nuevos IDs con prefijo landing-)
+// Funciones para modales (con IDs con prefijo landing-)
 function closeLoginModal() {
     const modal = document.getElementById('landingLoginModal');
     if (modal) modal.style.display = 'none';
-    document.getElementById('landingLoginForm')?.reset();
+    const form = document.getElementById('landingLoginForm');
+    if (form) form.reset();
 }
 
 function openLoginModal() {
     const modal = document.getElementById('landingLoginModal');
     if (modal) modal.style.display = 'flex';
-    setTimeout(() => document.getElementById('landingLoginUsername')?.focus(), 100);
+    setTimeout(() => {
+        const input = document.getElementById('landingLoginUsername');
+        if (input) input.focus();
+    }, 100);
 }
 
 function closeRegisterModal() {
     const modal = document.getElementById('landingRegisterModal');
     if (modal) modal.style.display = 'none';
-    document.getElementById('landingRegisterForm')?.reset();
+    const form = document.getElementById('landingRegisterForm');
+    if (form) form.reset();
 }
 
 function openRegisterModal() {
@@ -187,8 +212,12 @@ function openRegisterModal() {
 }
 
 function logout() {
-    localStorage.clear();
-    window.location.reload();
+    if (window.api && typeof window.api.logout === 'function') {
+        window.api.logout();
+    } else {
+        localStorage.clear();
+        window.location.reload();
+    }
 }
 
 // Toggle de contraseña
@@ -219,20 +248,60 @@ function initFaqAccordion() {
         window._faqHandler = function() {
             const answer = this.nextElementSibling;
             const icon = this.querySelector('i');
-            if (answer.style.display === 'block') {
+            if (answer && answer.style.display === 'block') {
                 answer.style.display = 'none';
-                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-            } else {
+                if (icon) icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            } else if (answer) {
                 answer.style.display = 'block';
-                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                if (icon) icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
             }
         };
         q.addEventListener('click', window._faqHandler);
     });
 }
 
+// Verificar y restaurar sesión al cargar
+function checkAndRestoreSession() {
+    const token = localStorage.getItem('access_token');
+    const userName = localStorage.getItem('userName');
+    const userRole = localStorage.getItem('userRole');
+    
+    console.log("🔍 Verificando sesión - token:", !!token, "userName:", userName, "userRole:", userRole);
+    
+    if (token && userName && userRole) {
+        const landingWrapper = document.getElementById('landing-wrapper');
+        const spaWrapper = document.getElementById('spa-wrapper');
+        
+        if (landingWrapper) landingWrapper.style.display = 'none';
+        if (spaWrapper) spaWrapper.style.display = 'block';
+        
+        // Actualizar header
+        const userNameSpan = document.getElementById('spaUserName');
+        const userRoleSpan = document.getElementById('spaUserRole');
+        if (userNameSpan) userNameSpan.innerText = userName;
+        if (userRoleSpan) userRoleSpan.innerText = userRole === 'provider' ? 'Proveedor' : 'Restaurante';
+        
+        // Renderizar menú según rol guardado
+        if (typeof window.updateRoleFromStorage === 'function') {
+            window.updateRoleFromStorage();
+        } else if (typeof renderMenu === 'function') {
+            renderMenu();
+        }
+        
+        // Inicializar router
+        if (window.router && typeof window.router.init === 'function') {
+            setTimeout(() => window.router.init(), 100);
+        }
+        
+        return true;
+    }
+    return false;
+}
+
 // Inicialización cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("🚀 landing_spa.js inicializado");
+    
     // Inicializar toggles y FAQ
     initPasswordToggles();
     initFaqAccordion();
@@ -240,18 +309,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Login form (landing)
     const loginForm = document.getElementById('landingLoginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        if (window._loginHandler) loginForm.removeEventListener('submit', window._loginHandler);
+        window._loginHandler = (e) => {
             e.preventDefault();
             const username = document.getElementById('landingLoginUsername')?.value;
             const password = document.getElementById('landingLoginPassword')?.value;
             handleLogin(username, password);
-        });
+        };
+        loginForm.addEventListener('submit', window._loginHandler);
     }
 
     // Register form (landing)
     const registerForm = document.getElementById('landingRegisterForm');
     if (registerForm) {
-        registerForm.addEventListener('submit', (e) => {
+        if (window._registerHandler) registerForm.removeEventListener('submit', window._registerHandler);
+        window._registerHandler = (e) => {
             e.preventDefault();
             const userData = {
                 correo: document.getElementById('regEmail')?.value,
@@ -265,63 +337,90 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             const userType = document.getElementById('regRole')?.value;
             handleRegister(userData, userType === 'provider');
-        });
+        };
+        registerForm.addEventListener('submit', window._registerHandler);
     }
 
     // Botones de la landing
-    document.getElementById('landingLoginBtn')?.addEventListener('click', openLoginModal);
-    document.getElementById('landingOpenRegisterBtn')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        openRegisterModal();
-    });
+    const loginBtn = document.getElementById('landingLoginBtn');
+    if (loginBtn) {
+        if (window._openLoginHandler) loginBtn.removeEventListener('click', window._openLoginHandler);
+        window._openLoginHandler = () => openLoginModal();
+        loginBtn.addEventListener('click', window._openLoginHandler);
+    }
+    
+    const registerHeroBtn = document.getElementById('landingOpenRegisterBtn');
+    if (registerHeroBtn) {
+        if (window._openRegisterHandler) registerHeroBtn.removeEventListener('click', window._openRegisterHandler);
+        window._openRegisterHandler = (e) => {
+            e.preventDefault();
+            openRegisterModal();
+        };
+        registerHeroBtn.addEventListener('click', window._openRegisterHandler);
+    }
 
     // Switches entre modales
-    document.getElementById('landingSwitchToRegister')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeLoginModal();
-        openRegisterModal();
-    });
-    document.getElementById('landingSwitchToLogin')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeRegisterModal();
-        openLoginModal();
-    });
+    const switchToRegister = document.getElementById('landingSwitchToRegister');
+    if (switchToRegister) {
+        if (window._switchToRegisterHandler) switchToRegister.removeEventListener('click', window._switchToRegisterHandler);
+        window._switchToRegisterHandler = (e) => {
+            e.preventDefault();
+            closeLoginModal();
+            openRegisterModal();
+        };
+        switchToRegister.addEventListener('click', window._switchToRegisterHandler);
+    }
+    
+    const switchToLogin = document.getElementById('landingSwitchToLogin');
+    if (switchToLogin) {
+        if (window._switchToLoginHandler) switchToLogin.removeEventListener('click', window._switchToLoginHandler);
+        window._switchToLoginHandler = (e) => {
+            e.preventDefault();
+            closeRegisterModal();
+            openLoginModal();
+        };
+        switchToLogin.addEventListener('click', window._switchToLoginHandler);
+    }
 
     // Cerrar modales con X
-    document.getElementById('landingCloseLoginBtn')?.addEventListener('click', closeLoginModal);
-    document.getElementById('landingCloseRegisterBtn')?.addEventListener('click', closeRegisterModal);
+    const closeLoginX = document.getElementById('landingCloseLoginBtn');
+    if (closeLoginX) {
+        if (window._closeLoginHandler) closeLoginX.removeEventListener('click', window._closeLoginHandler);
+        window._closeLoginHandler = () => closeLoginModal();
+        closeLoginX.addEventListener('click', window._closeLoginHandler);
+    }
+    
+    const closeRegisterX = document.getElementById('landingCloseRegisterBtn');
+    if (closeRegisterX) {
+        if (window._closeRegisterHandler) closeRegisterX.removeEventListener('click', window._closeRegisterHandler);
+        window._closeRegisterHandler = () => closeRegisterModal();
+        closeRegisterX.addEventListener('click', window._closeRegisterHandler);
+    }
 
     // Cerrar modales clickeando fuera
     window.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('landingLoginModal')) closeLoginModal();
-        if (e.target === document.getElementById('landingRegisterModal')) closeRegisterModal();
+        const loginModal = document.getElementById('landingLoginModal');
+        const registerModal = document.getElementById('landingRegisterModal');
+        if (e.target === loginModal) closeLoginModal();
+        if (e.target === registerModal) closeRegisterModal();
     });
 
     // Botón cerrar sesión en el sidebar
     const logoutBtn = document.getElementById('logoutBtnSidebar');
-    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    if (logoutBtn) {
+        if (window._logoutHandler) logoutBtn.removeEventListener('click', window._logoutHandler);
+        window._logoutHandler = () => logout();
+        logoutBtn.addEventListener('click', window._logoutHandler);
+    }
 
-    // Restaurar sesión si existe token
-    const token = localStorage.getItem('access_token');
-    if (token) {
-        const userName = localStorage.getItem('userName');
-        const userRole = localStorage.getItem('userRole');
-        if (userName && userRole) {
-            const landing = document.getElementById('landing-wrapper');
-            const spa = document.getElementById('spa-wrapper');
-            if (landing) landing.style.display = 'none';
-            if (spa) spa.style.display = 'block';
-            
-            // Actualizar header
-            const userNameSpan = document.getElementById('spaUserName');
-            const userRoleSpan = document.getElementById('spaUserRole');
-            if (userNameSpan) userNameSpan.innerText = userName;
-            if (userRoleSpan) userRoleSpan.innerText = userRole === 'provider' ? 'Proveedor' : 'Restaurante';
-            
-            // Forzar actualización del menú
-            if (typeof window.updateRoleFromStorage === 'function') window.updateRoleFromStorage();
-            if (window.router?.init) setTimeout(() => window.router.init(), 100);
-        }
+    // Restaurar sesión si existe
+    const sessionRestored = checkAndRestoreSession();
+    if (!sessionRestored) {
+        // Asegurar que el landing se vea
+        const landingWrapper = document.getElementById('landing-wrapper');
+        const spaWrapper = document.getElementById('spa-wrapper');
+        if (landingWrapper) landingWrapper.style.display = 'block';
+        if (spaWrapper) spaWrapper.style.display = 'none';
     }
 });
 
@@ -335,3 +434,4 @@ window.handleRegister = handleRegister;
 window.showToast = showToast;
 window.logout = logout;
 window.showSpaAndInit = showSpaAndInit;
+window.checkAndRestoreSession = checkAndRestoreSession;

@@ -3,8 +3,8 @@
     <div class="inventory-container">
         <div class="inventory-header">
             <h1><i class="fas fa-boxes"></i> Inventario</h1>
-            <button class="btn-new-product" id="newProductBtn">
-                <i class="fas fa-plus-circle"></i> Nuevo Producto
+            <button id="addProductBtn" class="btn-primary">
+                <i class="fas fa-plus"></i> Nuevo Producto
             </button>
         </div>
 
@@ -33,16 +33,13 @@
                 placeholder="Buscar por código, nombre o categoría...">
         </div>
 
+        <!-- Los filtros se generan dinámicamente desde inventory.js -->
         <div class="tabs-container">
-            <div class="tabs">
-                <button class="tab-btn active" data-filter="todos"><i class="fas fa-list"></i> Todos</button>
-                <button class="tab-btn" data-filter="construcción"><i class="fas fa-hard-hat"></i> Construcción</button>
-                <button class="tab-btn" data-filter="plomería"><i class="fas fa-wrench"></i> Plomería</button>
-                <button class="tab-btn" data-filter="acabados"><i class="fas fa-paint-brush"></i> Acabados</button>
-                <button class="tab-btn" data-filter="herramientas"><i class="fas fa-tools"></i> Herramientas</button>
-                <button class="tab-btn" data-filter="metales"><i class="fas fa-cog"></i> Metales</button>
+            <div class="tabs" id="filterTabs">
+                <!-- Los botones se generan automáticamente desde JavaScript -->
             </div>
         </div>
+
         <div class="card">
             <div class="table-wrapper">
                 <table id="inventoryTable">
@@ -56,16 +53,23 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="inventoryTableBody"></tbody>
+                    <tbody id="inventoryTableBody">
+                        <!-- Los datos se cargan desde JavaScript -->
+                    </tbody>
                 </table>
             </div>
         </div>
-
     </div>
 </div>
 
 <script>
-    if (window.inventory && window.inventory.init) {
-        window.inventory.init();
-    }
+    // Esperar a que el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.inventory && typeof window.inventory.init === 'function') {
+            console.log("🚀 Ejecutando inventory.init() desde DOMContentLoaded");
+            window.inventory.init();
+        } else {
+            console.error("❌ inventory no está definido o no tiene método init");
+        }
+    });
 </script>

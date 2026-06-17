@@ -1,18 +1,24 @@
 <!-- fragments/profile.html -->
-<!-- fragments/profile.html -->
 <div class="profile-container">
     <div class="profile-header">
-        <div class="profile-avatar">
-            <i class="fas fa-store"></i>
+        <div class="profile-avatar-wrapper">
+            <div class="profile-avatar" id="profileAvatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-header-info">
+                <h2 id="profileHeaderName">Cargando...</h2>
+                <p id="profileHeaderRole">Restaurante</p>
+                <span class="profile-badge" id="profileBadge">
+                    <i class="fas fa-check-circle"></i> Verificado
+                </span>
+            </div>
         </div>
-        <h2>Configuración de Perfil</h2>
-        <p>Gestiona tu información personal y sucursales</p>
     </div>
 
     <!-- Tabs -->
     <div class="profile-tabs">
         <button class="tab-btn active" data-tab="personal">
-            <i class="fas fa-user"></i> Datos Personales
+            <i class="fas fa-user-circle"></i> Datos Personales
         </button>
         <button class="tab-btn" data-tab="company">
             <i class="fas fa-building"></i> Datos de Empresa
@@ -20,59 +26,90 @@
         <button class="tab-btn" data-tab="branches">
             <i class="fas fa-store"></i> Sucursales
         </button>
+        <button class="tab-btn" data-tab="security">
+            <i class="fas fa-shield-alt"></i> Seguridad
+        </button>
     </div>
 
     <!-- Tab: Datos Personales -->
     <div id="personalTab" class="tab-content active">
-        <form id="profileForm">
-            <div class="form-group">
-                <label><i class="fas fa-user"></i> Nombre Completo</label>
-                <input type="text" id="profileName" placeholder="Ingresa tu nombre completo" required>
+        <form id="profileForm" class="profile-form">
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-id-card"></i> Información Personal</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nombre Completo</label>
+                        <input type="text" id="profileName" placeholder="Ingresa tu nombre completo" required>
+                        <small>Tu nombre público en la plataforma</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                        <input type="email" id="profileEmail" placeholder="correo@ejemplo.com" required>
+                        <small>Usado para iniciar sesión y notificaciones</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Teléfono de Contacto</label>
+                        <input type="tel" id="profilePhone" placeholder="+505 XXXX XXXX">
+                        <small>Número para contacto rápido</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Miembro desde</label>
+                        <input type="text" id="profileMemberSince" readonly disabled>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
-                <input type="email" id="profileEmail" placeholder="correo@ejemplo.com" required>
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-phone"></i> Teléfono</label>
-                <input type="tel" id="profilePhone" placeholder="+505 XXXX XXXX">
-            </div>
-            <button type="submit" class="btn-save">
-                <i class="fas fa-save"></i> Guardar Cambios
-            </button>
         </form>
     </div>
 
     <!-- Tab: Datos de Empresa -->
     <div id="companyTab" class="tab-content">
-        <form id="companyForm">
-            <div class="form-group">
-                <label><i class="fas fa-building"></i> Razón Social</label>
-                <input type="text" id="companyRazonSocial" placeholder="Razón social de la empresa">
+        <form id="companyForm" class="profile-form">
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-briefcase"></i> Información Legal</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-building"></i> Razón Social</label>
+                        <input type="text" id="companyRazonSocial" placeholder="Razón social de la empresa">
+                        <small>Nombre legal de tu negocio</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> RUC / NIT</label>
+                        <input type="text" id="companyRUC" placeholder="RUC de la empresa">
+                        <small>Número de identificación tributaria</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone-alt"></i> Teléfono Empresa</label>
+                        <input type="tel" id="companyPhone" placeholder="Teléfono de la empresa">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Correo Empresa</label>
+                        <input type="email" id="companyEmail" placeholder="correo@empresa.com">
+                    </div>
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-map-marker-alt"></i> Dirección Fiscal</label>
+                        <textarea id="companyAddress" rows="3" placeholder="Dirección fiscal completa"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-image"></i> Logo URL</label>
+                        <input type="url" id="companyLogoUrl" placeholder="https://...">
+                        <small>URL de tu logo corporativo</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-globe"></i> Sitio Web</label>
+                        <input type="url" id="companyWebsite" placeholder="https://www.miempresa.com">
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-id-card"></i> RUC</label>
-                <input type="text" id="companyRUC" placeholder="RUC de la empresa">
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Guardar Datos Empresa
+                </button>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-phone-alt"></i> Teléfono Empresa</label>
-                <input type="tel" id="companyPhone" placeholder="Teléfono de la empresa">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-envelope"></i> Correo Empresa</label>
-                <input type="email" id="companyEmail" placeholder="correo@empresa.com">
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-map-marker-alt"></i> Dirección Fiscal</label>
-                <textarea id="companyAddress" rows="3" placeholder="Dirección fiscal completa"></textarea>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-image"></i> Logo URL</label>
-                <input type="url" id="companyLogoUrl" placeholder="https://...">
-            </div>
-            <button type="submit" class="btn-save">
-                <i class="fas fa-save"></i> Guardar Datos Empresa
-            </button>
         </form>
     </div>
 
@@ -81,10 +118,9 @@
         <div class="branches-header">
             <h3><i class="fas fa-store"></i> Mis Sucursales</h3>
             <button class="btn-add-branch" id="openBranchModalBtn">
-                <i class="fas fa-plus"></i> Agregar Sucursal
+                <i class="fas fa-plus"></i> Nueva Sucursal
             </button>
         </div>
-
         <div id="branchesList" class="branches-grid">
             <div class="empty-state">
                 <i class="fas fa-store-slash"></i>
@@ -94,6 +130,79 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- Tab: Seguridad -->
+    <div id="securityTab" class="tab-content">
+        <form id="securityForm" class="profile-form">
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-lock"></i> Cambiar Contraseña</h3>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-key"></i> Contraseña Actual</label>
+                        <input type="password" id="currentPassword" placeholder="Ingresa tu contraseña actual">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Nueva Contraseña</label>
+                        <input type="password" id="newPassword" placeholder="Nueva contraseña">
+                        <small>Mínimo 8 caracteres</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirma tu nueva contraseña">
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-bell"></i> Notificaciones</h3>
+                <div class="notifications-settings">
+                    <div class="notif-item">
+                        <div class="notif-info">
+                            <i class="fas fa-shopping-cart"></i>
+                            <div>
+                                <strong>Notificaciones de pedidos</strong>
+                                <small>Recibe alertas cuando hagas o recibas un pedido</small>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notifyOrders" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="notif-item">
+                        <div class="notif-info">
+                            <i class="fas fa-tags"></i>
+                            <div>
+                                <strong>Ofertas y promociones</strong>
+                                <small>Recibe notificaciones de ofertas especiales</small>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notifyPromos" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="notif-item">
+                        <div class="notif-info">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <strong>Newsletter</strong>
+                                <small>Recibe novedades y consejos por correo</small>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notifyNewsletter">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -106,7 +215,7 @@
         </div>
         <form id="branchForm">
             <input type="hidden" id="branchId">
-            <div class="form-row">
+            <div class="form-grid">
                 <div class="form-group">
                     <label><i class="fas fa-store"></i> Nombre Sucursal *</label>
                     <input type="text" id="branchName" required placeholder="Ej: Sucursal Managua">
@@ -115,12 +224,10 @@
                     <label><i class="fas fa-map-pin"></i> Municipio *</label>
                     <input type="text" id="branchMunicipio" required placeholder="Ej: Managua">
                 </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-location-dot"></i> Dirección Exacta *</label>
-                <textarea id="branchAddress" rows="2" required placeholder="Dirección exacta de la sucursal"></textarea>
-            </div>
-            <div class="form-row">
+                <div class="form-group full-width">
+                    <label><i class="fas fa-location-dot"></i> Dirección Exacta *</label>
+                    <textarea id="branchAddress" rows="2" required placeholder="Dirección exacta de la sucursal"></textarea>
+                </div>
                 <div class="form-group">
                     <label><i class="fas fa-phone"></i> Teléfono Sucursal</label>
                     <input type="tel" id="branchPhone" placeholder="+505 XXXX XXXX">
@@ -129,21 +236,19 @@
                     <label><i class="fas fa-clock"></i> Horario Atención</label>
                     <input type="text" id="branchSchedule" placeholder="Lun-Vie: 8am-5pm">
                 </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group">
                     <label class="checkbox-label">
                         <input type="checkbox" id="branchIsWarehouse">
                         <span><i class="fas fa-warehouse"></i> ¿Es Bodega?</span>
                     </label>
                 </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-flag-checkered"></i> Estado</label>
-                <select id="branchStatus">
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                </select>
+                <div class="form-group">
+                    <label><i class="fas fa-flag-checkered"></i> Estado</label>
+                    <select id="branchStatus">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
             </div>
             <div class="branch-modal-buttons">
                 <button type="button" class="btn-cancel" id="cancelBranchBtn">Cancelar</button>

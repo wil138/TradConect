@@ -1,245 +1,383 @@
-// orders.js - Gestión de pedidos con datos reales desde localStorage
+// orders.js - Gestión de pedidos conectado a la API real
 window.orders = {
-    ordersData: [],
-    currentFilter: 'todos',
+    orders: [],
+    currentFilter: 'all',
     currentSearch: '',
+    userRole: 'client',
+    _boundStatusChange: null, 
+    _boundViewClick: null,
 
-    init: function() {
-        console.log("Orders: Inicializando");
-        this.loadData();
-        this.renderOrders();
+    init: function () {
+        console.log("📋 Orders: Inicializando");
+        this.userRole = localStorage.getItem('userRole') === 'provider' ? 'provider' : 'client';
+        this.loadOrders();
         this.setupEvents();
+        this.renderOrders();
     },
 
-    loadData: function() {
-        const role = localStorage.getItem('userRole');
-        let rawOrders = [];
-        if (role === 'client') {
-            rawOrders = JSON.parse(localStorage.getItem('pedidos_comprador') || '[]');
-        } else {
-            rawOrders = JSON.parse(localStorage.getItem('pedidos_proveedor') || '[]');
+    // =========================================================
+    // CARGA DESDE localStorage (ya populado por api.login/refreshMyData)
+    // =========================================================
+    loadOrders: function () {
+        const key = this.userRole === 'client' ? 'pedidos_comprador' : 'pedidos_proveedor';
+        try {
+            const stored = localStorage.getItem(key);
+            this.orders = stored ? JSON.parse(stored) : [];
+        } catch (e) {
+            console.error('❌ Error al parsear pedidos:', e);
+            this.orders = [];
         }
-        // Asegurar que totalneto sea número y agregar campo 'total' para mostrar
-        this.ordersData = rawOrders.map(order => ({
-            ...order,
-            totalneto: typeof order.totalneto === 'number' ? order.totalneto : parseFloat(order.totalneto) || 0,
-            total: `$${ (typeof order.totalneto === 'number' ? order.totalneto : parseFloat(order.totalneto) || 0).toFixed(2) }`,
-            estado_actual: order.estado_actual || 'Pendiente'
-        }));
+        console.log(`📦 Pedidos cargados (${this.userRole}):`, this.orders.length);
     },
 
-    renderOrders: function() {
-        const tbody = document.getElementById('orders-table-body');
-        if (!tbody) return;
+    // =========================================================
+    // RENDER PRINCIPAL
+    // =========================================================
+    renderOrders: function () {
+        const tbody = document.getElementById('ordersTableBody')
+            || document.getElementById('orders-table-body');
+        if (!tbody) {
+            console.warn("⚠️ No se encontró tbody de pedidos");
+            return;
+        }
+        this._renderInto(tbody);
+    },
 
-        let filtered = [...this.ordersData];
-        if (this.currentFilter !== 'todos') {
-            filtered = filtered.filter(order => order.estado_actual === this.currentFilter);
-        }
-        if (this.currentSearch) {
-            const search = this.currentSearch.toLowerCase();
-            filtered = filtered.filter(order =>
-                order.id.toString().includes(search) ||
-                (order.restaurante_nombre || order.proveedor_nombre || '').toLowerCase().includes(search)
-            );
-        }
+    _renderInto: function (tbody) {
+        const filtered = this.filterOrders();
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">No se encontraron pedidos</div></td></tr>`;
+            tbody.innerHTML = `
+                <tr><td colspan="6">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox" style="font-size:2rem;opacity:.4;display:block;margin-bottom:.5rem"></i>
+                        No hay pedidos que coincidan
+                    </div>
+                </td></tr>`;
             this.updateStats();
             return;
         }
 
         tbody.innerHTML = filtered.map(order => {
-            const statusClass = this.getStatusClass(order.estado_actual);
-            const clientName = order.restaurante_nombre || order.proveedor_nombre || 'Cliente';
+            const estado = order.estado_actual || 'Pendiente';
+            const badgeClass = this._getBadgeClass(estado);
+            const fecha = order.fechapedido
+                ? new Date(order.fechapedido).toLocaleDateString('es-NI', { day: '2-digit', month: 'short', year: 'numeric' })
+                : 'N/A';
+            const monto = '$' + parseFloat(order.totalneto || 0).toFixed(2);
+            const contraparte = this.userRole === 'client'
+                ? (order.proveedor_nombre || 'Proveedor')
+                : (order.restaurante_nombre || 'Cliente');
+
+            const statusSelect = this.userRole === 'provider'
+                ? `<select class="status-select" data-order-id="${order.id}">
+                       ${this._getEstadoOptions(estado)}
+                   </select>`
+                : '';
+
             return `
-                <tr data-id="${order.id}">
+                <tr data-order-id="${order.id}">
                     <td><strong>#${order.id}</strong></td>
-                    <td>${this.escapeHtml(clientName)}</td>
-                    <td>${order.total}</td>
-                    <td><span class="badge ${statusClass}">${order.estado_actual}</span></td>
+                    <td>${fecha}</td>
+                    <td>${contraparte}</td>
+                    <td>${monto}</td>
+                    <td><span class="badge ${badgeClass}">${estado}</span></td>
                     <td class="actions-cell">
-                        <button class="action-btn view-btn" data-action="view" title="Ver detalles"><i class="fas fa-eye"></i></button>
-                        <button class="action-btn edit-btn" data-action="edit" title="Editar estado"><i class="fas fa-pen-to-square"></i></button>
+                        <button class="action-btn view-btn" title="Ver detalles">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${statusSelect}
                     </td>
-                </tr>
-            `;
+                </tr>`;
         }).join('');
 
-        this.setupTableDelegation();
+        // Reasignar eventos con delegación en el tbody para evitar duplicados
+        tbody.removeEventListener('click', this._boundViewClick);
+        this._boundViewClick = (e) => {
+            const btn = e.target.closest('.view-btn');
+            if (!btn) return;
+            const orderId = parseInt(btn.closest('tr').dataset.orderId);
+            this.showOrderDetails(orderId);
+        };
+        tbody.addEventListener('click', this._boundViewClick);
+
+        if (this.userRole === 'provider') {
+            tbody.removeEventListener('change', this._boundStatusChange);
+            this._boundStatusChange = (e) => {
+                if (!e.target.classList.contains('status-select')) return;
+                const orderId = parseInt(e.target.dataset.orderId);
+                const newStatus = e.target.value;
+                this.changeOrderStatus(orderId, newStatus, e.target);
+            };
+            tbody.addEventListener('change', this._boundStatusChange);
+        }
+
         this.updateStats();
     },
 
-    setupTableDelegation: function() {
-        const tbody = document.getElementById('orders-table-body');
-        if (!tbody) return;
-        // Remover listener anterior para evitar duplicados
-        const newTbody = tbody.cloneNode(true);
-        tbody.parentNode.replaceChild(newTbody, tbody);
-        newTbody.addEventListener('click', (e) => {
-            const target = e.target.closest('[data-action]');
-            if (!target) return;
-            const action = target.dataset.action;
-            const row = target.closest('tr');
-            const orderId = parseInt(row.dataset.id);
-            const order = this.ordersData.find(o => o.id === orderId);
-            if (!order) return;
-            if (action === 'view') this.showOrderDetails(order);
-            if (action === 'edit') this.openOrderStatusModal(order);
-        });
-        // Re-asignar referencia
-        document.getElementById('orders-table-body')?.parentNode.replaceChild(newTbody, document.getElementById('orders-table-body'));
-        // Actualizar variable global (opcional)
-        window.ordersTableBody = newTbody;
-    },
-
-    showOrderDetails: function(order) {
-        const detallesHtml = (order.detalles || []).map(d => `
-            <div class="detail-item">
-                <span>${this.escapeHtml(d.producto_nombre || 'Producto')}</span>
-                <strong>${d.cantidad} x $${parseFloat(d.preciounitario).toFixed(2)}</strong>
-            </div>
-        `).join('') || '<p>Sin detalles</p>';
-
-        const modalHtml = `
-            <div class="modal-overlay active" id="orderDetailsModal" onclick="if(event.target===this)this.remove()">
-                <div class="modal detail-card">
-                    <div class="modal-header">
-                        <h2><i class="fas fa-box"></i> Detalles del Pedido #${order.id}</h2>
-                        <button class="modal-close" onclick="document.getElementById('orderDetailsModal').remove()">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="detail-grid">
-                            <div class="detail-item"><span>Cliente:</span><strong>${this.escapeHtml(order.restaurante_nombre || order.proveedor_nombre)}</strong></div>
-                            <div class="detail-item"><span>Fecha:</span><strong>${new Date(order.fechapedido).toLocaleDateString()}</strong></div>
-                            <div class="detail-item"><span>Total:</span><strong>${order.total}</strong></div>
-                            <div class="detail-item"><span>Estado:</span><strong><span class="badge ${this.getStatusClass(order.estado_actual)}">${order.estado_actual}</span></strong></div>
-                            <div class="detail-item"><span>Subtotal:</span><strong>$${parseFloat(order.subtotal).toFixed(2)}</strong></div>
-                            <div class="detail-item"><span>Impuesto:</span><strong>$${parseFloat(order.impuesto).toFixed(2)}</strong></div>
-                        </div>
-                        <hr>
-                        <h4>Productos</h4>
-                        <div class="detail-grid">${detallesHtml}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    },
-
-    openOrderStatusModal: function(order) {
-        this.closeOrderModal();
-        const statusOptions = ['Pendiente', 'Confirmado', 'Enviado', 'Entregado', 'Cancelado'];
-        const modalHtml = `
-            <div class="modal-overlay active" id="orderModal">
-                <div class="modal card-shadow">
-                    <div class="modal-header">
-                        <h2><i class="fas fa-edit"></i> Cambiar estado del pedido #${order.id}</h2>
-                        <button class="modal-close" onclick="window.orders.closeOrderModal()">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="orderStatusForm">
-                            <div class="form-group">
-                                <label>Nuevo estado</label>
-                                <select id="newOrderStatus" class="form-control">
-                                    ${statusOptions.map(s => `<option value="${s}" ${order.estado_actual === s ? 'selected' : ''}>${s}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="form-actions">
-                                <button type="button" class="btn-cancel" onclick="window.orders.closeOrderModal()">Cancelar</button>
-                                <button type="submit" class="btn-save">Guardar cambio</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        document.getElementById('orderStatusForm').addEventListener('submit', (e) => this.updateOrderStatus(e, order));
-    },
-
-    updateOrderStatus: async function(e, order) {
-        e.preventDefault();
-        const newStatus = document.getElementById('newOrderStatus').value;
-        // Aquí deberías llamar a la API para actualizar el estado en el backend
-        // Ejemplo: await api.updateOrderStatus(order.id, { estado_id: id_del_estado });
-        // Por ahora, solo actualizamos localmente y mostramos mensaje
-        this.showNotification(`Estado del pedido #${order.id} cambiado a "${newStatus}" (simulado)`, 'success');
-        this.closeOrderModal();
-        // Si quisieras recargar datos del backend, llamar a api.login de nuevo o a un endpoint de refresco
-        // window.api.login(localStorage.getItem('userEmail'), '****').then(() => this.loadData());
-    },
-
-    closeOrderModal: function() {
-        const modal = document.getElementById('orderModal');
-        if (modal) modal.remove();
-    },
-
-    getStatusClass: function(status) {
+    // =========================================================
+    // HELPERS DE ESTADO
+    // =========================================================
+    _getBadgeClass: function (estado) {
         const map = {
-            'Pendiente': 'badge-warning',
+            'Pendiente':  'badge-warning',
             'Confirmado': 'badge-info',
-            'Enviado': 'badge-primary',
-            'Entregado': 'badge-success',
-            'Cancelado': 'badge-danger'
+            'Enviado':    'badge-primary',
+            'Entregado':  'badge-success',
+            'Cancelado':  'badge-danger',
+            'Completado': 'badge-success',
         };
-        return map[status] || 'badge-secondary';
+        return map[estado] || 'badge-secondary';
     },
 
-    updateStats: function() {
-        const totalOrders = this.ordersData.length;
-        const totalValue = this.ordersData.reduce((sum, o) => sum + (o.totalneto || 0), 0);
-        const pending = this.ordersData.filter(o => o.estado_actual === 'Pendiente').length;
-        const sent = this.ordersData.filter(o => o.estado_actual === 'Enviado').length;
-        const delivered = this.ordersData.filter(o => o.estado_actual === 'Entregado').length;
-        const cancelled = this.ordersData.filter(o => o.estado_actual === 'Cancelado').length;
-
-        document.getElementById('totalOrders').textContent = totalOrders;
-        document.getElementById('pendingOrders').textContent = pending;
-        document.getElementById('sentOrders').textContent = sent;
-        document.getElementById('deliveredOrders').textContent = delivered;
-        document.getElementById('cancelledOrders').textContent = cancelled;
-        document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
+    _getEstadoOptions: function (currentEstado) {
+        const catalogos = JSON.parse(localStorage.getItem('catalogos') || '{}');
+        const estados = catalogos.estados_pedido || [];
+        const fallback = ['Pendiente', 'Confirmado', 'Enviado', 'Entregado', 'Cancelado'];
+        const lista = estados.length > 0
+            ? estados.map(e => e.estadonombre || e.nombre || 'Sin nombre')
+            : fallback;
+        return lista.map(nombre =>
+            `<option value="${nombre}" ${nombre === currentEstado ? 'selected' : ''}>${nombre}</option>`
+        ).join('');
     },
 
-    setupEvents: function() {
-        const tabs = document.querySelectorAll('#ordersTabContainer .tab-btn');
-        tabs.forEach(btn => {
+    // =========================================================
+    // FILTRADO Y BÚSQUEDA
+    // =========================================================
+    filterOrders: function () {
+        let result = [...this.orders];
+        if (this.currentFilter !== 'all' && this.currentFilter !== 'todos') {
+            result = result.filter(o => (o.estado_actual || 'Pendiente') === this.currentFilter);
+        }
+        if (this.currentSearch) {
+            const term = this.currentSearch.toLowerCase();
+            result = result.filter(o => {
+                const nombre = this.userRole === 'client'
+                    ? (o.proveedor_nombre || '')
+                    : (o.restaurante_nombre || '');
+                return String(o.id).includes(term) || nombre.toLowerCase().includes(term);
+            });
+        }
+        return result;
+    },
+
+    // =========================================================
+    // CAMBIAR ESTADO — llama a la API real
+    // =========================================================
+    changeOrderStatus: async function (orderId, newStatus, selectEl) {
+        const catalogos = JSON.parse(localStorage.getItem('catalogos') || '{}');
+        const estados = catalogos.estados_pedido || [];
+
+        const estadoObj = estados.find(e =>
+            e.estadonombre && e.estadonombre.toLowerCase() === newStatus.toLowerCase()
+        );
+        if (!estadoObj?.id) {
+            this.showToast(`Estado "${newStatus}" no encontrado en catálogo`, 'error');
+            return;
+        }
+
+        // Deshabilitar select mientras se procesa
+        if (selectEl) selectEl.disabled = true;
+
+        try {
+            const result = await api.updateOrderStatus(
+                orderId, estadoObj.id, `Cambio de estado a ${newStatus}`
+            );
+            if (result.success) {
+                // Actualizar localStorage localmente sin llamada extra al servidor
+                const key = 'pedidos_proveedor';
+                const pedidos = JSON.parse(localStorage.getItem(key) || '[]');
+                const idx = pedidos.findIndex(p => p.id === orderId);
+                if (idx !== -1) {
+                    pedidos[idx].estado_actual = newStatus;
+                    localStorage.setItem(key, JSON.stringify(pedidos));
+                }
+                this.loadOrders();
+                this.renderOrders();
+                this.showToast(`Pedido #${orderId} → ${newStatus}`, 'success');
+            } else {
+                this.showToast(result.error || 'Error al actualizar estado', 'error');
+                // Revertir el select al valor anterior
+                if (selectEl) {
+                    const order = this.orders.find(o => o.id === orderId);
+                    if (order) selectEl.value = order.estado_actual || 'Pendiente';
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            this.showToast('Error de conexión', 'error');
+        } finally {
+            if (selectEl) selectEl.disabled = false;
+        }
+    },
+
+    // =========================================================
+    // REFRESCAR DESDE EL SERVIDOR
+    // =========================================================
+    refreshData: async function () {
+        this.showToast('Actualizando pedidos...', 'info');
+        const ok = await api.refreshMyData();
+        if (ok) {
+            this.loadOrders();
+            this.renderOrders();
+            this.showToast('Pedidos actualizados', 'success');
+        } else {
+            this.showToast('Error al refrescar datos', 'error');
+        }
+    },
+
+    // =========================================================
+    // MODAL DE DETALLES
+    // =========================================================
+    showOrderDetails: function (orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) { this.showToast('Pedido no encontrado', 'error'); return; }
+
+        // Eliminar modal anterior si existe
+        document.getElementById('orderDetailModal')?.remove();
+
+        const detalles = order.detalles || [];
+        const itemsHtml = detalles.length > 0
+            ? detalles.map(d => {
+                // El serializer devuelve preciounitario (sin guión bajo)
+                const precio = parseFloat(d.preciounitario || d.precio_unitario || 0);
+                const cant = parseFloat(d.cantidad || 0);
+                const desc = parseFloat(d.descuentoaplicado || 0);
+                const subtotal = precio * cant * (1 - desc / 100);
+                return `
+                    <tr>
+                        <td>${d.producto_nombre || 'Producto'}</td>
+                        <td>${cant}</td>
+                        <td>$${precio.toFixed(2)}</td>
+                        <td>${desc > 0 ? desc + '%' : '—'}</td>
+                        <td>$${subtotal.toFixed(2)}</td>
+                    </tr>`;
+            }).join('')
+            : '<tr><td colspan="5" style="text-align:center;color:#888">Sin productos registrados</td></tr>';
+
+        const subtotal = parseFloat(order.subtotal || 0);
+        const impuesto = parseFloat(order.impuesto || 0);
+        const total = parseFloat(order.totalneto || 0);
+        const estadoBadge = `<span class="badge ${this._getBadgeClass(order.estado_actual || 'Pendiente')}">${order.estado_actual || 'Pendiente'}</span>`;
+
+        document.body.insertAdjacentHTML('beforeend', `
+            <div class="modal-overlay active" id="orderDetailModal"
+                 onclick="if(event.target===this)this.remove()">
+                <div class="modal detail-card" style="max-width:860px;width:95%">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-receipt" style="margin-right:.5rem"></i>Pedido #${order.id}</h2>
+                        <button class="modal-close" onclick="document.getElementById('orderDetailModal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="detail-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem">
+                            <div><span style="color:var(--text-muted);font-size:.8rem">Fecha</span><br>
+                                <strong>${new Date(order.fechapedido).toLocaleString('es-NI')}</strong></div>
+                            <div><span style="color:var(--text-muted);font-size:.8rem">Estado</span><br>${estadoBadge}</div>
+                            <div><span style="color:var(--text-muted);font-size:.8rem">Proveedor</span><br>
+                                <strong>${order.proveedor_nombre || 'N/A'}</strong></div>
+                            <div><span style="color:var(--text-muted);font-size:.8rem">Restaurante</span><br>
+                                <strong>${order.restaurante_nombre || 'N/A'}</strong></div>
+                            <div><span style="color:var(--text-muted);font-size:.8rem">Comentario</span><br>
+                                <strong>${order.comentario || '—'}</strong></div>
+                        </div>
+
+                        <h3 style="margin-bottom:.75rem">Productos</h3>
+                        <div style="overflow-x:auto">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th><th>Cant.</th>
+                                        <th>Precio unit.</th><th>Descuento</th><th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${itemsHtml}</tbody>
+                            </table>
+                        </div>
+
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;margin-top:1rem;font-size:.95rem">
+                            <div>Subtotal: <strong>$${subtotal.toFixed(2)}</strong></div>
+                            <div>Impuesto (15%): <strong>$${impuesto.toFixed(2)}</strong></div>
+                            <div style="font-size:1.1rem;color:var(--primary,#3b82f6)">
+                                Total: <strong>$${total.toFixed(2)}</strong>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>`);
+    },
+
+    // =========================================================
+    // ESTADÍSTICAS
+    // =========================================================
+    updateStats: function () {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+
+        const counts = { Pendiente: 0, Confirmado: 0, Enviado: 0, Entregado: 0, Cancelado: 0 };
+        let totalMonto = 0;
+
+        this.orders.forEach(o => {
+            const estado = o.estado_actual || 'Pendiente';
+            if (counts[estado] !== undefined) counts[estado]++;
+            totalMonto += parseFloat(o.totalneto || 0);
+        });
+
+        set('totalOrders',     this.orders.length);
+        set('totalValue',      '$' + totalMonto.toFixed(2));
+        set('pendingOrders',   counts.Pendiente);
+        set('sentOrders',      counts.Enviado);
+        set('deliveredOrders', counts.Entregado);
+        set('cancelledOrders', counts.Cancelado);
+        set('confirmedOrders', counts.Confirmado);
+    },
+
+    // =========================================================
+    // EVENTOS DE TABS Y BÚSQUEDA
+    // =========================================================
+    setupEvents: function () {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                tabs.forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                this.currentFilter = btn.getAttribute('data-filter');
+                this.currentFilter = btn.dataset.filter || 'all';
                 this.renderOrders();
             });
         });
+
         const searchInput = document.getElementById('searchOrders');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
-                this.currentSearch = e.target.value;
+                this.currentSearch = e.target.value.trim();
                 this.renderOrders();
             });
         }
     },
 
-    showNotification: function(message, type) {
+    // =========================================================
+    // TOAST
+    // =========================================================
+    showToast: function (msg, type = 'success') {
         const toast = document.getElementById('toastMessage');
-        const text = document.getElementById('toastText');
+        const text  = document.getElementById('toastText');
         if (toast && text) {
-            text.innerText = message;
+            text.innerText = msg;
             toast.style.display = 'flex';
-            toast.style.background = type === 'success' ? '#10b981' : '#3b82f6';
-            setTimeout(() => toast.style.display = 'none', 3000);
-        } else alert(message);
-    },
-
-    escapeHtml: function(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+            toast.style.background =
+                type === 'error' ? '#ef4444' :
+                type === 'info'  ? '#3b82f6' : '#10b981';
+            clearTimeout(this._toastTimer);
+            this._toastTimer = setTimeout(() => toast.style.display = 'none', 3000);
+        } else {
+            console.warn('[Toast]', msg);
+        }
     }
 };
+
+// Inicialización automática
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.orders?.init());
+} else {
+    window.orders?.init();
+}
