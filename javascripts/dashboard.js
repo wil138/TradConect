@@ -7,6 +7,8 @@ window.dashboard = {
 
     init: function() {
         console.log("📊 Dashboard: Inicializando");
+        this.destroy();
+        this._events = new AbortController();
         this.userRole = localStorage.getItem('userRole') || 'provider';
         // Cargar datos desde localStorage (ya actualizados por refreshFullData)
         this.loadFromStorage();
@@ -21,15 +23,15 @@ window.dashboard = {
     // ========== CARGA DESDE LOCALSTORAGE ==========
     loadFromStorage: function() {
         // Productos
-        const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+        const productos = appUtils.readJSON('productos', []);
         // Inventario (para stock)
-        const inventario = JSON.parse(localStorage.getItem('inventario') || '[]');
+        const inventario = appUtils.readJSON('inventario', []);
         // Pedidos según rol
         const key = this.userRole === 'provider' ? 'pedidos_proveedor' : 'pedidos_comprador';
-        const pedidos = JSON.parse(localStorage.getItem(key) || '[]');
+        const pedidos = appUtils.readJSON(key, []);
 
         // Estadísticas (si existen, pueden usarse para complementar)
-        const stats = JSON.parse(localStorage.getItem('estadisticas') || '{}');
+        const stats = appUtils.readJSON('estadisticas', {});
 
         console.log(`📦 Datos cargados: ${productos.length} productos, ${pedidos.length} pedidos`);
 
@@ -297,6 +299,14 @@ window.dashboard = {
                 this.renderCharts();
                 this.renderRecentOrders();
             }
+        }, { signal: this._events.signal });
+    },
+
+    destroy: function() {
+        this._events?.abort();
+        clearTimeout(this._toastTimer);
+        document.querySelectorAll('#main-view canvas').forEach(canvas => {
+            canvas.chart?.destroy();
         });
     },
 
@@ -316,24 +326,5 @@ window.dashboard = {
         this.showNotification('✅ Dashboard actualizado', 'success');
     },
 
-    showNotification: function(msg, type) {
-        const toast = document.getElementById('toastMessage');
-        const text = document.getElementById('toastText');
-        if (toast && text) {
-            text.innerText = msg;
-            toast.style.display = 'flex';
-            toast.style.background = type === 'error' ? '#dc2626' : '#10b981';
-            clearTimeout(this._toastTimer);
-            this._toastTimer = setTimeout(() => toast.style.display = 'none', 3000);
-        } else {
-            alert(msg);
-        }
-    }
+    showNotification: function(msg, type) { appUtils.showToast(msg, type); }
 };
-
-// Inicialización
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.dashboard.init());
-} else {
-    window.dashboard.init();
-}

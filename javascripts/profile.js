@@ -36,12 +36,9 @@ window.profile = {
     },
 
     loadFromLocalStorage: function() {
-        const userStr = localStorage.getItem('user');
-        if (userStr) this.currentUser = JSON.parse(userStr);
-        const companyStr = localStorage.getItem('company');
-        if (companyStr) this.currentCompany = JSON.parse(companyStr);
-        const branchesStr = localStorage.getItem('sucursales');
-        this.branches = branchesStr ? JSON.parse(branchesStr) : [];
+        this.currentUser = appUtils.readJSON('user', {});
+        this.currentCompany = appUtils.readJSON('company', {});
+        this.branches = appUtils.readJSON('sucursales', []);
         window.userBranches = this.branches;
         console.log("📦 Datos cargados de localStorage:", {
             user: this.currentUser?.nombreusuario,
@@ -432,29 +429,7 @@ window.profile = {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     },
 
-    escapeHtml: function(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    },
+    escapeHtml: appUtils.escapeHtml,
 
-    showToast: function(message, type = 'success') {
-        const toast = document.getElementById('toastMessage');
-        const text = document.getElementById('toastText');
-        if (toast && text) {
-            text.textContent = message;
-            toast.style.display = 'flex';
-            toast.style.background = type === 'error' ? '#dc2626' : type === 'warning' ? '#f59e0b' : '#10b981';
-            clearTimeout(this._toastTimeout);
-            this._toastTimeout = setTimeout(() => toast.style.display = 'none', 3000);
-        } else {
-            alert(message);
-        }
-    }
+    showToast: function(message, type = 'success') { appUtils.showToast(message, type); }
 };
-
-// Inicialización
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.profile && window.profile.init) window.profile.init();
-});

@@ -61,15 +61,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Esperar a que el DOM esté listo
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.inventory && typeof window.inventory.init === 'function') {
-            console.log("🚀 Ejecutando inventory.init() desde DOMContentLoaded");
-            window.inventory.init();
-        } else {
-            console.error("❌ inventory no está definido o no tiene método init");
-        }
-    });
-</script>

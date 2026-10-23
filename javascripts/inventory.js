@@ -29,7 +29,7 @@ window.inventory = {
                 console.log(`✅ Productos cargados: ${productos.length}`);
             } else {
                 console.warn("⚠️ Error al cargar productos, usando localStorage:", prodResult.error);
-                productos = JSON.parse(localStorage.getItem('productos') || '[]');
+                productos = appUtils.readJSON('productos', []);
             }
 
             if (invResult.success) {
@@ -37,7 +37,7 @@ window.inventory = {
                 console.log(`✅ Inventario cargado: ${inventario.length}`);
             } else {
                 console.warn("⚠️ Error al cargar inventario, usando localStorage:", invResult.error);
-                inventario = JSON.parse(localStorage.getItem('inventario') || '[]');
+                inventario = appUtils.readJSON('inventario', []);
             }
 
             this.productos = productos;
@@ -52,8 +52,8 @@ window.inventory = {
         } catch (error) {
             console.error("❌ Error en loadDataFromAPI:", error);
             // Fallback a localStorage
-            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
-            const inventario = JSON.parse(localStorage.getItem('inventario') || '[]');
+            const productos = appUtils.readJSON('productos', []);
+            const inventario = appUtils.readJSON('inventario', []);
             this.productos = productos;
             this.inventario = inventario;
             this.buildInventory();
@@ -94,7 +94,7 @@ window.inventory = {
                 categoriesSet.add(item.category);
             }
         });
-        const catalogos = JSON.parse(localStorage.getItem('catalogos') || '{}');
+        const catalogos = appUtils.readJSON('catalogos', {});
         if (catalogos.categorias && Array.isArray(catalogos.categorias)) {
             catalogos.categorias.forEach(c => {
                 const nombre = c.nombre || c.NombreCategoria || c.Nombre;
@@ -510,32 +510,8 @@ window.inventory = {
     },
 
     // ========== NOTIFICACIONES ==========
-    showNotification: function(msg, type) {
-        const toast = document.getElementById('toastMessage');
-        const text = document.getElementById('toastText');
-        if (toast && text) {
-            text.innerText = msg;
-            toast.style.display = 'flex';
-            toast.style.background = type === 'error' ? '#dc2626' : type === 'warning' ? '#f59e0b' : '#10b981';
-            clearTimeout(this._toastTimeout);
-            this._toastTimeout = setTimeout(() => toast.style.display = 'none', 3000);
-        } else {
-            alert(msg);
-        }
-    },
+    showNotification: function(msg, type) { appUtils.showToast(msg, type); },
 
     // ========== UTILIDADES ==========
-    escapeHtml: function(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
+    escapeHtml: appUtils.escapeHtml
 };
-
-// Inicialización
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.inventory && typeof window.inventory.init === 'function') {
-        window.inventory.init();
-    }
-});

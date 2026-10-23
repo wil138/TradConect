@@ -2,7 +2,7 @@
 const router = {
     routes: {
         'marketplace': 'fragments/marketplace.html',
-        'dashboard': 'fragments/dashboard.html',
+        'dashboard': 'fragments/Dashboard.html',
         'profile': 'fragments/profile.html',
         'orders': 'fragments/orders.html',
         'inventory': 'fragments/inventory.html',
@@ -28,6 +28,10 @@ const router = {
             moduleName = role === 'client' ? 'marketplace' : 'dashboard';
         }
 
+        const requestId = this._requestId = (this._requestId || 0) + 1;
+        this._pending?.abort();
+        this._pending = new AbortController();
+        window[this.currentModule]?.destroy?.();
         this.currentModule = moduleName;
         localStorage.setItem('currentModule', moduleName);
 
@@ -39,34 +43,28 @@ const router = {
         });
 
         try {
-            const response = await fetch(this.routes[moduleName]);
+            const response = await fetch(this.routes[moduleName], { signal: this._pending.signal });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const html = await response.text();
 
+            if (requestId !== this._requestId) return;
             const mainView = document.getElementById('main-view');
-            if (mainView) mainView.innerHTML = html;
-
-            // Ejecutar scripts dentro del fragmento
-            const scripts = mainView.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.textContent = oldScript.textContent;
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
+            if (!mainView) return;
+            mainView.innerHTML = html;
 
             // Inicializar módulo si existe
             if (window[moduleName] && typeof window[moduleName].init === 'function') {
-                window[moduleName].init();
+                await window[moduleName].init();
             }
         } catch (error) {
+            if (error.name === 'AbortError' || requestId !== this._requestId) return;
             console.error("❌ Error al cargar el módulo:", error);
             const mainView = document.getElementById('main-view');
             if (mainView) {
                 mainView.innerHTML = `
                     <div class="error-state">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <p>Error al cargar el contenido: ${error.message}</p>
+                        <p>Error al cargar el contenido: ${appUtils.escapeHtml(error.message)}</p>
                         <button onclick="router.loadModule('${moduleName}')" class="btn-primary">Reintentar</button>
                     </div>
                 `;
@@ -86,7 +84,7 @@ const router = {
         }
 
         // Manejar navegación con botones atrás/adelante
-        window.addEventListener('popstate', (event) => {
+        if (!this._listening) window.addEventListener('popstate', (event) => {
             const module = event.state?.module || localStorage.getItem('currentModule');
             if (module && this.routes[module]) {
                 this.loadModule(module);

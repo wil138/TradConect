@@ -10,7 +10,8 @@
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles/style.css" />
+    <link rel="stylesheet" href="Styles/style.css" />
+    <link rel="stylesheet" href="Styles/landing.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -31,16 +32,22 @@
                 <!-- Hero -->
                 <div class="hero" id="inicio">
                     <div class="hero-content">
-                        <h1>Conectamos <span>proveedores</span> con restaurantes y comederos en Nicaragua</h1>
+                        <span class="landing-eyebrow">COMERCIO LOCAL ? NICARAGUA</span>
+                        <h1>Tu pr?ximo proveedor est? <span>m?s cerca.</span></h1>
                         <p>La plataforma B2B que optimiza tu cadena de suministro, reduce costos y apoya la economía
                             local.</p>
                         <div class="hero-buttons">
                             <button class="btn-primary" id="landingOpenRegisterBtn">Regístrate gratis</button>
                         </div>
                     </div>
-                    <div class="hero-image">
-                        <i class="fas fa-handshake"></i> <i class="fas fa-truck-fast"></i> <i
-                            class="fas fa-utensils"></i>
+                    <div class="hero-image" aria-label="Del proveedor a tu negocio en un solo lugar">
+                        <div class="supply-heading"><span class="landing-eyebrow">TU NEGOCIO, CONECTADO</span><i class="fas fa-handshake" aria-hidden="true"></i></div>
+                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-seedling" aria-hidden="true"></i></span><div><strong>Proveedores locales</strong><p>Productos para cada necesidad</p></div></div>
+                        <div class="supply-connector" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-box-open" aria-hidden="true"></i></span><div><strong>Todo en un solo pedido</strong><p>Explora, selecciona y organiza</p></div></div>
+                        <div class="supply-connector" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-utensils" aria-hidden="true"></i></span><div><strong>Directo a tu restaurante</strong><p>M?s tiempo para lo que haces mejor</p></div></div>
+                        <div class="supply-footnote"><i class="fas fa-location-dot" aria-hidden="true"></i> Conectando negocios en Nicaragua</div>
                     </div>
                 </div>
 
@@ -107,7 +114,7 @@
                 <section id="productos" class="section">
                     <h2 class="section-title">Lo que ofrecemos</h2>
                     <p class="lead">Categorías especialmente seleccionadas para restaurantes y comederos</p>
-                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin-top: 2rem;">
+                    <div class="landing-categories">
                         <div style="text-align: center;"><i class="fas fa-carrot"
                                 style="font-size: 2.5rem; color:#1e4a76;"></i>
                             <h4 style="margin-top:0.5rem;">Alimentos frescos</h4>
@@ -599,14 +606,16 @@
 
     <!-- ==================== MODALES CON PREFIJO landing- (para que funcione con landing_spa.js) ==================== -->
     <!-- Modal Login -->
-    <div id="landingLoginModal" class="landing-modal">
+    <div id="landingLoginModal" class="landing-modal" role="dialog" aria-modal="true" aria-labelledby="landingLoginTitle">
         <div class="landing-modal-content">
-            <span class="landing-close-modal" id="landingCloseLoginBtn">&times;</span>
+            <button type="button" class="landing-close-modal" id="landingCloseLoginBtn" aria-label="Cerrar">&times;</button>
             <h3>Iniciar sesión</h3>
             <form id="landingLoginForm">
-                <input type="text" id="landingLoginUsername" placeholder="Usuario o correo electrónico" required>
+                <label for="landingLoginUsername">Usuario o correo</label>
+                <input type="text" id="landingLoginUsername" placeholder="Usuario o correo electrónico" autocomplete="username" required>
+                <label for="landingLoginPassword">Contrase?a</label>
                 <div class="landing-pass-wrapper">
-                    <input type="password" id="landingLoginPassword" placeholder="Contraseña" required>
+                <input type="password" id="landingLoginPassword" placeholder="Contraseña" autocomplete="current-password" required>
                     <i class="fas fa-eye-slash landing-toggle-pass" data-target="landingLoginPassword"></i>
                 </div>
                 <button type="submit" class="landing-btn-primary">Ingresar</button>
@@ -618,18 +627,24 @@
     </div>
 
     <!-- Modal Register -->
-    <div id="landingRegisterModal" class="landing-modal">
+    <div id="landingRegisterModal" class="landing-modal" role="dialog" aria-modal="true" aria-labelledby="landingRegisterTitle">
         <div class="landing-modal-content">
-            <span class="landing-close-modal" id="landingCloseRegisterBtn">&times;</span>
-            <h3>Crear cuenta gratis</h3>
+            <button type="button" class="landing-close-modal" id="landingCloseRegisterBtn" aria-label="Cerrar">&times;</button>
+            <h3 id="landingRegisterTitle">Crear cuenta gratis</h3>
+            <p class="auth-intro">Conecta con nuevas oportunidades para tu negocio.</p>
             <form id="landingRegisterForm">
-                <input type="text" id="regName" placeholder="Nombre completo" required>
-                <input type="email" id="regEmail" placeholder="Correo electrónico" required>
-                <input type="text" id="regUsername" placeholder="Nombre de usuario" required>
+                <label for="regName">Nombre completo</label>
+                <input type="text" id="regName" placeholder="Nombre completo" autocomplete="name" required>
+                <label for="regEmail">Correo electr?nico</label>
+                <input type="email" id="regEmail" placeholder="Correo electrónico" autocomplete="email" required>
+                <label for="regUsername">Nombre de usuario</label>
+                <input type="text" id="regUsername" placeholder="Nombre de usuario" autocomplete="username" required>
+                <label for="regPassword">Contrase?a</label>
                 <div class="landing-pass-wrapper">
-                    <input type="password" id="regPassword" placeholder="Contraseña" required>
+                <input type="password" id="regPassword" placeholder="Contraseña" autocomplete="new-password" required>
                     <i class="fas fa-eye-slash landing-toggle-pass" data-target="regPassword"></i>
                 </div>
+                <label for="regRole">Tipo de negocio</label>
                 <select id="regRole" required>
                     <option value="client">Restaurante / Cliente</option>
                     <option value="provider">Proveedor</option>
@@ -645,6 +660,7 @@
     <div id="toastMessage" class="toast"><i class="fas fa-circle-check"></i> <span id="toastText"></span></div>
 
     <!-- Scripts -->
+    <script src="javascripts/utils/common.js"></script>
     <script src="javascripts/utils/api.js"></script>
     <script src="javascripts/utils/rolusuario.js"></script>
     <script src="javascripts/utils/router.js"></script>
@@ -654,7 +670,7 @@
     <script src="javascripts/marketplace.js"></script>
     <script src="javascripts/orders.js"></script>
     <script src="javascripts/inventory.js"></script>
-    <!-- <script src="javascripts/analytics.js"></script> -->
+    <script src="javascripts/analytics.js"></script>
     <script src="javascripts/dashboard.js"></script>
 
 

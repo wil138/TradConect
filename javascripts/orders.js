@@ -131,7 +131,7 @@ window.orders = {
     },
 
     _getEstadoOptions: function (currentEstado) {
-        const catalogos = JSON.parse(localStorage.getItem('catalogos') || '{}');
+        const catalogos = appUtils.readJSON('catalogos', {});
         const estados = catalogos.estados_pedido || [];
         const fallback = ['Pendiente', 'Confirmado', 'Enviado', 'Entregado', 'Cancelado'];
         const lista = estados.length > 0
@@ -166,7 +166,7 @@ window.orders = {
     // CAMBIAR ESTADO — llama a la API real
     // =========================================================
     changeOrderStatus: async function (orderId, newStatus, selectEl) {
-        const catalogos = JSON.parse(localStorage.getItem('catalogos') || '{}');
+        const catalogos = appUtils.readJSON('catalogos', {});
         const estados = catalogos.estados_pedido || [];
 
         const estadoObj = estados.find(e =>
@@ -187,7 +187,7 @@ window.orders = {
             if (result.success) {
                 // Actualizar localStorage localmente sin llamada extra al servidor
                 const key = 'pedidos_proveedor';
-                const pedidos = JSON.parse(localStorage.getItem(key) || '[]');
+                const pedidos = appUtils.readJSON(key, []);
                 const idx = pedidos.findIndex(p => p.id === orderId);
                 if (idx !== -1) {
                     pedidos[idx].estado_actual = newStatus;
@@ -374,10 +374,3 @@ window.orders = {
         }
     }
 };
-
-// Inicialización automática
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.orders?.init());
-} else {
-    window.orders?.init();
-}

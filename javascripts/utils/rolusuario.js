@@ -62,7 +62,7 @@ function renderMenu() {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             link.classList.add('active');
             closeAll();
-            if (window.router && window.router.loadModule) window.router.loadModule(item.module);
+            if (window.router && window.router.loadModule) window.router.navigateTo(item.module);
         });
         menuContainer.appendChild(link);
     });
@@ -91,8 +91,8 @@ function updateRoleFromStorage() {
     const currentMod = localStorage.getItem('currentModule');
     const role = getCurrentRole();
     const allowed = (role === 'client')
-        ? ['marketplace','orders','invoices','profile']
-        : ['dashboard','inventory','orders','invoices','analytics'];
+        ? ['marketplace','orders','profile']
+        : ['dashboard','inventory','orders','profile','analytics'];
     if (currentMod && !allowed.includes(currentMod)) {
         const defaultMod = role === 'client' ? 'marketplace' : 'dashboard';
         if (window.router?.loadModule) window.router.loadModule(defaultMod);

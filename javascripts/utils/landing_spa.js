@@ -72,7 +72,7 @@ async function handleLogin(usernameOrEmail, password) {
         result = await window.api.login(usernameOrEmail, password);
     } else {
         // Fallback solo si no existe API
-        const users = JSON.parse(localStorage.getItem('fakeUsers') || '[]');
+        const users = appUtils.readJSON('fakeUsers', []);
         const user = users.find(u => (u.username === usernameOrEmail || u.email === usernameOrEmail) && u.password === password);
         if (user) {
             result = { 
@@ -145,7 +145,7 @@ async function handleRegister(userData, isProvider) {
         result = await window.api.register(data);
     } else {
         // Fallback local
-        const users = JSON.parse(localStorage.getItem('fakeUsers') || '[]');
+        const users = appUtils.readJSON('fakeUsers', []);
         if (users.find(u => u.email === data.correo || u.username === data.nombre_usuario)) {
             result = { success: false, error: 'El correo o usuario ya está registrado' };
         } else {

@@ -15,8 +15,7 @@ window.CartModule = {
     },
 
     loadCart: function() {
-        const saved = localStorage.getItem('marketplaceCart');
-        this.cart = saved ? JSON.parse(saved) : [];
+        this.cart = appUtils.readJSON('marketplaceCart', []);
         console.log(`📦 Carrito: ${this.cart.length} items`);
     },
 
@@ -47,7 +46,7 @@ window.CartModule = {
             try { this.selectedPaymentMethod = JSON.parse(saved); } catch(e) { this.selectedPaymentMethod = null; }
         }
         if (!this.selectedPaymentMethod) {
-            const catalogos = JSON.parse(localStorage.getItem('catalogos') || '{}');
+            const catalogos = appUtils.readJSON('catalogos', {});
             if (catalogos.metodos_pago && catalogos.metodos_pago.length > 0) {
                 this.selectedPaymentMethod = catalogos.metodos_pago[0];
                 this.saveSelectedPaymentMethod();
@@ -250,7 +249,7 @@ window.CartModule = {
             `;
         }
 
-        const catalogos = JSON.parse(localStorage.getItem('catalogos') || '{}');
+        const catalogos = appUtils.readJSON('catalogos', {});
         const metodosPago = catalogos.metodos_pago || [];
         let paymentDiv = document.getElementById('paymentMethodSelector');
         if (!paymentDiv) {
@@ -355,7 +354,7 @@ window.CartModule = {
     },
 
     selectBranch: function() {
-        const branches = JSON.parse(localStorage.getItem('sucursales') || '[]');
+        const branches = appUtils.readJSON('sucursales', []);
         if (branches.length === 0) {
             this.showToast("No tienes sucursales. Ve a Mi Perfil > Sucursales.", "error");
             return;
@@ -698,12 +697,7 @@ window.CartModule = {
         }
     },
 
-    escapeHtml: function(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
+    escapeHtml: appUtils.escapeHtml
 };
 
 // Exponer funciones globales

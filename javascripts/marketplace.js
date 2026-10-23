@@ -281,6 +281,8 @@ window.marketplace = {
 
     init: async function() {
         console.log('🛒 Marketplace: Inicializando');
+        this.destroy();
+        this._events = new AbortController();
         this._injectStyles();
         await this.loadProducts();
         this.renderCategories();
@@ -294,12 +296,7 @@ window.marketplace = {
         this._stylesInjected = true;
     },
 
-    escapeHtml: function(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    },
+    escapeHtml: appUtils.escapeHtml,
 
     loadProducts: async function(filters = {}, forceRefresh = false) {
         if (this._loading) return;
@@ -339,7 +336,7 @@ window.marketplace = {
             } else {
                 this.showToast(result.error || 'Error al cargar productos', true);
                 // Fallback a datos locales
-                const localProducts = JSON.parse(localStorage.getItem('marketplace_products') || 'null');
+                const localProducts = appUtils.readJSON('marketplace_products', null);
                 if (localProducts) {
                     this.products = localProducts;
                     this.categories = ["Todos", ...new Set(this.products.map(p => p.category))];
@@ -352,7 +349,7 @@ window.marketplace = {
         } catch (error) {
             console.error('❌ Error cargando marketplace:', error);
             this.showToast('Error de conexión con el servidor', true);
-            const localProducts = JSON.parse(localStorage.getItem('marketplace_products') || 'null');
+            const localProducts = appUtils.readJSON('marketplace_products', null);
             if (localProducts) {
                 this.products = localProducts;
                 this.categories = ["Todos", ...new Set(this.products.map(p => p.category))];
@@ -630,7 +627,7 @@ window.marketplace = {
         }
         window.addEventListener('storage', (e) => {
             if (e.key === 'userRole') this.renderProducts();
-        });
+        }, { signal: this._events.signal });
     },
 
     showToast: function(message, isErr = false) {
@@ -655,15 +652,8 @@ window.marketplace = {
     },
 
     destroy: function() {
-        console.log('Marketplace: Destruido');
+        this._events?.abort();
+        clearTimeout(this._toastTimeout);
+        document.getElementById('productDetailModal')?.remove();
     }
 };
-
-// Inicialización
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.marketplace && window.marketplace.init) window.marketplace.init();
-    });
-} else {
-    if (window.marketplace && window.marketplace.init) window.marketplace.init();
-}

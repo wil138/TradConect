@@ -120,7 +120,7 @@
         }
         let html = '<ul class="list-group">';
         data.forEach((item, index) => {
-            const name = item.producto__nombre_producto || 'Producto';
+            const name = appUtils.escapeHtml(item.producto__nombre_producto || 'Producto');
             const qty = parseFloat(item.total_vendido || 0).toFixed(0);
             const revenue = parseFloat(item.total_ingreso || 0).toFixed(2);
             html += `
@@ -164,8 +164,8 @@
         }
         let html = '<table class="table table-striped"><thead><tr><th>Empresa</th><th>RUC</th><th>Total Comprado</th><th>Pedidos</th></tr></thead><tbody>';
         data.forEach(row => {
-            const name = row.empresa__razon_social || 'N/A';
-            const ruc = row.empresa__ruc || '';
+            const name = appUtils.escapeHtml(row.empresa__razon_social || 'N/A');
+            const ruc = appUtils.escapeHtml(row.empresa__ruc || '');
             const total = parseFloat(row.total_comprado || 0).toFixed(2);
             const orders = parseInt(row.total_pedidos || 0);
             html += `<tr><td>${name}</td><td>${ruc}</td><td>$${total}</td><td>${orders}</td></tr>`;
@@ -189,6 +189,10 @@
         }
 
         const { start, end } = getDateRange();
+        if (start && end && start > end) {
+            appUtils.showToast('La fecha inicial debe ser anterior a la fecha final', 'warning');
+            return;
+        }
 
         // Mostrar indicadores de carga
         document.querySelectorAll('.loading').forEach(el => el.textContent = 'Cargando...');

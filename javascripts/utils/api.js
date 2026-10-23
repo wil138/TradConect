@@ -1,7 +1,13 @@
 // javascripts/utils/api.js - VERSIÓN CON REFRESCO AUTOMÁTICO TRAS CRUD (dump-all)
-const API_BASE_URL = 'https://ntzjmczt-8000.use.devtunnels.ms/api';
+const API_BASE_URL = 'http://localhost:8000/api';
 
 const api = {
+    async readResponse(response) {
+        const text = await response.text();
+        if (!text.trim()) return {};
+        try { return JSON.parse(text); }
+        catch { throw new Error(`Respuesta no v?lida del servidor (HTTP ${response.status})`); }
+    },
     // =========================================================
     // MÉTODO PRINCIPAL DE PETICIONES (AUTENTICADAS)
     // =========================================================
@@ -31,7 +37,7 @@ const api = {
                     const newToken = localStorage.getItem('access_token');
                     config.headers['Authorization'] = `Bearer ${newToken}`;
                     const retry = await fetch(`${API_BASE_URL}${endpoint}`, config);
-                    const retryData = await retry.json();
+                    const retryData = await this.readResponse(retry);
                     if (retry.ok) return { success: true, data: retryData };
                     throw new Error(retryData.error || retryData.detail || 'Error en reintento');
                 } else {
@@ -40,7 +46,7 @@ const api = {
                 }
             }
 
-            const data = await response.json();
+            const data = await this.readResponse(response);
             if (!response.ok) {
                 const errorMsg = data.error || data.detail || data.message || 'Error en la petición';
                 throw new Error(errorMsg);
@@ -79,7 +85,7 @@ const api = {
 
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-            const data = await response.json();
+            const data = await this.readResponse(response);
             if (!response.ok) {
                 const errorMsg = data.error || data.detail || data.message || 'Error en la petición';
                 throw new Error(errorMsg);
