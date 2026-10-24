@@ -2,43 +2,53 @@
 <div class="analytics-dashboard">
     <div class="dashboard-header">
         <h1><i class="fas fa-chart-pie"></i> Panel de Análisis</h1>
-        <div class="filters">
+        <div class="filters"><div class="filter-group"><label for="analyticsCurrency">Moneda</label><select id="analyticsCurrency"></select></div>
             <div class="filter-group">
-                <label>Desde:</label>
+                <label for="analyticsStartDate">Desde</label>
                 <input type="date" id="analyticsStartDate" />
             </div>
             <div class="filter-group">
-                <label>Hasta:</label>
+                <label for="analyticsEndDate">Hasta</label>
                 <input type="date" id="analyticsEndDate" />
             </div>
             <button id="analyticsRefreshBtn" class="btn-primary"><i class="fas fa-sync-alt"></i> Actualizar</button>
         </div>
     </div>
 
+    <section class="report-panel" aria-labelledby="analyticsReportTitle">
+        <div class="report-panel-copy"><span class="report-panel-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span><div><h2 id="analyticsReportTitle">Reporte analítico</h2><p id="analyticsExportSummary">Actualiza los datos para habilitar la descarga.</p></div></div>
+        <div class="report-actions" role="group" aria-label="Exportar reporte analítico">
+            <button id="analyticsExportCSV" type="button" class="report-button" disabled><i class="fas fa-file-csv" aria-hidden="true"></i> Descargar CSV</button>
+            <button id="analyticsExportPrint" type="button" class="report-button report-button-primary" disabled><i class="fas fa-print" aria-hidden="true"></i> Imprimir / PDF</button>
+        </div>
+    </section>
+    <p id="analyticsStatus" role="status" aria-live="polite"></p>
+    <p>Importes de pedidos registrados, excluyendo cancelados. Los pedidos incluyen impuestos; productos y categorías muestran importes de líneas con descuento. Las cantidades pueden combinar unidades diferentes.</p>
+    <div class="data-box"><h3>Calidad de servicio</h3><p id="analyticsFeedback">Cargando...</p></div>
     <!-- KPI Cards -->
     <div class="kpi-grid">
         <div class="kpi-card">
-            <span class="kpi-label">Total Ventas</span>
-            <span class="kpi-value" id="kpiTotalSales">$0.00</span>
+            <span class="kpi-label">Importe de pedidos</span>
+            <span class="kpi-value" id="kpiTotalSales">0.00</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-label">Nº Pedidos</span>
             <span class="kpi-value" id="kpiTotalOrders">0</span>
         </div>
         <div class="kpi-card">
-            <span class="kpi-label">Productos Vendidos</span>
+            <span class="kpi-label">Cantidad pedida</span>
             <span class="kpi-value" id="kpiTotalItems">0</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-label">Ticket Promedio</span>
-            <span class="kpi-value" id="kpiAvgTicket">$0.00</span>
+            <span class="kpi-value" id="kpiAvgTicket">0.00</span>
         </div>
     </div>
 
     <!-- Gráficos y tablas -->
     <div class="chart-row">
         <div class="chart-box">
-            <h3>Ventas por Mes</h3>
+            <h3>Importes por mes</h3>
             <canvas id="salesChart" width="400" height="250"></canvas>
         </div>
         <div class="chart-box">

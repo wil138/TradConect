@@ -4,9 +4,9 @@ window.profile = {
     currentCompany: null,
     branches: [],
 
-    init: function() {
+    init: async function() {
         console.log("👤 Profile: Inicializando");
-        this.loadAllDataFromAPI();
+        await this.loadAllDataFromAPI();
         this.renderProfileHeader();
         this.setupTabs();
         this.setupForms();
@@ -187,7 +187,7 @@ window.profile = {
 
         const branchData = {
             nombresucursal: branchName,
-            municipioid: parseInt(this.getValue('branchMunicipio')) || 1,
+            municipioid: Number(this.getValue('branchMunicipio')),
             direccionexacta: branchAddress,
             telefonosucursal: this.getValue('branchPhone'),
             estado: this.getValue('branchStatus') === 'Activo' ? 'Activo' : 'Inactivo'
@@ -218,13 +218,14 @@ window.profile = {
         if (!branch) return;
         this.setValue('branchId', branch.id);
         this.setValue('branchName', branch.nombresucursal || branch.nombre);
-        this.setValue('branchMunicipio', branch.municipioid?.id || branch.municipio || '');
+        this.setValue('branchMunicipio', branch.municipioid?.id || branch.municipioid || '');
         this.setValue('branchAddress', branch.direccionexacta || branch.direccion || '');
         this.setValue('branchPhone', branch.telefonosucursal || branch.telefono || '');
         this.setValue('branchStatus', branch.estado === 'Activo' ? 'Activo' : 'Inactivo');
         const modalTitle = document.getElementById('branchModalTitle');
         if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Sucursal';
-        this.openBranchModal();
+        const modal = document.getElementById('branchModal');
+        if (modal) { modal.classList.add('show'); modal.style.display = 'flex'; }
     },
 
     deleteBranch: async function(branchId) {

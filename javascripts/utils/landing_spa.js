@@ -31,7 +31,7 @@ async function showSpaAndInit() {
     const userNameSpan = document.getElementById('spaUserName');
     const userRoleSpan = document.getElementById('spaUserRole');
     if (userNameSpan) userNameSpan.innerText = userName;
-    if (userRoleSpan) userRoleSpan.innerText = userRole === 'provider' ? 'Proveedor' : 'Restaurante';
+    if (userRoleSpan) userRoleSpan.innerText = appUtils.readJSON('user', {}).rol_nombre || 'Usuario';
 
     // Renderizar menú
     if (typeof window.updateRoleFromStorage === 'function') {
@@ -108,7 +108,7 @@ async function handleLogin(usernameOrEmail, password) {
 }
 
 async function handleRegister(userData, isProvider) {
-    if (!userData.correo || !userData.contrasena || !userData.razon_social) {
+    if (!userData.correo || !userData.contrasena || !userData.razon_social?.trim() || !userData.telefono?.trim() || !userData.ruc?.trim()) {
         showToast('Complete todos los campos requeridos', true);
         return;
     }
@@ -127,9 +127,9 @@ async function handleRegister(userData, isProvider) {
         correo: userData.correo,
         contrasena: userData.contrasena,
         razon_social: userData.razon_social,
-        ruc: userData.ruc || `TEMP${Date.now()}`,
+        ruc: userData.ruc?.trim(),
         telefono: userData.telefono || '',
-        rol: isProvider ? 'proveedor' : 'restaurante',
+        rol: isProvider ? 'provider' : 'restaurant',
         direccion_fiscal: userData.direccion_fiscal || ''
     };
     
@@ -141,28 +141,14 @@ async function handleRegister(userData, isProvider) {
     }
     
     let result;
-    if (window.api && typeof window.api.register === 'function') {
-        result = await window.api.register(data);
-    } else {
-        // Fallback local
-        const users = appUtils.readJSON('fakeUsers', []);
-        if (users.find(u => u.email === data.correo || u.username === data.nombre_usuario)) {
-            result = { success: false, error: 'El correo o usuario ya está registrado' };
-        } else {
-            const newUser = {
-                id: users.length + 1,
-                name: data.razon_social,
-                email: data.correo,
-                username: data.nombre_usuario,
-                password: data.contrasena,
-                role: data.rol
-            };
-            users.push(newUser);
-            localStorage.setItem('fakeUsers', JSON.stringify(users));
-            result = { success: true, user: { nombreusuario: data.nombre_usuario, correoelectronico: data.correo, rol: data.rol } };
-        }
+    try {
+        result = window.api?.register
+            ? await window.api.register(data)
+            : { success: false, error: 'El servicio de registro no está disponible.' };
+    } catch (error) {
+        result = { success: false, error: 'No se pudo conectar con el servidor. Intenta de nuevo.' };
     }
-    
+
     if (registerBtn) {
         registerBtn.innerHTML = originalText;
         registerBtn.disabled = false;
@@ -286,7 +272,7 @@ function checkAndRestoreSession() {
         const userNameSpan = document.getElementById('spaUserName');
         const userRoleSpan = document.getElementById('spaUserRole');
         if (userNameSpan) userNameSpan.innerText = userName;
-        if (userRoleSpan) userRoleSpan.innerText = userRole === 'provider' ? 'Proveedor' : 'Restaurante';
+        if (userRoleSpan) userRoleSpan.innerText = appUtils.readJSON('user', {}).rol_nombre || 'Usuario';
         
         // Renderizar menú según rol guardado
         if (typeof window.updateRoleFromStorage === 'function') {
@@ -309,6 +295,11 @@ function checkAndRestoreSession() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("🚀 landing_spa.js inicializado");
     
+    // Precarga pública silenciosa: no consulta credenciales ni datos privados.
+    const preloadCatalog = () => window.api?.getMarketplaceProducts({}, true).catch(() => {});
+    if (window.requestIdleCallback) window.requestIdleCallback(preloadCatalog, { timeout: 1500 });
+    else setTimeout(preloadCatalog, 250);
+
     // Inicializar toggles y FAQ
     initPasswordToggles();
     initFaqAccordion();
@@ -335,11 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const userData = {
                 correo: document.getElementById('regEmail')?.value,
                 contrasena: document.getElementById('regPassword')?.value,
-                confirmar_contrasena: document.getElementById('regPassword')?.value,
+                confirmar_contrasena: document.getElementById('regConfirmPassword')?.value,
                 razon_social: document.getElementById('regName')?.value,
                 nombre_usuario: document.getElementById('regUsername')?.value,
-                telefono: '',
-                ruc: '',
+                telefono: document.getElementById('regPhone')?.value,
+                ruc: document.getElementById('regRuc')?.value,
                 direccion_fiscal: ''
             };
             const userType = document.getElementById('regRole')?.value;

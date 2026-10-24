@@ -5,10 +5,14 @@ window.dashboard = {
     recentOrders: [],
     userRole: 'provider', // o 'client' según corresponda
 
-    init: function() {
+    init: async function() {
         console.log("📊 Dashboard: Inicializando");
         this.destroy();
         this._events = new AbortController();
+        const events = this._events;
+        const refreshed = await api.refreshFullData();
+        if (events.signal.aborted) return;
+        if (!refreshed) this.showNotification('No se pudo actualizar el tablero. Se muestra la copia guardada.', 'warning');
         this.userRole = localStorage.getItem('userRole') || 'provider';
         // Cargar datos desde localStorage (ya actualizados por refreshFullData)
         this.loadFromStorage();
@@ -28,7 +32,8 @@ window.dashboard = {
         const inventario = appUtils.readJSON('inventario', []);
         // Pedidos según rol
         const key = this.userRole === 'provider' ? 'pedidos_proveedor' : 'pedidos_comprador';
-        const pedidos = appUtils.readJSON(key, []);
+        const currency = localStorage.getItem('marketplaceCurrency') || '1';
+        const pedidos = appUtils.readJSON(key, []).filter(order => String(order.monedaid) === String(currency));
 
         // Estadísticas (si existen, pueden usarse para complementar)
         const stats = appUtils.readJSON('estadisticas', {});
@@ -36,14 +41,20 @@ window.dashboard = {
         console.log(`📦 Datos cargados: ${productos.length} productos, ${pedidos.length} pedidos`);
 
         // ====== CALCULAR KPIs ======
-        const total_ventas = pedidos.reduce((sum, p) => sum + (parseFloat(p.totalneto) || 0), 0);
+        const total_ventas = pedidos.filter(p => p.estado_actual !== 'Cancelado').reduce((sum, p) => sum + (parseFloat(p.totalneto) || 0), 0);
         const total_pedidos = pedidos.length;
+        const activos = pedidos.filter(p => p.estado_actual !== 'Cancelado');
+        const clientes = new Set(activos.map(p => p.restauranteid).filter(Boolean)).size;
+        const pendientes = pedidos.filter(p => p.estado_actual === 'Pendiente').length;
+        const estados = {};
+        pedidos.forEach(p => { const estado = p.estado_actual || 'Sin estado'; estados[estado] = (estados[estado] || 0) + 1; });
+        this.statusData = estados;
         // Productos con stock bajo (umbral 10)
         const stockBajo = inventario.filter(i => (i.stockdisponible || 0) < 10).length;
 
         // ====== DATOS PARA GRÁFICO DE VENTAS MENSUALES ======
         const ventasPorMes = {};
-        pedidos.forEach(p => {
+        activos.forEach(p => {
             if (p.fechapedido) {
                 const fecha = new Date(p.fechapedido);
                 const mes = `${fecha.getFullYear()}-${String(fecha.getMonth()+1).padStart(2,'0')}`;
@@ -64,7 +75,7 @@ window.dashboard = {
             .slice(0, 5);
 
         // Guardar en this
-        this.data = { total_ventas, total_pedidos, stockBajo };
+        this.data = { total_ventas, total_pedidos, stockBajo, pendientes, clientes };
         this.salesData = { labels, data };
         this.recentOrders = recent;
 
@@ -87,15 +98,15 @@ window.dashboard = {
         const data = this.data || { total_ventas: 0, total_pedidos: 0, stockBajo: 0 };
 
         const kpis = {
-            "ventas": `$${data.total_ventas.toFixed(2)}`,
-            "pedidos": data.total_pedidos,
+            "ventas": `${appUtils.currencySymbol()}${data.total_ventas.toFixed(2)}`,
+            "pedidos": data.pendientes,
             "stock": data.stockBajo,
             // Otros indicadores (puedes calcular o dejar estáticos)
-            "vs": "+12.5% vs ayer",   // Podrías calcular tendencia comparando con mes anterior
-            "urge": `${data.stockBajo} urgente`,
+            "vs": "Pedidos registrados, sin cancelados",
+            "urge": `${data.total_pedidos} pedidos registrados`,
             "critic": data.stockBajo > 10 ? "Inventario crítico" : "Inventario saludable",
-            "newc": "+3 esta semana", // Podrías calcular nuevos pedidos en los últimos 7 días
-            "clientes": 12            // Si tienes clientes en dump-all, puedes calcular
+            "newc": "Clientes con pedidos no cancelados",
+            "clientes": data.clientes
         };
 
         for (const [id, valor] of Object.entries(kpis)) {
@@ -123,13 +134,14 @@ window.dashboard = {
         }
 
         // Gráfico de transacciones (puedes usar datos de ventas por hora si los tienes en pedidos)
-        this.createTransactionalChart([5, 12, 25, 18, 32, 15, 18]); // fijo o calcular
+        this.createTransactionalChart(Object.values(this.statusData || {}));
         // Gráfico de crecimiento (ventas mensuales)
         this.createGrowthChart(sales.labels, sales.data);
         // Gráfico de regiones (si tienes datos de región en pedidos, puedes calcular)
-        this.createRegionChart([40, 40, 15, 10, 10]); // fijo o calcular
+        this.createRegionChart(Object.values(this.statusData || {}));
         // Gráfico de forecast (puedes calcular proyección simple)
-        this.createForecastChart([67000, 72000, 60000, 80000]); // fijo o calcular
+        let accumulated = 0;
+        this.createForecastChart(sales.data.map(value => accumulated += value));
     },
 
     // ========== PEDIDOS RECIENTES ==========
@@ -150,7 +162,7 @@ window.dashboard = {
                     <td>#${order.id}</td>
                     <td>${new Date(order.fechapedido).toLocaleDateString('es-NI')}</td>
                     <td>${order.cliente_nombre || order.proveedor_nombre || 'Cliente'}</td>
-                    <td>$${parseFloat(order.totalneto || 0).toFixed(2)}</td>
+                    <td>${appUtils.currencySymbol()}${parseFloat(order.totalneto || 0).toFixed(2)}</td>
                     <td><span class="badge ${badgeClass}">${estado}</span></td>
                 </tr>
             `;
@@ -176,9 +188,9 @@ window.dashboard = {
         canvas.chart = new Chart(canvas, {
             type: "bar",
             data: {
-                labels: ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"],
+                labels: Object.keys(this.statusData || {}),
                 datasets: [{
-                    label: "Ventas por hora",
+                    label: "Pedidos por estado",
                     data: horas,
                     backgroundColor: "#3b82f6",
                     borderRadius: 6,
@@ -236,9 +248,9 @@ window.dashboard = {
         canvas.chart = new Chart(canvas, {
             type: "doughnut",
             data: {
-                labels: ["Managua", "León", "Granada", "Estelí", "Matagalpa"],
+                labels: Object.keys(this.statusData || {}),
                 datasets: [{
-                    label: "Distribución por región",
+                    label: "Distribución de pedidos",
                     data: regiones,
                     backgroundColor: ["#7c3aed", "#a78bfa", "#c4b5fd", "#ddd6fe", "#ede9fe"],
                     borderColor: "#fff",
@@ -262,9 +274,9 @@ window.dashboard = {
         canvas.chart = new Chart(canvas, {
             type: "line",
             data: {
-                labels: ["Jul", "Ago", "Sep", "Oct"],
+                labels: this.salesData.labels,
                 datasets: [{
-                    label: "Proyección",
+                    label: "Importe acumulado de pedidos",
                     data: forecast,
                     borderColor: "#7c3aed",
                     borderDash: [5, 5],

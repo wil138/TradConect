@@ -1,12 +1,14 @@
 // router.js - CON VALIDACIÓN DE TOKEN Y REDIRECCIÓN AL LOGIN
 const router = {
     routes: {
+        'feedback': 'fragments/feedback.html',
         'marketplace': 'fragments/marketplace.html',
         'dashboard': 'fragments/Dashboard.html',
         'profile': 'fragments/profile.html',
         'orders': 'fragments/orders.html',
         'inventory': 'fragments/inventory.html',
-        'analytics': 'fragments/analytics.html'
+        'analytics': 'fragments/analytics.html',
+        'documents': 'fragments/documents.html'
     },
     currentModule: null,
 
@@ -25,7 +27,7 @@ const router = {
         // Si el módulo no existe, redirigir al predeterminado según rol
         if (!this.routes[moduleName]) {
             const role = localStorage.getItem('userRole');
-            moduleName = role === 'client' ? 'marketplace' : 'dashboard';
+            moduleName = role === 'provider' ? 'dashboard' : role === 'client' ? 'marketplace' : 'profile';
         }
 
         const requestId = this._requestId = (this._requestId || 0) + 1;
@@ -102,7 +104,7 @@ const router = {
         } else if (role === 'provider') {
             this.loadModule('dashboard');
         } else {
-            this.loadModule('marketplace');
+            this.loadModule('profile');
         }
     },
 
@@ -135,7 +137,10 @@ const router = {
         if (mainView) mainView.innerHTML = '';
 
         // Recargar la página para reiniciar el estado completamente
-        window.location.reload();
+        this._pending?.abort();
+        window[this.currentModule]?.destroy?.();
+        this.currentModule = null;
+        window.closeAll?.();
     }
 };
 

@@ -1,0 +1,16 @@
+<section class="mongo-panel">
+    <h1>Datos MongoDB</h1>
+    <p>Registro administrativo de preferencias, evaluaciones, incidencias y demás documentos. Los identificadores SQL deben existir previamente.</p>
+    <label for="mongoCollection">Colección</label>
+    <select id="mongoCollection" disabled></select>
+    <p id="mongoStatus" role="status" aria-live="polite"></p>
+    <form id="mongoForm">
+        <div id="mongoFields" class="mongo-fields"></div>
+        <button type="submit" class="btn-primary" disabled>Guardar documento</button>
+    </form>
+    <h2>Documentos registrados</h2>
+    <p>Los identificadores mostrados pueden utilizarse para vincular documentos.</p>
+    <div id="mongoResults" class="mongo-results"></div>
+    <button id="mongoPrevious" type="button" disabled>Anterior</button>
+    <button id="mongoNext" type="button" disabled>Siguiente</button>
+</section>

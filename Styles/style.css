@@ -3910,3 +3910,58 @@ input:checked + .slider:before {
         align-items: stretch;
     }
 }
+/* Formularios administrativos MongoDB */
+.mongo-panel { padding: 24px; color: var(--text-primary, #253047); }
+.mongo-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 20px 0; }
+.mongo-fields label { display: flex; flex-direction: column; gap: 8px; }
+.mongo-panel input, .mongo-panel select { padding: 10px; border: 1px solid var(--border-color, #d1d5db); border-radius: 8px; max-width: 100%; }
+.mongo-results pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.mongo-results details { padding: 12px; border-bottom: 1px solid var(--border-color, #d1d5db); }
+
+.feedback-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.mongo-results article { padding: 16px 0; border-bottom: 1px solid var(--border-color, #ddd); }
+.mongo-results form { display: flex; flex-wrap: wrap; gap: 12px; }
+.mongo-results textarea { min-width: 220px; flex: 1; min-height: 80px; padding: 10px; }
+
+/* Acciones de exportaci?n de pedidos y reportes. */
+.report-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-block: 16px; }
+.report-actions small { color: var(--text-muted); flex-basis: 100%; }
+.report-actions button:disabled { opacity: .5; cursor: not-allowed; }
+/* Controles de documentos integrados en pedidos, análisis y detalle. */
+.orders-module .module-eyebrow, .analytics-dashboard .module-eyebrow { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: .68rem; font-weight: 700; letter-spacing: .12em; }
+.orders-module .module-description, .analytics-dashboard .module-description { margin-top: 10px; font-size: .9rem; color: var(--text-muted); line-height: 1.7; }
+.report-panel { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-block: 24px; padding: 22px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); }
+.report-panel-copy { display: flex; align-items: center; gap: 14px; flex: 1 1 260px; min-width: 0; }
+.report-panel-icon { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; color: var(--blue-primary); background: var(--blue-soft); font-size: 1.2rem; }
+.report-panel-copy h2 { margin: 0 0 6px; font-size: 1rem; font-weight: 700; color: var(--text-main); }
+.report-panel-copy p { margin: 0; color: var(--text-muted); font-size: .8rem; line-height: 1.7; overflow-wrap: anywhere; }
+.report-panel .report-actions { margin: 0; gap: 10px; }
+.report-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 11px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text-main); font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; transition: background .2s, border-color .2s; }
+.report-button:hover:not(:disabled) { background: var(--blue-soft); border-color: var(--blue-primary); }
+.report-button-primary { background: var(--blue-primary); border-color: var(--blue-primary); color: var(--white); }
+.report-button-primary:hover:not(:disabled) { background: var(--blue-hover); color: var(--white); }
+.report-button:disabled { opacity: .5; cursor: not-allowed; }
+.report-button:focus-visible { outline: 3px solid var(--blue-primary); outline-offset: 3px; }
+.orders-module .inventory-header { margin-bottom: 24px; }
+.orders-module .tabs { overflow-x: auto; max-width: 100%; }
+.analytics-dashboard .dashboard-header { align-items: flex-start; gap: 24px; }
+.analytics-dashboard .filters { padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); align-items: flex-end; }
+.analytics-dashboard .filter-group { flex-direction: column; align-items: flex-start; gap: 8px; }
+.analytics-dashboard .filter-group label { font-size: .75rem; }
+.analytics-dashboard .filter-group select, .analytics-dashboard .filter-group input { max-width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text-main); font: inherit; font-size: .8rem; }
+.analytics-dashboard #analyticsStatus { margin-block: 12px; font-size: .85rem; color: var(--text-muted); }
+.order-document-panel { margin-bottom: 0; background: var(--bg); }
+@media (max-width: 640px) {
+    .report-panel { padding: 18px; gap: 16px; }
+    .report-panel-copy { flex-basis: 100%; }
+    .report-panel .report-actions { width: 100%; }
+    .report-panel .report-button { flex: 1 1 150px; }
+    .analytics-dashboard .filters { width: 100%; }
+    .analytics-dashboard .filter-group { flex: 1 1 140px; min-width: 0; }
+    .analytics-dashboard .filter-group select, .analytics-dashboard .filter-group input { width: 100%; }
+    .analytics-dashboard #analyticsRefreshBtn { width: 100%; min-height: 44px; }
+}
+
+.product-quantity { width: 90px; padding: 6px; text-align: center; border: 1px solid var(--border-color, #ddd); border-radius: 6px; }
+#productEditor label { display:flex; flex-direction:column; gap:8px; }
+#productEditor input, #productEditor select { padding:10px; border:1px solid var(--border-color, #ddd); border-radius:6px; }

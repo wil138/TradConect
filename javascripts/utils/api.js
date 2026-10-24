@@ -1,7 +1,75 @@
 // javascripts/utils/api.js - VERSIÓN CON REFRESCO AUTOMÁTICO TRAS CRUD (dump-all)
-const API_BASE_URL = 'http://localhost:8000/api';
+let API_BASE_URL = (window.TRADCONNECT_CONFIG?.apiBaseUrl || 'http://localhost:8001/api').replace(/\/$/, '');
+
+const apiErrorStats = { total: 0, byEndpoint: {}, byStatus: {}, lastErrorAt: null };
+
+function recordApiError(endpoint, status) {
+    const path = String(endpoint).split('?')[0];
+    const statusKey = Number.isInteger(status) ? `HTTP_${status}` : status || 'NETWORK_OR_RESPONSE';
+    apiErrorStats.total++;
+    apiErrorStats.byEndpoint[path] = (apiErrorStats.byEndpoint[path] || 0) + 1;
+    apiErrorStats.byStatus[statusKey] = (apiErrorStats.byStatus[statusKey] || 0) + 1;
+    apiErrorStats.lastErrorAt = new Date().toISOString();
+}
 
 const api = {
+    loadConfiguration() {
+        if (this._configurationRequest) return this._configurationRequest;
+        this._configurationRequest = (async () => {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 8000);
+            try {
+                const response = await fetch(`${API_BASE_URL}/configuracion/`, {
+                    headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal
+                });
+                const data = await this.readResponse(response);
+                if (!response.ok || typeof data.api_base_url !== 'string') throw new Error('Configuración de API no disponible.');
+                const next = new URL(data.api_base_url);
+                if (next.origin !== new URL(API_BASE_URL).origin || !['http:', 'https:'].includes(next.protocol)) {
+                    throw new Error('La configuración debe pertenecer al mismo servidor de la API.');
+                }
+                API_BASE_URL = next.href.replace(/\/$/, '');
+                window.TRADCONNECT_CONFIG = { ...window.TRADCONNECT_CONFIG, apiBaseUrl: API_BASE_URL, links: data };
+                return { success: true, data };
+            } catch (error) {
+                return { success: false, error: error.message };
+            } finally {
+                clearTimeout(timer);
+            }
+        })();
+        return this._configurationRequest;
+    },
+    getConnectionStatus() {
+        return this.publicRequest('/conexiones/', { method: 'GET' }, false);
+    },
+    getErrorStats() {
+        return {
+            total: apiErrorStats.total,
+            byEndpoint: { ...apiErrorStats.byEndpoint },
+            byStatus: { ...apiErrorStats.byStatus },
+            lastErrorAt: apiErrorStats.lastErrorAt
+        };
+    },
+    resetErrorStats() {
+        apiErrorStats.total = 0;
+        apiErrorStats.byEndpoint = {};
+        apiErrorStats.byStatus = {};
+        apiErrorStats.lastErrorAt = null;
+    },
+    invalidateMarketplaceCache() {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key?.startsWith('marketplace_') || key?.startsWith('cache_/marketplace/')) localStorage.removeItem(key);
+        }
+    },
+    resolveRole(name) {
+        const value = String(name).toLowerCase();
+        return value === 'proveedor' ? 'provider' : ['cliente','restaurante'].includes(value) ? 'client' : ['admin','administrador'].includes(value) ? 'admin' : 'staff';
+    },
+    formatError(data) {
+        const value = data.error || data.detail || data.message || data;
+        return typeof value === 'string' ? value : JSON.stringify(value);
+    },
     async readResponse(response) {
         const text = await response.text();
         if (!text.trim()) return {};
@@ -21,15 +89,18 @@ const api = {
 
         const isPublic = endpoint === '/auth/login/' || endpoint === '/auth/register/' || endpoint === '/auth/refresh/';
         if (!isPublic && !token) {
+            recordApiError(endpoint, 'CLIENT_AUTH');
             throw new Error('No hay token de autenticación. Inicia sesión.');
         }
 
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const config = { ...options, headers };
+        let status = null;
 
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+            status = response.status;
 
             if (response.status === 401 && !isPublic && endpoint !== '/auth/refresh/') {
                 const refreshed = await this.refreshToken();
@@ -37,9 +108,10 @@ const api = {
                     const newToken = localStorage.getItem('access_token');
                     config.headers['Authorization'] = `Bearer ${newToken}`;
                     const retry = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    status = retry.status;
                     const retryData = await this.readResponse(retry);
                     if (retry.ok) return { success: true, data: retryData };
-                    throw new Error(retryData.error || retryData.detail || 'Error en reintento');
+                    throw new Error(this.formatError(retryData));
                 } else {
                     this.logout();
                     throw new Error('Sesión expirada');
@@ -48,13 +120,15 @@ const api = {
 
             const data = await this.readResponse(response);
             if (!response.ok) {
-                const errorMsg = data.error || data.detail || data.message || 'Error en la petición';
+                const errorMsg = data.error || data.detail || data.message || Object.entries(data).map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : String(messages)}`).join('; ') || 'Error en la petición';
                 throw new Error(errorMsg);
             }
+            if (options.method && !['GET','HEAD'].includes(options.method.toUpperCase())) this.invalidateMarketplaceCache();
             return { success: true, data };
         } catch (error) {
+            recordApiError(endpoint, status);
             console.error(`API Error [${endpoint}]:`, error);
-            return { success: false, error: error.message };
+            return { success: false, error: typeof error.message === 'string' ? error.message : JSON.stringify(error.message) };
         }
     },
 
@@ -82,12 +156,14 @@ const api = {
             ...options.headers
         };
         const config = { ...options, headers };
+        let status = null;
 
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+            status = response.status;
             const data = await this.readResponse(response);
             if (!response.ok) {
-                const errorMsg = data.error || data.detail || data.message || 'Error en la petición';
+                const errorMsg = data.error || data.detail || data.message || Object.entries(data).map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : String(messages)}`).join('; ') || 'Error en la petición';
                 throw new Error(errorMsg);
             }
             if (useCache) {
@@ -95,16 +171,17 @@ const api = {
             }
             return { success: true, data, fromCache: false };
         } catch (error) {
+            recordApiError(endpoint, status);
             console.error(`Public API Error [${endpoint}]:`, error);
             const cached = localStorage.getItem(cacheKeyFinal);
-            if (cached) {
+            if (useCache && cached) {
                 try {
                     const { data } = JSON.parse(cached);
                     console.warn(`⚠️ Usando caché expirada para ${endpoint}`);
                     return { success: true, data, fromCache: true, expired: true };
                 } catch (e) { }
             }
-            return { success: false, error: error.message };
+            return { success: false, error: typeof error.message === 'string' ? error.message : JSON.stringify(error.message) };
         }
     },
 
@@ -114,6 +191,7 @@ const api = {
     async refreshToken() {
         const refresh = localStorage.getItem('refresh_token');
         if (!refresh) return false;
+        let status = null;
         try {
             const res = await fetch(`${API_BASE_URL}/auth/refresh/`, {
                 method: 'POST',
@@ -123,8 +201,10 @@ const api = {
                 },
                 body: JSON.stringify({ refresh })
             });
+            status = res.status;
             if (res.status === 404) {
                 console.error('❌ Endpoint de refresh no encontrado.');
+                recordApiError('/auth/refresh/', status);
                 return false;
             }
             const data = await res.json();
@@ -132,8 +212,10 @@ const api = {
                 localStorage.setItem('access_token', data.access);
                 return true;
             }
+            recordApiError('/auth/refresh/', status);
             return false;
         } catch (error) {
+            recordApiError('/auth/refresh/', status);
             console.error('❌ Error en refresh:', error);
             return false;
         }
@@ -144,7 +226,7 @@ const api = {
     // =========================================================
     async refreshFullData() {
         try {
-            const result = await this.request('/auth/dump-all/', { method: 'POST', body: JSON.stringify({}) });
+            const result = await this.request('/auth/my-data/', { method: 'GET' });
             if (result.success) {
                 const data = result.data;
                 console.log("🔄 Refrescando todos los datos desde dump-all");
@@ -161,16 +243,11 @@ const api = {
                 localStorage.setItem('userName', usuario.nombreusuario || 'Usuario');
                 localStorage.setItem('userEmail', usuario.correoelectronico || '');
 
-                const rolNombre = usuario.rol_nombre || '';
-                let role = 'client';
-                if (rolNombre.toLowerCase() === 'proveedor') {
-                    role = 'provider';
-                } else if (rolNombre.toLowerCase() === 'restaurante') {
-                    role = 'client';
-                }
+                const role = this.resolveRole(usuario.rol_nombre || '');
                 localStorage.setItem('userRole', role);
 
                 localStorage.setItem('catalogos', JSON.stringify(data.catalogos || {}));
+                localStorage.setItem('marketplaceCurrency', String(data.moneda_catalogo_id || 1));
                 localStorage.setItem('sucursales', JSON.stringify(data.sucursales || []));
                 localStorage.setItem('productos', JSON.stringify(data.productos || []));
                 localStorage.setItem('inventario', JSON.stringify(data.inventario || []));
@@ -221,16 +298,11 @@ const api = {
             localStorage.setItem('userName', usuario.nombreusuario || 'Usuario');
             localStorage.setItem('userEmail', usuario.correoelectronico || '');
 
-            const rolNombre = usuario.rol_nombre || '';
-            let role = 'client';
-            if (rolNombre.toLowerCase() === 'proveedor') {
-                role = 'provider';
-            } else if (rolNombre.toLowerCase() === 'restaurante') {
-                role = 'client';
-            }
-            localStorage.setItem('userRole', role);
+            const role = this.resolveRole(usuario.rol_nombre || '');
+                localStorage.setItem('userRole', role);
 
             localStorage.setItem('catalogos', JSON.stringify(data.catalogos || {}));
+                localStorage.setItem('marketplaceCurrency', String(data.moneda_catalogo_id || 1));
             localStorage.setItem('sucursales', JSON.stringify(data.sucursales || []));
             localStorage.setItem('productos', JSON.stringify(data.productos || []));
             localStorage.setItem('inventario', JSON.stringify(data.inventario || []));
@@ -251,7 +323,9 @@ const api = {
             body: JSON.stringify(userData)
         });
         if (regResult.success) {
-            return await this.login(userData.correo, userData.contrasena);
+            const login = await this.login(userData.correo, userData.contrasena);
+            if (!login.success) return { success: false, error: 'Tu cuenta fue creada. Inicia sesión para continuar; no necesitas registrarte nuevamente.' };
+            return login;
         }
         return regResult;
     },
@@ -260,10 +334,12 @@ const api = {
     // MÉTODOS PRIVADOS
     // =========================================================
     async changePassword(oldPassword, newPassword) {
-        return await this.request('/auth/change-password/', {
-            method: 'POST',
-            body: JSON.stringify({ old_password: oldPassword, new_password: newPassword })
-        });
+        const result = await this.request('/auth/change-password/', {method: 'POST', body: JSON.stringify({old_password: oldPassword, new_password: newPassword})});
+        if (result.success && result.data.tokens) {
+            localStorage.setItem('access_token', result.data.tokens.access);
+            localStorage.setItem('refresh_token', result.data.tokens.refresh);
+        }
+        return result;
     },
 
     async updateProfile(userData) {
@@ -280,7 +356,7 @@ const api = {
     // EMPRESAS
     async updateCompany(companyId, companyData) {
         const result = await this.request(`/empresas/${companyId}/`, {
-            method: 'PUT',
+            method: 'PATCH',
             body: JSON.stringify(companyData)
         });
         if (result.success) {
@@ -327,6 +403,9 @@ const api = {
     },
 
     // PRODUCTOS
+    getProducts() { return this.request('/productos/'); },
+    getInventory() { return this.request('/inventario/'); },
+    quoteOrder(data) { return this.request('/pedidos/cotizar/', { method: 'POST', body: JSON.stringify(data) }); },
     async createProduct(productData) {
         const result = await this.request('/productos/', {
             method: 'POST',
@@ -340,7 +419,7 @@ const api = {
 
     async updateProduct(productId, productData) {
         const result = await this.request(`/productos/${productId}/`, {
-            method: 'PUT',
+            method: 'PATCH',
             body: JSON.stringify(productData)
         });
         if (result.success) {
@@ -456,7 +535,19 @@ const api = {
         const query = params.toString();
         if (query) endpoint += `?${query}`;
         const cacheKey = `marketplace_${query || 'all'}`;
-        return await this.publicRequest(endpoint, { method: 'GET' }, !forceRefresh, cacheKey);
+        this._marketplaceRequests ||= new Map();
+        if (this._marketplaceRequests.has(query)) return this._marketplaceRequests.get(query);
+        const pending = (async () => {
+            const result = await this.publicRequest(endpoint, { method: 'GET', cache: forceRefresh ? 'no-store' : 'default' }, !forceRefresh, cacheKey);
+            if (result.success && !Array.isArray(result.data)) return { success: false, error: 'El catálogo recibido no es válido.' };
+            if (result.success && !result.fromCache) {
+                try { localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: result.data })); } catch { /* La carga no depende de la caché. */ }
+            }
+            return result;
+        })();
+        this._marketplaceRequests.set(query, pending);
+        try { return await pending; }
+        finally { this._marketplaceRequests.delete(query); }
     },
 
     // =========================================================
@@ -469,71 +560,45 @@ const api = {
      * @param {string} end - fecha fin (YYYY-MM-DD)
      * @returns {Promise<Object>} { success, data }
      */
+    async analyticsData(start = null, end = null) {
+        const role = localStorage.getItem('userRole') === 'provider' ? 'proveedor' : 'cliente';
+        const params = new URLSearchParams();
+        if (start) params.set('start', start);
+        if (end) params.set('end', end);
+        return this.request(`/nosql/${role}/analitica/?${params}`);
+    },
     async getSalesByDate(granularity = 'month', start = null, end = null) {
-        const params = new URLSearchParams();
-        params.append('granularity', granularity);
-        if (start) params.append('start', start);
-        if (end) params.append('end', end);
-        const endpoint = `/dw_tradconnect/sales-by-date/?${params.toString()}`;
-        return await this.request(endpoint, { method: 'GET' });
+        const result = await this.analyticsData(start, end);
+        return result.success ? {...result, data: result.data.ventas} : result;
     },
-
-    /**
-     * Obtiene el top N de productos más vendidos
-     * @param {number} limit - cantidad de productos
-     * @param {string} start - fecha inicio
-     * @param {string} end - fecha fin
-     * @returns {Promise<Object>}
-     */
-    async getTopProducts(limit = 10, start = null, end = null) {
-        const params = new URLSearchParams();
-        params.append('limit', limit);
-        if (start) params.append('start', start);
-        if (end) params.append('end', end);
-        const endpoint = `/dw_tradconnect/top-products/?${params.toString()}`;
-        return await this.request(endpoint, { method: 'GET' });
+    async getTopProducts(limit = 5, start = null, end = null) {
+        const result = await this.analyticsData(start, end);
+        return result.success ? {...result, data: result.data.productos.slice(0, limit)} : result;
     },
-
-    /**
-     * Obtiene ventas agrupadas por categoría de producto
-     * @param {string} start - fecha inicio
-     * @param {string} end - fecha fin
-     * @returns {Promise<Object>}
-     */
     async getSalesByCategory(start = null, end = null) {
-        const params = new URLSearchParams();
-        if (start) params.append('start', start);
-        if (end) params.append('end', end);
-        const endpoint = `/dw_tradconnect/sales-by-category/?${params.toString()}`;
-        return await this.request(endpoint, { method: 'GET' });
+        const result = await this.analyticsData(start, end);
+        return result.success ? {...result, data: result.data.categorias} : result;
     },
-
-    /**
-     * Obtiene ventas agrupadas por empresa (cliente)
-     * @param {string} start - fecha inicio
-     * @param {string} end - fecha fin
-     * @returns {Promise<Object>}
-     */
     async getSalesByCompany(start = null, end = null) {
-        const params = new URLSearchParams();
-        if (start) params.append('start', start);
-        if (end) params.append('end', end);
-        const endpoint = `/dw_tradconnect/sales-by-company/?${params.toString()}`;
-        return await this.request(endpoint, { method: 'GET' });
+        const result = await this.analyticsData(start, end);
+        return result.success ? {...result, data: result.data.clientes} : result;
     },
-
-    /**
-     * Obtiene la distribución de pedidos por estado
-     * @returns {Promise<Object>}
-     */
     async getOrderStatusDistribution() {
-        const endpoint = '/dw_tradconnect/order-status-distribution/';
-        return await this.request(endpoint, { method: 'GET' });
+        const result = await this.analyticsData();
+        return result.success ? {...result, data: result.data.estados} : result;
     },
 
-    // =========================================================
-    // LOGOUT
-    // =========================================================
+    getDocumentSchemas() {
+        return this.request('/nosql/esquemas/');
+    },
+    listDocuments(collection, offset = 0) {
+        return this.request(`/nosql/${encodeURIComponent(collection)}/?limit=50&offset=${offset}`);
+    },
+    createDocument(collection, data) {
+        return this.request(`/nosql/${encodeURIComponent(collection)}/`, {
+            method: 'POST', body: JSON.stringify(data)
+        });
+    },
     logout() {
         localStorage.clear();
         if (window.router && typeof window.router.redirectToLogin === 'function') {
@@ -546,4 +611,5 @@ const api = {
 
 // Exponer globalmente
 window.api = api;
+window.addEventListener?.('DOMContentLoaded', () => { api.loadConfiguration(); }, { once: true });
 console.log('✅ API Module con refresco automático usando dump-all');

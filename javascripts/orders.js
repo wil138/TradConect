@@ -10,6 +10,12 @@ window.orders = {
     init: function () {
         console.log("📋 Orders: Inicializando");
         this.userRole = localStorage.getItem('userRole') === 'provider' ? 'provider' : 'client';
+        this.currentFilter = 'all';
+        this.currentSearch = '';
+        const description = document.getElementById('ordersRoleDescription');
+        if (description) description.textContent = this.userRole === 'provider'
+            ? 'Gestiona los pedidos recibidos y prepara los documentos para tus clientes.'
+            : 'Consulta tus compras y descarga los documentos de tus proveedores.';
         this.loadOrders();
         this.setupEvents();
         this.renderOrders();
@@ -45,6 +51,12 @@ window.orders = {
 
     _renderInto: function (tbody) {
         const filtered = this.filterOrders();
+        const summary = document.getElementById('ordersExportSummary');
+        if (summary) summary.textContent = `${filtered.length} pedido${filtered.length === 1 ? '' : 's'} en la selección · Se respetan el estado y la búsqueda.`;
+        for (const id of ['ordersExportCSV', 'ordersExportPrint']) {
+            const button = document.getElementById(id);
+            if (button) button.disabled = filtered.length === 0;
+        }
 
         if (filtered.length === 0) {
             tbody.innerHTML = `
@@ -64,7 +76,7 @@ window.orders = {
             const fecha = order.fechapedido
                 ? new Date(order.fechapedido).toLocaleDateString('es-NI', { day: '2-digit', month: 'short', year: 'numeric' })
                 : 'N/A';
-            const monto = '$' + parseFloat(order.totalneto || 0).toFixed(2);
+            const monto = appUtils.money(order.totalneto, order.monedaid);
             const contraparte = this.userRole === 'client'
                 ? (order.proveedor_nombre || 'Proveedor')
                 : (order.restaurante_nombre || 'Cliente');
@@ -113,6 +125,13 @@ window.orders = {
         }
 
         this.updateStats();
+    },
+
+    exportReport: function(format, orderId = null) {
+        const rows = orderId == null ? this.filterOrders() : this.orders.filter(order => String(order.id) === String(orderId));
+        if (!rows.length) { appUtils.showToast('No hay pedidos para exportar.', 'warning'); return; }
+        const report = reportExport.orderReport(rows, this.userRole, `${this.currentFilter}; búsqueda: ${this.currentSearch || 'ninguna'}`, orderId != null);
+        reportExport.deliver(report, format, orderId == null ? 'pedidos' : `pedido-${orderId}`);
     },
 
     // =========================================================
@@ -244,14 +263,14 @@ window.orders = {
                 const precio = parseFloat(d.preciounitario || d.precio_unitario || 0);
                 const cant = parseFloat(d.cantidad || 0);
                 const desc = parseFloat(d.descuentoaplicado || 0);
-                const subtotal = precio * cant * (1 - desc / 100);
+                const subtotal = Number(d.subtotal ?? d.subtotallinea ?? precio * cant * (1 - desc / 100));
                 return `
                     <tr>
                         <td>${d.producto_nombre || 'Producto'}</td>
                         <td>${cant}</td>
-                        <td>$${precio.toFixed(2)}</td>
+                        <td>${appUtils.currencySymbol(order.monedaid)}${precio.toFixed(2)}</td>
                         <td>${desc > 0 ? desc + '%' : '—'}</td>
-                        <td>$${subtotal.toFixed(2)}</td>
+                        <td>${appUtils.currencySymbol(order.monedaid)}${subtotal.toFixed(2)}</td>
                     </tr>`;
             }).join('')
             : '<tr><td colspan="5" style="text-align:center;color:#888">Sin productos registrados</td></tr>';
@@ -297,16 +316,40 @@ window.orders = {
                         </div>
 
                         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;margin-top:1rem;font-size:.95rem">
-                            <div>Subtotal: <strong>$${subtotal.toFixed(2)}</strong></div>
-                            <div>Impuesto (15%): <strong>$${impuesto.toFixed(2)}</strong></div>
+                            <div>Subtotal: <strong>${appUtils.currencySymbol(order.monedaid)}${subtotal.toFixed(2)}</strong></div>
+                            <div>Impuesto (15%): <strong>${appUtils.currencySymbol(order.monedaid)}${impuesto.toFixed(2)}</strong></div>
                             <div style="font-size:1.1rem;color:var(--primary,#3b82f6)">
-                                Total: <strong>$${total.toFixed(2)}</strong>
+                                Total: <strong>${appUtils.currencySymbol(order.monedaid)}${total.toFixed(2)}</strong>
                             </div>
                         </div>
 
                     </div>
                 </div>
             </div>`);
+        const toolbar = document.createElement('div');
+        toolbar.className = 'report-panel order-document-panel';
+        const copy = document.createElement('div');
+        copy.className = 'report-panel-copy';
+        const description = document.createElement('p');
+        description.textContent = 'Documento del pedido: productos, descuentos, impuestos y total.';
+        copy.append(description);
+        const actions = document.createElement('div');
+        actions.className = 'report-actions';
+        actions.setAttribute('role', 'group');
+        actions.setAttribute('aria-label', 'Exportar este pedido');
+        toolbar.append(copy, actions);
+        for (const [format, label] of [['csv', 'Descargar CSV'], ['print', 'Imprimir / Guardar PDF']]) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'report-button' + (format === 'print' ? ' report-button-primary' : '');
+            const icon = document.createElement('i');
+            icon.className = format === 'csv' ? 'fas fa-file-csv' : 'fas fa-print';
+            icon.setAttribute('aria-hidden', 'true');
+            button.append(icon, document.createTextNode(label));
+            button.onclick = () => this.exportReport(format, orderId);
+            actions.append(button);
+        }
+        document.querySelector('#orderDetailModal .modal-body').append(toolbar);
     },
 
     // =========================================================
@@ -316,16 +359,16 @@ window.orders = {
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
 
         const counts = { Pendiente: 0, Confirmado: 0, Enviado: 0, Entregado: 0, Cancelado: 0 };
-        let totalMonto = 0;
+        const totals = new Map();
 
         this.orders.forEach(o => {
             const estado = o.estado_actual || 'Pendiente';
             if (counts[estado] !== undefined) counts[estado]++;
-            totalMonto += parseFloat(o.totalneto || 0);
+            totals.set(o.monedaid, (totals.get(o.monedaid) || 0) + Number(o.totalneto || 0));
         });
 
         set('totalOrders',     this.orders.length);
-        set('totalValue',      '$' + totalMonto.toFixed(2));
+        set('totalValue', [...totals.entries()].map(([currency, total]) => appUtils.money(total, currency)).join(' / ') || appUtils.money(0));
         set('pendingOrders',   counts.Pendiente);
         set('sentOrders',      counts.Enviado);
         set('deliveredOrders', counts.Entregado);

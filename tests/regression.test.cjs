@@ -10,6 +10,25 @@ function context() {
     ctx.appUtils = ctx.window.appUtils;
     return ctx;
 }
+
+test('dashboard derives pending orders, customers and sales from company orders in selected currency', () => {
+    const ctx = context();
+    ctx.localStorage.setItem('marketplaceCurrency', '1');
+    ctx.localStorage.setItem('pedidos_proveedor', JSON.stringify([
+        {id:1, monedaid:1, restauranteid:'a', estado_actual:'Pendiente', totalneto:'100', fechapedido:'2026-10-10T12:00:00Z'},
+        {id:2, monedaid:1, restauranteid:'a', estado_actual:'Entregado', totalneto:'50', fechapedido:'2026-10-11T12:00:00Z'},
+        {id:3, monedaid:1, restauranteid:'b', estado_actual:'Cancelado', totalneto:'80', fechapedido:'2026-10-12T12:00:00Z'},
+        {id:4, monedaid:2, restauranteid:'c', estado_actual:'Pendiente', totalneto:'900', fechapedido:'2026-10-13T12:00:00Z'}
+    ]));
+    vm.runInContext(readFileSync('javascripts/dashboard.js', 'utf8'), ctx);
+    const dashboard = ctx.window.dashboard;
+    dashboard.loadFromStorage();
+    assert.equal(dashboard.data.total_ventas, 150);
+    assert.equal(dashboard.data.total_pedidos, 3);
+    assert.equal(dashboard.data.pendientes, 1);
+    assert.equal(dashboard.data.clientes, 1);
+    assert.equal(dashboard.salesData.data.reduce((a,b) => a+b, 0), 150);
+});
 test('stored data recovers from invalid JSON and wrong collection types', () => {
     const ctx = context();
     ctx.localStorage.setItem('items', '{broken');
@@ -25,6 +44,26 @@ test('API accepts empty successful responses and reports non-JSON responses', as
     assert.equal(JSON.stringify(await ctx.window.api.readResponse({ text: async () => '', status: 204 })), '{}');
     await assert.rejects(ctx.window.api.readResponse({ text: async () => '<html>', status: 502 }), /HTTP 502/);
 });
+
+test('API counts failures by endpoint and status without retaining error messages', async () => {
+    const ctx = context();
+    ctx.localStorage.setItem('access_token', 'test-token');
+    ctx.fetch = async () => ({ ok: false, status: 400, text: async () => JSON.stringify({ detail: 'Invalid payload with private data' }) });
+    vm.runInContext(readFileSync('javascripts/utils/api.js', 'utf8'), ctx);
+
+    const result = await ctx.window.api.request('/productos/?search=private-data');
+    assert.equal(result.success, false);
+    const stats = ctx.window.api.getErrorStats();
+    assert.equal(stats.total, 1);
+    assert.equal(stats.byEndpoint['/productos/'], 1);
+    assert.equal(stats.byStatus.HTTP_400, 1);
+    assert.equal(stats.lastErrorAt.length > 0, true);
+    assert.equal(JSON.stringify(stats).includes('private-data'), false);
+
+    ctx.window.api.resetErrorStats();
+    assert.equal(ctx.window.api.getErrorStats().total, 0);
+});
+
 test('all router fragments exist with exact filename casing and contain no startup scripts', () => {
     const ctx = context();
     vm.runInContext(readFileSync('javascripts/utils/router.js', 'utf8'), ctx);
@@ -34,4 +73,102 @@ test('all router fragments exist with exact filename casing and contain no start
         assert.ok(readdirSync('fragments').includes(path.split('/')[1]), path);
         assert.doesNotMatch(readFileSync(path, 'utf8'), /<script\b/i);
     }
+});
+
+test('refresh uses JWT snapshot endpoint and preserves existing tokens', async () => {
+    const ctx = context();
+    ctx.localStorage.setItem('access_token', 'existing-access');
+    ctx.localStorage.setItem('refresh_token', 'existing-refresh');
+    ctx.fetch = async (url, options) => {
+        assert.equal(url, 'http://localhost:8001/api/auth/my-data/');
+        assert.equal(options.method, 'GET');
+        assert.equal(options.headers.Authorization, 'Bearer existing-access');
+        return { ok: true, status: 200, text: async () => JSON.stringify({usuario: {nombreusuario: 'Ana'}, productos: [{id: 1}]}) };
+    };
+    vm.runInContext(readFileSync('javascripts/utils/api.js', 'utf8'), ctx);
+    assert.equal(await ctx.window.api.refreshFullData(), true);
+    assert.equal(ctx.localStorage.getItem('access_token'), 'existing-access');
+    assert.equal(ctx.localStorage.getItem('refresh_token'), 'existing-refresh');
+    assert.equal(JSON.parse(ctx.localStorage.getItem('productos'))[0].id, 1);
+});
+
+test('API maps administrative roles independently from clients', () => {
+    const ctx = context();
+    vm.runInContext(readFileSync('javascripts/utils/api.js', 'utf8'), ctx);
+    assert.equal(ctx.window.api.resolveRole('Admin'), 'admin');
+    assert.equal(ctx.window.api.resolveRole('Gerencia'), 'staff');
+    assert.equal(ctx.window.api.resolveRole('Cliente'), 'client');
+    assert.equal(ctx.window.api.resolveRole('Proveedor'), 'provider');
+    assert.equal(typeof ctx.window.api.getProducts, 'function');
+    assert.equal(typeof ctx.window.api.getInventory, 'function');
+});
+
+test('checkout preserves string company IDs and fractional quantities without accepting client prices', () => {
+    const ctx = context();
+    ctx.document = {readyState:'loading', addEventListener() {}};
+    vm.runInContext(readFileSync('javascripts/utils/cart.js', 'utf8'), ctx);
+    const cart = ctx.window.CartModule;
+    cart.selectedBranch = {id: 2}; cart.selectedPaymentMethod = {id: 3};
+    const payload = cart.orderPayload({proveedorId: 'emp_001', items: [{id: 7, quantity: 1.25, price: 0.01, sucursalOrigenId: 4}]});
+    assert.equal(payload.proveedor_id, 'emp_001');
+    assert.equal(payload.items[0].cantidad, 1.25);
+    assert.equal(payload.sucursal_origen_id, 4);
+    assert.equal('precio_unitario' in payload.items[0], false);
+});
+
+test('money uses selected currency rather than an unconditional dollar sign', () => {
+    const ctx = context();
+    ctx.localStorage.setItem('catalogos', JSON.stringify({monedas:[{id:1,simbolo:'C$'},{id:2,simbolo:'$'}]}));
+    assert.equal(ctx.appUtils.money(12.5,1), 'C$12.50');
+    assert.equal(ctx.appUtils.money(12.5,2), '$12.50');
+});
+
+test('clearing cart requires confirmation and does not depend on checkout variables', () => {
+    const ctx = context();
+    ctx.document = {readyState:'loading', addEventListener() {}};
+    ctx.confirm = () => false;
+    vm.runInContext(readFileSync('javascripts/utils/cart.js', 'utf8'), ctx);
+    const cart = ctx.window.CartModule;
+    cart.cart = [{id:7}]; cart.saveCart = () => {}; cart.showToast = () => {};
+    cart.clearCart(); assert.equal(cart.cart.length, 1);
+    ctx.confirm = () => true;
+    cart.clearCart(); assert.equal(cart.cart.length, 0);
+});
+
+test('partial checkout retains products whose order failed', async () => {
+    const ctx = context();
+    ctx.document = {readyState:'loading', addEventListener() {}};
+    ctx.api = {quoteOrder:async()=>({success:true,data:{}}),refreshMyData:async()=>true};
+    vm.runInContext(readFileSync('javascripts/utils/cart.js', 'utf8'), ctx);
+    const cart = ctx.window.CartModule;
+    cart.selectedBranch={id:1}; cart.selectedPaymentMethod={id:1};
+    cart.cart=[{id:1,proveedorId:'a',sucursalOrigenId:1},{id:2,proveedorId:'b',sucursalOrigenId:2}];
+    cart.showToast=()=>{}; cart.saveCart=()=>{}; cart.closeCart=()=>{};
+    cart.showCheckoutConfirmationModal=async()=>true;
+    cart._createOrderForProveedor=async group=>({success:group.proveedorId==='a',orderId:10});
+    await cart.proceedCheckout();
+    assert.equal(cart.cart.length,1); assert.equal(cart.cart[0].id,2);
+});
+
+test('frontend accepts central configuration from its API server and uses its base path', async () => {
+    const ctx = context(); ctx.URL = URL; ctx.setTimeout = setTimeout; ctx.clearTimeout = clearTimeout;
+    const calls = [];
+    ctx.fetch = async url => {
+        calls.push(url);
+        const data = url.endsWith('/configuracion/') ? {api_base_url:'http://localhost:8001/proxy/api/'} : [];
+        return {ok:true,status:200,text:async()=>JSON.stringify(data)};
+    };
+    vm.runInContext(readFileSync('javascripts/utils/api.js','utf8'),ctx);
+    assert.equal((await ctx.window.api.loadConfiguration()).success,true);
+    await ctx.window.api.publicRequest('/categorias/',{},false);
+    assert.equal(calls[0],'http://localhost:8001/api/configuracion/');
+    assert.equal(calls[1],'http://localhost:8001/proxy/api/categorias/');
+    assert.equal(ctx.window.TRADCONNECT_CONFIG.apiBaseUrl,'http://localhost:8001/proxy/api');
+});
+
+test('frontend rejects a configuration pointing to another server', async () => {
+    const ctx = context(); ctx.URL = URL; ctx.setTimeout = setTimeout; ctx.clearTimeout = clearTimeout;
+    ctx.fetch = async () => ({ok:true,status:200,text:async()=>JSON.stringify({api_base_url:'https://untrusted.example/api'})});
+    vm.runInContext(readFileSync('javascripts/utils/api.js','utf8'),ctx);
+    assert.equal((await ctx.window.api.loadConfiguration()).success,false);
 });

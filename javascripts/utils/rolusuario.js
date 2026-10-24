@@ -17,12 +17,17 @@ function closeAll() {
 }
 
 const menus = {
+    admin: [{label: 'Mi Perfil', module: 'profile', icon: 'fa-user'}],
+    staff: [{label: 'Mi Perfil', module: 'profile', icon: 'fa-user'}],
     client: [
+        { label: "Atenci\u00f3n y preferencias", module: "feedback", icon: "fa-comment" },
         { label: "Marketplace", module: "marketplace", icon: "fa-shop" },
         { label: "Mis Pedidos", module: "orders", icon: "fa-box" },
+        { label: "An\u00e1lisis de compras", module: "analytics", icon: "fa-chart-pie" },
         { label: "Mi Perfil", module: "profile", icon: "fa-user" }
     ],
     provider: [
+        { label: "Reclamos y opiniones", module: "feedback", icon: "fa-comments" },
         { label: "Dashboard", module: "dashboard", icon: "fa-chart-line" },
         { label: "Mi Inventario", module: "inventory", icon: "fa-warehouse" },
         { label: "Pedidos Recibidos", module: "orders", icon: "fa-clipboard-list" },
@@ -44,7 +49,11 @@ function renderMenu() {
     if (!menuContainer) return;
     const role = getCurrentRole();
     console.log("🎨 Renderizando menú para rol:", role);
-    const items = menus[role];
+    const items = [...(menus[role] || [])];
+    const user = appUtils.readJSON('user', {});
+    if (['admin', 'administrador'].includes((user.rol_nombre || '').toLowerCase())) {
+        items.push({ label: 'Datos MongoDB', module: 'documents', icon: 'fa-database' });
+    }
     if (!items) {
         console.error("No hay menú para rol:", role);
         return;
@@ -90,13 +99,10 @@ function updateRoleFromStorage() {
     updateConditionalElements();
     const currentMod = localStorage.getItem('currentModule');
     const role = getCurrentRole();
-    const allowed = (role === 'client')
-        ? ['marketplace','orders','profile']
-        : ['dashboard','inventory','orders','profile','analytics'];
-    if (currentMod && !allowed.includes(currentMod)) {
-        const defaultMod = role === 'client' ? 'marketplace' : 'dashboard';
-        if (window.router?.loadModule) window.router.loadModule(defaultMod);
-    }
+    const allowed = (menus[role] || []).map(item => item.module);
+    if (role === 'admin') allowed.push('documents');
+    if (currentMod && !allowed.includes(currentMod)) window.router?.loadModule(allowed[0] || 'profile');
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {

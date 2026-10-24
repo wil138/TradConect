@@ -280,14 +280,30 @@ window.marketplace = {
     `,
 
     init: async function() {
-        console.log('🛒 Marketplace: Inicializando');
         this.destroy();
         this._events = new AbortController();
+        const signal = this._events.signal;
         this._injectStyles();
-        await this.loadProducts();
+        const cached = appUtils.readJSON('marketplace_all', null);
+        if (Array.isArray(cached?.data)) this.acceptProducts(cached.data);
+        else {
+            this.products = appUtils.readJSON('marketplace_products', []);
+            this.categories = ['Todos', ...new Set(this.products.map(product => product.category))];
+        }
         this.renderCategories();
         this.renderProducts();
         this.setupEvents();
+        const update = async () => {
+            if (signal.aborted || document.hidden) return;
+            await this.loadProducts({}, true, true);
+            if (signal.aborted) return;
+            this.renderCategories();
+            this.renderProducts();
+        };
+        this._refreshTimer = setInterval(update, 60000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); }, { signal });
+        window.addEventListener('focus', update, { signal });
+        await update();
     },
 
     _injectStyles: function() {
@@ -298,18 +314,8 @@ window.marketplace = {
 
     escapeHtml: appUtils.escapeHtml,
 
-    loadProducts: async function(filters = {}, forceRefresh = false) {
-        if (this._loading) return;
-        this._loading = true;
-        try {
-            const result = await api.getMarketplaceProducts(filters, forceRefresh);
-            console.log("📦 Respuesta del marketplace:", result);
-
-            if (result.success) {
-                const data = result.data;
-                console.log("📋 Primer producto:", data[0]);
-
-                this.products = data.map(p => ({
+    acceptProducts: function(data) {
+        this.products = data.map(p => ({
                     id: p.id,
                     name: p.nombreproducto || 'Sin nombre',
                     description: p.descripcion || 'Sin descripción',
@@ -322,46 +328,37 @@ window.marketplace = {
                     proveedorNombre: p.empresa_nombre || 'Proveedor',
                     sucursalOrigenId: p.sucursal_origen_id || null,
                     origin: "Nicaragua",
-                    img: p.imagenurl || "https://placehold.co/300x200?text=Producto",
-                    stock_disponible: p.inventario?.reduce((sum, inv) => sum + inv.stock, 0) || 0,
+                    img: p.imagenurl && !p.imagenurl.includes('example.invalid') ? p.imagenurl : 'assets/product-placeholder.svg',
+                    stock_disponible: p.inventario?.find(inv => inv.sucursal_id === p.sucursal_origen_id)?.stock || 0,
                     unidad: p.unidad_nombre || 'Unidad',
-                    cantidad_minima: 1,
+                    cantidad_minima: p.cantidadminimapedido || 1,
                     es_perecedero: p.esperecedero || false,
                     dias_vida_util: p.diasvidautil || null,
                     inventario: p.inventario || []
                 }));
 
                 this.categories = ["Todos", ...new Set(this.products.map(p => p.category))];
-                console.log(`✅ Productos cargados: ${this.products.length} (${result.fromCache ? 'desde caché' : 'del servidor'})`);
-            } else {
-                this.showToast(result.error || 'Error al cargar productos', true);
-                // Fallback a datos locales
-                const localProducts = appUtils.readJSON('marketplace_products', null);
-                if (localProducts) {
-                    this.products = localProducts;
-                    this.categories = ["Todos", ...new Set(this.products.map(p => p.category))];
-                    this.showToast('Usando datos locales (fuera de línea)', true);
-                } else {
-                    this.products = [];
-                    this.categories = ["Todos"];
+    },
+
+    loadProducts: async function(filters = {}, forceRefresh = false, silent = false) {
+        if (this._loadPromise) return this._loadPromise;
+        this._loadPromise = (async () => {
+            try {
+                const result = await api.getMarketplaceProducts(filters, forceRefresh);
+                if (!result.success) {
+                    if (!silent) this.showToast(result.error || 'No se pudo actualizar el catálogo', true);
+                    return false;
                 }
+                this.acceptProducts(result.data);
+                try { localStorage.setItem('marketplace_products', JSON.stringify(this.products)); } catch { /* Caché opcional. */ }
+                return true;
+            } catch {
+                if (!silent) this.showToast('No se pudo actualizar el catálogo', true);
+                return false;
             }
-        } catch (error) {
-            console.error('❌ Error cargando marketplace:', error);
-            this.showToast('Error de conexión con el servidor', true);
-            const localProducts = appUtils.readJSON('marketplace_products', null);
-            if (localProducts) {
-                this.products = localProducts;
-                this.categories = ["Todos", ...new Set(this.products.map(p => p.category))];
-                this.showToast('Usando datos locales (fuera de línea)', true);
-            } else {
-                this.products = [];
-                this.categories = ["Todos"];
-            }
-        } finally {
-            this._loading = false;
-            localStorage.setItem('marketplace_products', JSON.stringify(this.products));
-        }
+        })();
+        try { return await this._loadPromise; }
+        finally { this._loadPromise = null; }
     },
 
     getCategoryIcon: function(cat) {
@@ -427,14 +424,14 @@ window.marketplace = {
                 <div class="discount-badge">-${p.discount}%</div>
             ` : '';
             const priceHtml = p.isOffer ? `
-                <span class="original-price">$${p.originalPrice.toFixed(2)}</span>
-                <span class="offer-price">$${p.price.toFixed(2)}</span>
-            ` : `<span>$${p.price.toFixed(2)}</span>`;
+                <span class="original-price">${appUtils.currencySymbol()}${p.originalPrice.toFixed(2)}</span>
+                <span class="offer-price">${appUtils.currencySymbol()}${p.price.toFixed(2)}</span>
+            ` : `<span>${appUtils.currencySymbol()}${p.price.toFixed(2)}</span>`;
 
             return `
                 <div class="product-card" data-id="${p.id}">
                     <div class="product-image">
-                        <img src="${p.img}" alt="${nameEscaped}" loading="lazy">
+                        <img src="${this.escapeHtml(p.img)}" alt="${nameEscaped}" loading="lazy" onerror="this.onerror=null;this.src='assets/product-placeholder.svg'">
                         ${offerHtml}
                     </div>
                     <div class="product-info">
@@ -446,19 +443,19 @@ window.marketplace = {
                         <div style="margin-top:10px;">
                             <div class="quantity-selector" style="display:flex; justify-content:space-between; align-items:center;">
                                 <button class="qty-btn" data-id="${p.id}" data-delta="-1">-</button>
-                                <span id="qty-${p.id}">1</span>
+                                <input id="qty-${p.id}" type="number" step="0.01" min="${p.cantidad_minima}" value="${p.cantidad_minima}" aria-label="Cantidad" class="product-quantity">
                                 <button class="qty-btn" data-id="${p.id}" data-delta="1">+</button>
                             </div>
                             <button class="btn-add"
                                 data-id="${p.id}"
                                 data-price="${p.price}"
                                 data-name="${nameEscaped}"
-                                data-img="${p.img}"
+                                data-img="${this.escapeHtml(p.img)}"
                                 data-proveedor="${vendorEscaped}"
                                 data-proveedor-id="${p.proveedorId}"
                                 data-sucursal-origen="${p.sucursalOrigenId || ''}"
                                 data-original="${p.originalPrice || ''}"
-                                data-inventario='${JSON.stringify(p.inventario)}'>
+                                data-inventario='${this.escapeHtml(JSON.stringify(p.inventario))}'>
                                 <i class="fas fa-cart-plus"></i> Añadir al carrito
                             </button>
                             <button class="btn-detail-modal" data-id="${p.id}" style="width:100%; margin-top:6px; background:#f1f5f9; border:none; border-radius:8px; padding:6px; cursor:pointer; font-size:0.8rem; color:#475569; transition:0.2s;">
@@ -477,9 +474,9 @@ window.marketplace = {
                 const id = btn.dataset.id;
                 const delta = parseInt(btn.dataset.delta);
                 const span = document.getElementById(`qty-${id}`);
-                let qty = parseInt(span.innerText);
-                qty = Math.max(1, qty + delta);
-                span.innerText = qty;
+                let qty = Number(span.value);
+                qty = Math.max(Number(span.min) || 1, qty + delta);
+                span.value = qty;
             });
         });
 
@@ -488,7 +485,7 @@ window.marketplace = {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const id = btn.dataset.id;
-                const quantity = parseInt(document.getElementById(`qty-${id}`)?.innerText || 1);
+                const quantity = Number(document.getElementById(`qty-${id}`)?.value || 1);
 
                 const product = {
                     id: parseInt(id),
@@ -496,7 +493,7 @@ window.marketplace = {
                     price: parseFloat(btn.dataset.price),
                     originalPrice: btn.dataset.original ? parseFloat(btn.dataset.original) : null,
                     proveedorNombre: btn.dataset.proveedor,
-                    proveedorId: parseInt(btn.dataset.proveedorId),
+                    proveedorId: String(btn.dataset.proveedorId),
                     sucursalOrigenId: btn.dataset.sucursalOrigen ? parseInt(btn.dataset.sucursalOrigen) : null,
                     img: btn.dataset.img,
                     inventario: JSON.parse(btn.dataset.inventario || '[]')
@@ -537,7 +534,7 @@ window.marketplace = {
                     <button class="detail-modal-close" onclick="document.getElementById('productDetailModal').remove()">&times;</button>
 
                     <div class="detail-modal-header">
-                        <img src="${product.img}" alt="${nameEscaped}" onerror="this.src='https://placehold.co/300x200?text=Producto'">
+                        <img src="${this.escapeHtml(product.img)}" alt="${nameEscaped}" onerror="this.onerror=null;this.src='assets/product-placeholder.svg'">
                         <div>
                             <h2>${nameEscaped}</h2>
                             <div class="vendor"><i class="fas fa-building"></i> ${vendorEscaped}</div>
@@ -550,7 +547,7 @@ window.marketplace = {
                     <div class="detail-modal-body">
                         <div class="info-item price">
                             <label>Precio</label>
-                            <span>${product.isOffer ? `<span style="text-decoration:line-through;font-size:0.9rem;color:#94a3b8;">$${product.originalPrice.toFixed(2)}</span> <span style="color:#ef4444;">$${product.price.toFixed(2)}</span>` : `$${product.price.toFixed(2)}`}</span>
+                            <span>${product.isOffer ? `<span style="text-decoration:line-through;font-size:0.9rem;color:#94a3b8;">${appUtils.currencySymbol()}${product.originalPrice.toFixed(2)}</span> <span style="color:#ef4444;">${appUtils.currencySymbol()}${product.price.toFixed(2)}</span>` : `${appUtils.currencySymbol()}${product.price.toFixed(2)}`}</span>
                         </div>
                         <div class="info-item">
                             <label>Unidad</label>
@@ -645,14 +642,17 @@ window.marketplace = {
     },
 
     refresh: async function() {
-        await this.loadProducts({}, true);
+        const signal = this._events?.signal;
+        const success = await this.loadProducts({}, true);
+        if (signal?.aborted) return;
         this.renderCategories();
         this.renderProducts();
-        this.showToast('Marketplace actualizado');
+        if (success) this.showToast('Marketplace actualizado');
     },
 
     destroy: function() {
         this._events?.abort();
+        clearInterval(this._refreshTimer);
         clearTimeout(this._toastTimeout);
         document.getElementById('productDetailModal')?.remove();
     }

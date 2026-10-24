@@ -3,3 +3,21 @@ prueba.html
 prueba.css
 Shared.js
 RULES.md
+trad
+# Configuraci?n local y entorno Python
+**/.venv/
+**/__pycache__/
+**/.env
+**/configurar-entorno.ps1
+
+# Exportaciones locales de datos reales
+TradConnect_Api/datos_limpios*.jsonl
+
+TradConnect_Api/exportaciones*/
+
+TradConnect_Api/respaldos/
+
+.django-secret-key
+**/.django-secret-key
+
+**/conexiones.local.json

@@ -9,7 +9,7 @@ window.inventory = {
 
     init: function() {
         console.log("📦 Inventory: Inicializando");
-        this.loadDataFromAPI();
+        return this.loadDataFromAPI();
     },
 
     // ========== CARGA DE DATOS DESDE API ==========
@@ -30,6 +30,7 @@ window.inventory = {
             } else {
                 console.warn("⚠️ Error al cargar productos, usando localStorage:", prodResult.error);
                 productos = appUtils.readJSON('productos', []);
+                this.showNotification('No se pudieron actualizar los productos. Se muestra la copia guardada.', 'warning');
             }
 
             if (invResult.success) {
@@ -38,6 +39,7 @@ window.inventory = {
             } else {
                 console.warn("⚠️ Error al cargar inventario, usando localStorage:", invResult.error);
                 inventario = appUtils.readJSON('inventario', []);
+                this.showNotification('No se pudo actualizar el stock. Se muestra la copia guardada.', 'warning');
             }
 
             this.productos = productos;
@@ -69,7 +71,8 @@ window.inventory = {
     // ========== CONSTRUCCIÓN DE INVENTARIO COMBINADO ==========
     buildInventory: function() {
         this.inventory = this.productos.map((p, index) => {
-            const inv = this.inventario.find(i => i.productoid === p.id);
+            const records = this.inventario.filter(i => i.productoid === p.id);
+            const inv = records[0];
             let categoria = p.categoria_nombre || p.categoria || 'General';
             return {
                 id: p.id || index,
@@ -78,8 +81,8 @@ window.inventory = {
                 name: p.nombreproducto || p.nombre || 'Sin nombre',
                 category: categoria,
                 unidad: p.unidad_nombre || p.unidad || 'Unidad',
-                stock: inv ? parseFloat(inv.stockdisponible) : 0,
-                price: p.precioventa ? `$${parseFloat(p.precioventa).toFixed(2)}` : '$0.00',
+                stock: records.reduce((sum, i) => sum + Number(i.stockdisponible || 0), 0),
+                price: p.precioventa ? `${appUtils.currencySymbol()}${parseFloat(p.precioventa).toFixed(2)}` : appUtils.money(0),
                 productId: p.id
             };
         });
@@ -97,7 +100,7 @@ window.inventory = {
         const catalogos = appUtils.readJSON('catalogos', {});
         if (catalogos.categorias && Array.isArray(catalogos.categorias)) {
             catalogos.categorias.forEach(c => {
-                const nombre = c.nombre || c.NombreCategoria || c.Nombre;
+                const nombre = c.nombrecategoria || c.nombre || c.NombreCategoria || c.Nombre;
                 if (nombre) categoriesSet.add(nombre);
             });
         }
@@ -249,215 +252,46 @@ window.inventory = {
     },
 
     // ========== MODAL DE EDICIÓN ==========
-    openProductModal: function(product, inventoryId) {
+    openProductModal: function(product) { this.openEditor(this.productos.find(p => p.id === product.id)); },
+    openCreateProductModal: function() { this.openEditor(null); },
+    openEditor: function(product) {
         this.closeProductModal();
-        const currentCategory = product.category || 'General';
-        const allCategories = [...new Set([...this.categories, currentCategory])].sort((a,b) => a.localeCompare(b));
-        const catOptions = allCategories.map(cat => 
-            `<option value="${this.escapeHtml(cat)}" ${cat === currentCategory ? 'selected' : ''}>${this.escapeHtml(cat)}</option>`
-        ).join('');
-
-        const modalHTML = `
-            <div class="modal-overlay active" id="productModal" onclick="if(event.target===this)window.inventory.closeProductModal()">
-                <div class="modal card-shadow" onclick="event.stopPropagation()">
-                    <div class="modal-header">
-                        <h2><i class="fas fa-pen"></i> Editar Producto</h2>
-                        <button class="modal-close" onclick="window.inventory.closeProductModal()">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="productForm">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Nombre</label>
-                                    <input type="text" id="name" value="${this.escapeHtml(product.name)}" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Categoría</label>
-                                    <select id="category" required>${catOptions}</select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Unidad</label>
-                                    <input type="text" id="unidad" value="${this.escapeHtml(product.unidad)}">
-                                </div>
-                                <div class="form-group">
-                                    <label>Stock</label>
-                                    <input type="number" id="stock" value="${product.stock}" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>Precio</label>
-                                    <input type="number" id="price" value="${parseFloat(product.price.replace('$',''))}" step="0.01" min="0">
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button type="button" class="btn-cancel" onclick="window.inventory.closeProductModal()">Cancelar</button>
-                                <button type="submit" class="btn-save">💾 Guardar cambios</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        const modal = document.getElementById('productModal');
-        if (modal) modal.dataset.inventoryId = inventoryId || '';
-        const form = document.getElementById('productForm');
-        if (form) {
-            form.removeEventListener('submit', this._saveHandler);
-            this._saveHandler = (e) => this.saveProduct(e, product);
-            form.addEventListener('submit', this._saveHandler);
-        }
+        const catalogs = appUtils.readJSON('catalogos', {});
+        const branches = appUtils.readJSON('sucursales', []).filter(b => b.estado === 'Activo');
+        if (!branches.length) { this.showNotification('Crea una sucursal activa en Mi Perfil antes de registrar stock.', 'warning'); return; }
+        const escape = value => this.escapeHtml(String(value ?? ''));
+        const options = (items, name, selected) => items.map(item => `<option value="${escape(item.id)}" ${String(item.id) === String(selected) ? 'selected' : ''}>${escape(item[name])}</option>`).join('');
+        const html = `<div class="modal-overlay active" id="productModal"><div class="modal card-shadow"><div class="modal-header"><h2>${product ? 'Editar producto' : 'Nuevo producto'}</h2><button type="button" id="closeProductEditor">?</button></div><form id="productEditor" class="modal-body"><div class="form-grid">
+            <label>Nombre<input name="nombreproducto" value="${escape(product?.nombreproducto)}" required maxlength="150"></label>
+            <label>Categor?a<select name="categoriaid" required>${options(catalogs.categorias || [], 'nombrecategoria', product?.categoriaid)}</select></label>
+            <label>Unidad<select name="unidadmedidaid" required>${options(catalogs.unidades_medida || [], 'nombreunidad', product?.unidadmedidaid)}</select></label>
+            <label>Precio<input name="precioventa" type="number" step="0.01" min="0.01" value="${escape(product?.precioventa || '')}" required></label>
+            <label>Cantidad m?nima<input name="cantidadminimapedido" type="number" min="1" step="1" value="${product?.cantidadminimapedido || 1}" required></label>
+            <label>Sucursal<select name="sucursal_id" id="productBranch">${options(branches, 'nombresucursal')}</select></label>
+            <label>Stock en esta sucursal<input name="stock" id="productStock" type="number" step="0.01" min="0" value="0" required></label>
+            </div><p id="productEditorStatus" role="status"></p><button type="submit" class="btn-primary">Guardar</button></form></div></div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        const form = document.getElementById('productEditor');
+        const branch = document.getElementById('productBranch');
+        const updateStock = () => { document.getElementById('productStock').value = this.inventario.find(i => i.productoid === product?.id && i.sucursalid === Number(branch.value))?.stockdisponible || 0; };
+        branch.onchange = updateStock; updateStock();
+        document.getElementById('closeProductEditor').onclick = () => this.closeProductModal();
+        form.onsubmit = async event => {
+            event.preventDefault(); const button = form.querySelector('button[type="submit"]'); button.disabled = true;
+            const data = Object.fromEntries(new FormData(form));
+            data.categoriaid = Number(data.categoriaid); data.unidadmedidaid = Number(data.unidadmedidaid); data.sucursal_id = Number(data.sucursal_id);
+            data[product ? 'stock_disponible' : 'stock_inicial'] = data.stock; delete data.stock;
+            try {
+                const result = product ? await api.updateProduct(product.id, data) : await api.createProduct(data);
+                if (!result.success) { document.getElementById('productEditorStatus').textContent = result.error; return; }
+                this.closeProductModal(); await this.loadDataFromAPI(); this.showNotification('Producto y stock guardados.', 'success');
+            } finally { button.disabled = false; }
+        };
     },
-
-    // ========== GUARDAR PRODUCTO EDITADO ==========
-    saveProduct: async function(e, product) {
-        e.preventDefault();
-        try {
-            const newName = document.getElementById('name').value;
-            const newCategory = document.getElementById('category').value;
-            const newUnidad = document.getElementById('unidad').value;
-            const newStock = parseInt(document.getElementById('stock').value) || 0;
-            const newPrice = parseFloat(document.getElementById('price').value) || 0;
-            const modal = document.getElementById('productModal');
-            const inventoryId = modal ? modal.dataset.inventoryId : null;
-
-            const productData = {
-                nombreproducto: newName,
-                categoria_nombre: newCategory,
-                unidad_nombre: newUnidad,
-                precioventa: newPrice
-            };
-
-            const productResult = await api.updateProduct(product.id, productData);
-            if (!productResult.success) {
-                this.showNotification(`❌ Error al actualizar producto: ${productResult.error}`, 'error');
-                return;
-            }
-
-            if (inventoryId) {
-                await api.updateInventory(inventoryId, { stockdisponible: newStock });
-            } else if (newStock > 0) {
-                await api.createInventory({ productoid: product.id, stockdisponible: newStock });
-            }
-
-            this.showNotification('✅ Producto actualizado', 'success');
-            await this.loadDataFromAPI();
-            this.closeProductModal();
-        } catch (error) {
-            console.error(error);
-            this.showNotification('Error al guardar', 'error');
-        }
-    },
-
-    // ========== ELIMINAR PRODUCTO ==========
     deleteProduct: async function(product) {
-        if (!confirm(`¿Eliminar "${product.name}"?`)) return;
-        try {
-            const result = await api.deleteProduct(product.id);
-            if (result.success) {
-                this.showNotification('Producto eliminado', 'success');
-                await this.loadDataFromAPI();
-            } else {
-                this.showNotification('Error al eliminar', 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            this.showNotification('Error de conexión', 'error');
-        }
-    },
-
-    // ========== CREAR NUEVO PRODUCTO ==========
-    openCreateProductModal: function() {
-        const sortedCategories = [...this.categories].sort((a,b) => a.localeCompare(b));
-        const catOptions = sortedCategories.map(cat => 
-            `<option value="${this.escapeHtml(cat)}">${this.escapeHtml(cat)}</option>`
-        ).join('');
-
-        const modalHTML = `
-            <div class="modal-overlay active" id="createProductModal" onclick="if(event.target===this)window.inventory.closeProductModal()">
-                <div class="modal card-shadow" onclick="event.stopPropagation()">
-                    <div class="modal-header">
-                        <h2><i class="fas fa-plus-circle"></i> Nuevo Producto</h2>
-                        <button class="modal-close" onclick="window.inventory.closeProductModal()">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="createProductForm">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Nombre *</label>
-                                    <input type="text" id="newName" placeholder="Ej: Arroz integral" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Categoría *</label>
-                                    <select id="newCategory" required>
-                                        <option value="">Selecciona</option>
-                                        ${catOptions}
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Unidad</label>
-                                    <input type="text" id="newUnidad" placeholder="kg, L, unidad" value="Unidad">
-                                </div>
-                                <div class="form-group">
-                                    <label>Stock inicial</label>
-                                    <input type="number" id="newStock" value="0" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>Precio *</label>
-                                    <input type="number" id="newPrice" placeholder="0.00" step="0.01" min="0" required>
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button type="button" class="btn-cancel" onclick="window.inventory.closeProductModal()">Cancelar</button>
-                                <button type="submit" class="btn-save">✨ Crear producto</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        const form = document.getElementById('createProductForm');
-        if (form) {
-            form.removeEventListener('submit', this._createHandler);
-            this._createHandler = (e) => this.createNewProduct(e);
-            form.addEventListener('submit', this._createHandler);
-        }
-    },
-
-    createNewProduct: async function(e) {
-        e.preventDefault();
-        try {
-            const nombre = document.getElementById('newName').value;
-            const categoria = document.getElementById('newCategory').value;
-            const unidad = document.getElementById('newUnidad').value || 'Unidad';
-            const stock = parseInt(document.getElementById('newStock').value) || 0;
-            const precio = parseFloat(document.getElementById('newPrice').value);
-
-            if (!nombre || !categoria || !precio) {
-                this.showNotification('Completa todos los campos obligatorios', 'warning');
-                return;
-            }
-
-            const productData = {
-                nombreproducto: nombre,
-                categoria_nombre: categoria,
-                unidad_nombre: unidad,
-                precioventa: precio
-            };
-
-            const result = await api.createProduct(productData);
-            if (result.success) {
-                if (stock > 0) {
-                    await api.createInventory({ productoid: result.data.id, stockdisponible: stock });
-                }
-                this.showNotification('Producto creado', 'success');
-                await this.loadDataFromAPI();
-                this.closeProductModal();
-            } else {
-                this.showNotification('Error al crear', 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            this.showNotification('Error de conexión', 'error');
-        }
+        if (!confirm(`?Eliminar "${product.name}"?`)) return;
+        const result = await api.deleteProduct(product.id);
+        if (result.success) await this.loadDataFromAPI(); else this.showNotification(result.error, 'error');
     },
 
     // ========== CERRAR MODAL ==========

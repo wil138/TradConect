@@ -3,6 +3,14 @@
     'use strict';
 
     // Instancias de gráficos para poder destruirlas al recargar
+    let generation = 0;
+    let exportSnapshot = null;
+    function enableExports(enabled) {
+        for (const id of ['analyticsExportCSV', 'analyticsExportPrint']) {
+            const button = document.getElementById(id);
+            if (button) button.disabled = !enabled;
+        }
+    }
     let salesChartInstance = null;
     let statusChartInstance = null;
 
@@ -19,10 +27,10 @@
     // Actualizar KPIs a partir de datos de ventas por fecha
     function updateKPIs(salesData) {
         if (!salesData || salesData.length === 0) {
-            document.getElementById('kpiTotalSales').textContent = '$0.00';
+            document.getElementById('kpiTotalSales').textContent = '0.00';
             document.getElementById('kpiTotalOrders').textContent = '0';
             document.getElementById('kpiTotalItems').textContent = '0';
-            document.getElementById('kpiAvgTicket').textContent = '$0.00';
+            document.getElementById('kpiAvgTicket').textContent = '0.00';
             return;
         }
 
@@ -34,10 +42,10 @@
         });
         const avgTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
 
-        document.getElementById('kpiTotalSales').textContent = `$${totalSales.toFixed(2)}`;
+        document.getElementById('kpiTotalSales').textContent = `${totalSales.toFixed(2)}`;
         document.getElementById('kpiTotalOrders').textContent = totalOrders;
-        document.getElementById('kpiTotalItems').textContent = totalItems.toFixed(0);
-        document.getElementById('kpiAvgTicket').textContent = `$${avgTicket.toFixed(2)}`;
+        document.getElementById('kpiTotalItems').textContent = totalItems.toFixed(2);
+        document.getElementById('kpiAvgTicket').textContent = `${avgTicket.toFixed(2)}`;
     }
 
     // Gráfico de ventas por mes (barras)
@@ -64,7 +72,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Ventas ($)',
+                    label: 'Ventas (moneda seleccionada)',
                     data: values,
                     backgroundColor: 'rgba(30, 74, 118, 0.6)',
                     borderColor: '#1e4a76',
@@ -121,13 +129,13 @@
         let html = '<ul class="list-group">';
         data.forEach((item, index) => {
             const name = appUtils.escapeHtml(item.producto__nombre_producto || 'Producto');
-            const qty = parseFloat(item.total_vendido || 0).toFixed(0);
+            const qty = parseFloat(item.total_vendido || 0).toFixed(2);
             const revenue = parseFloat(item.total_ingreso || 0).toFixed(2);
             html += `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <span><strong>#${index+1}</strong> ${name}</span>
                     <span class="badge bg-primary">${qty} uds</span>
-                    <span class="badge bg-success">$${revenue}</span>
+                    <span class="badge bg-success">${revenue}</span>
                 </li>
             `;
         });
@@ -143,12 +151,12 @@
             container.innerHTML = '<p>No hay datos.</p>';
             return;
         }
-        let html = '<table class="table table-sm"><thead><tr><th>Categoría</th><th>Ventas ($)</th><th>Cantidad</th></tr></thead><tbody>';
+        let html = '<table class="table table-sm"><thead><tr><th>Categoría</th><th>Ventas (moneda seleccionada)</th><th>Cantidad</th></tr></thead><tbody>';
         data.forEach(row => {
-            const cat = row.producto__categoria || 'Sin categoría';
+            const cat = appUtils.escapeHtml(row.producto__categoria) || 'Sin categoría';
             const revenue = parseFloat(row.total_ingreso || 0).toFixed(2);
-            const qty = parseFloat(row.total_cantidad || 0).toFixed(0);
-            html += `<tr><td>${cat}</td><td>$${revenue}</td><td>${qty}</td></tr>`;
+            const qty = parseFloat(row.total_cantidad || 0).toFixed(2);
+            html += `<tr><td>${cat}</td><td>${revenue}</td><td>${qty}</td></tr>`;
         });
         html += '</tbody></table>';
         container.innerHTML = html;
@@ -168,7 +176,7 @@
             const ruc = appUtils.escapeHtml(row.empresa__ruc || '');
             const total = parseFloat(row.total_comprado || 0).toFixed(2);
             const orders = parseInt(row.total_pedidos || 0);
-            html += `<tr><td>${name}</td><td>${ruc}</td><td>$${total}</td><td>${orders}</td></tr>`;
+            html += `<tr><td>${name}</td><td>${ruc}</td><td>${total}</td><td>${orders}</td></tr>`;
         });
         html += '</tbody></table>';
         container.innerHTML = html;
@@ -194,63 +202,43 @@
             return;
         }
 
-        // Mostrar indicadores de carga
-        document.querySelectorAll('.loading').forEach(el => el.textContent = 'Cargando...');
-
-        try {
-            // 1. Ventas por mes (granularidad: month)
-            const salesResult = await window.api.getSalesByDate('month', start, end);
-            if (salesResult.success) {
-                const salesData = salesResult.data;
-                updateKPIs(salesData);
-                renderSalesChart(salesData);
-            } else {
-                console.warn('Error en sales-by-date:', salesResult.error);
-            }
-
-            // 2. Distribución de estados
-            const statusResult = await window.api.getOrderStatusDistribution();
-            if (statusResult.success) {
-                renderStatusChart(statusResult.data);
-            } else {
-                console.warn('Error en order-status:', statusResult.error);
-            }
-
-            // 3. Top 5 productos
-            const topResult = await window.api.getTopProducts(5, start, end);
-            if (topResult.success) {
-                renderTopProducts(topResult.data);
-            } else {
-                console.warn('Error en top-products:', topResult.error);
-            }
-
-            // 4. Ventas por categoría
-            const catResult = await window.api.getSalesByCategory(start, end);
-            if (catResult.success) {
-                renderCategories(catResult.data);
-            } else {
-                console.warn('Error en sales-by-category:', catResult.error);
-            }
-
-            // 5. Ventas por empresa
-            const compResult = await window.api.getSalesByCompany(start, end);
-            if (compResult.success) {
-                renderCompanies(compResult.data);
-            } else {
-                console.warn('Error en sales-by-company:', compResult.error);
-            }
-
-        } catch (error) {
-            console.error('Error cargando analytics:', error);
-            document.querySelectorAll('.data-box .loading').forEach(el => {
-                el.textContent = '❌ Error al cargar datos';
-            });
+        exportSnapshot = null;
+        enableExports(false);
+        document.getElementById('analyticsExportSummary').textContent = 'Preparando el reporte del período seleccionado...';
+        const requestId = ++generation;
+        const status = document.getElementById('analyticsStatus');
+        status.textContent = 'Cargando datos reales...';
+        const params = new URLSearchParams();
+        if (start) params.set('start', start);
+        if (end) params.set('end', end);
+        const currency = document.getElementById('analyticsCurrency').value;
+        if (currency) params.set('moneda', currency);
+        const role = localStorage.getItem('userRole') === 'provider' ? 'provider' : 'client';
+        const result = await api.request(`/nosql/${role === 'provider' ? 'proveedor' : 'cliente'}/analitica/?` + params);
+        if (requestId !== generation) return;
+        if (!result.success) {
+            document.getElementById('analyticsExportSummary').textContent = 'No se pudo preparar el reporte. Vuelve a actualizar los datos.';
+            updateKPIs([]); renderSalesChart([]); renderStatusChart([]);
+            renderTopProducts([]); renderCategories([]); renderCompanies([]);
+            document.getElementById('analyticsFeedback').textContent = 'Sin datos disponibles.';
+            status.textContent = result.error; return;
         }
+        const data = result.data;
+        const select = document.getElementById('analyticsCurrency');
+        select.replaceChildren();
+        for (const item of data.monedas) select.add(new Option(item.nombremoneda, item.id));
+        select.value = data.moneda;
+        updateKPIs(data.ventas); renderSalesChart(data.ventas); renderStatusChart(data.estados);
+        renderTopProducts(data.productos); renderCategories(data.categorias); renderCompanies(data.clientes);
+        const feedback = data.feedback;
+        document.getElementById('analyticsFeedback').textContent = feedback.disponible
+            ? `Promedio: ${feedback.puntuacion == null ? 'Sin evaluaciones' : Number(feedback.puntuacion).toFixed(2) + '/5'} | Evaluaciones: ${feedback.evaluaciones} | Reclamos: ${feedback.reclamos} | Pendientes: ${feedback.pendientes} | Resueltos: ${feedback.resueltos}`
+            : 'Reclamos y evaluaciones no disponibles: revisa la conexión MongoDB.';
+        exportSnapshot = { data, start, end, role, currency: select.selectedOptions[0]?.textContent || String(data.moneda) };
+        enableExports(true);
+        document.getElementById('analyticsExportSummary').textContent = `${start || 'Sin límite'} — ${end || 'Sin límite'} · ${exportSnapshot.currency} · Último reporte actualizado`;
+        status.textContent = 'Datos actualizados. Importes en la moneda seleccionada.';
     }
-
-    // ============================================
-    // EXPOSICIÓN DEL MÓDULO
-    // ============================================
 
     window.analytics = {
         init: function() {
@@ -276,10 +264,18 @@
             }
 
             // Cargar datos por primera vez
-            loadAnalytics();
+            return loadAnalytics();
+        },
+
+        exportReport: function(format) {
+            if (!exportSnapshot) { appUtils.showToast('Actualiza los datos antes de exportar.', 'warning'); return; }
+            reportExport.deliver(reportExport.analyticsReport(exportSnapshot), format, 'analitica');
         },
 
         destroy: function() {
+            exportSnapshot = null;
+            enableExports(false);
+            ++generation;
             console.log('🧹 Destruyendo módulo analytics');
             if (salesChartInstance) {
                 salesChartInstance.destroy();

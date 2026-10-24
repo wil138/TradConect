@@ -126,18 +126,18 @@ window.CartModule = {
             container.innerHTML = this.cart.map(item => `
                 <div class="cart-item" style="padding:12px; border-bottom:1px solid #f1f5f9;">
                     <div style="display: flex; gap: 12px;">
-                        <img src="${item.img || 'https://placehold.co/60x60?text=Producto'}" 
+                        <img src="${this.escapeHtml(item.img || 'assets/product-placeholder.svg')}"
                              alt="${this.escapeHtml(item.name)}" 
                              style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; background:#f1f5f9;"
-                             onerror="this.src='https://placehold.co/60x60?text=Producto'">
+                             onerror="this.onerror=null;this.src='assets/product-placeholder.svg'">
                         <div style="flex: 1;">
                             <div style="font-weight: 600; font-size:0.95rem;">${this.escapeHtml(item.name)}</div>
                             <div style="font-size: 0.7rem; color: #64748b;">${this.escapeHtml(item.proveedorNombre || 'Proveedor')}</div>
                             <div style="margin: 5px 0;">
                                 ${item.originalPrice ? `
-                                    <span style="text-decoration: line-through; font-size: 0.75rem; color:#94a3b8;">$${item.originalPrice.toFixed(2)}</span>
-                                    <span style="color: #ef4444; font-weight:700;"> $${item.price.toFixed(2)}</span>
-                                ` : `<span style="font-weight:700;">$${item.price.toFixed(2)}</span>`}
+                                    <span style="text-decoration: line-through; font-size: 0.75rem; color:#94a3b8;">${appUtils.currencySymbol()}${item.originalPrice.toFixed(2)}</span>
+                                    <span style="color: #ef4444; font-weight:700;"> ${appUtils.currencySymbol()}${item.price.toFixed(2)}</span>
+                                ` : `<span style="font-weight:700;">${appUtils.currencySymbol()}${item.price.toFixed(2)}</span>`}
                             </div>
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display:flex; align-items:center; gap:4px;">
@@ -151,7 +151,7 @@ window.CartModule = {
                                         +
                                     </button>
                                 </div>
-                                <div><strong>$${(item.price * item.quantity).toFixed(2)}</strong></div>
+                                <div><strong>${appUtils.currencySymbol()}${(item.price * item.quantity).toFixed(2)}</strong></div>
                                 <button class="cart-remove-btn" data-id="${item.id}" 
                                         style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:4px 8px;">
                                     <i class="fas fa-trash-alt"></i>
@@ -194,18 +194,19 @@ window.CartModule = {
             if (totalRow) cartFooter.insertBefore(summaryDiv, totalRow);
             else cartFooter.prepend(summaryDiv);
         }
-        const total = subtotal - ahorro;
+        const impuesto = Math.round(subtotal * 15) / 100;
+        const total = subtotal + impuesto;
         summaryDiv.innerHTML = `
-            <div style="display: flex; justify-content: space-between; font-size:0.9rem;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
-            ${ahorro > 0 ? `<div style="display: flex; justify-content: space-between; font-size:0.9rem; color: #10b981;"><span>Descuentos:</span><span>-$${ahorro.toFixed(2)}</span></div>` : ''}
+            <div style="display: flex; justify-content: space-between; font-size:0.9rem;"><span>Subtotal estimado (descuentos aplicados):</span><span>${appUtils.currencySymbol()}${subtotal.toFixed(2)}</span></div>
+            ${ahorro > 0 ? `<div style="display: flex; justify-content: space-between; font-size:0.9rem; color: #10b981;"><span>Ahorro incluido:</span><span>-${appUtils.currencySymbol()}${ahorro.toFixed(2)}</span></div>` : ''}
             <div style="border-top: 1px dashed #cbd5e1; margin: 8px 0;"></div>
             <div style="display: flex; justify-content: space-between; font-weight: 800; font-size:1.1rem;">
-                <span>Total:</span>
-                <span style="color:#2563eb;">$${total.toFixed(2)}</span>
+                <span>Total estimado con IVA 15 %:</span>
+                <span style="color:#2563eb;">${appUtils.currencySymbol()}${total.toFixed(2)}</span>
             </div>
         `;
         const cartTotalSpan = document.getElementById('cartTotal');
-        if (cartTotalSpan) cartTotalSpan.innerText = `$${total.toFixed(2)}`;
+        if (cartTotalSpan) cartTotalSpan.innerText = `${appUtils.currencySymbol()}${total.toFixed(2)}`;
 
         let branchDiv = document.getElementById('selectedBranchInfo');
         if (!branchDiv) {
@@ -324,17 +325,18 @@ window.CartModule = {
             proveedorId: product.proveedorId || product.proveedor_id || product.empresaid || null,
             proveedorNombre: product.proveedorNombre || product.empresa_razonsocial || product.proveedor || 'Proveedor',
             sucursalOrigenId: product.sucursalOrigenId || product.sucursal_origen_id || null,
-            img: product.img || product.imagenurl || product.imagen || 'https://placehold.co/60x60?text=Producto',
-            quantity: parseInt(quantity) || 1,
+            img: product.img || product.imagenurl || product.imagen || 'assets/product-placeholder.svg',
+            quantity: Number(quantity) || 1,
             inventario: product.inventario || []
         };
 
+        if (!Number.isFinite(normalizedProduct.quantity) || normalizedProduct.quantity <= 0) { this.showToast('Cantidad invalida', 'error'); return; }
         // Si no tiene sucursal origen, intentar obtener del inventario del producto
         if (!normalizedProduct.sucursalOrigenId && normalizedProduct.inventario && normalizedProduct.inventario.length > 0) {
             normalizedProduct.sucursalOrigenId = normalizedProduct.inventario[0].sucursal_id;
         }
 
-        const existing = this.cart.find(i => i.id === normalizedProduct.id);
+        const existing = this.cart.find(i => i.id === normalizedProduct.id && i.sucursalOrigenId === normalizedProduct.sucursalOrigenId);
         if (existing) {
             existing.quantity = (existing.quantity || 1) + normalizedProduct.quantity;
         } else {
@@ -463,10 +465,10 @@ window.CartModule = {
 
         const groups = {};
         for (const item of this.cart) {
-            const key = item.proveedorId || 'unknown';
+            const key = `${item.proveedorId}:${item.sucursalOrigenId}`;
             if (!groups[key]) {
                 groups[key] = {
-                    proveedorId: key,
+                    proveedorId: item.proveedorId,
                     proveedorNombre: item.proveedorNombre || 'Proveedor',
                     items: []
                 };
@@ -476,6 +478,11 @@ window.CartModule = {
         const proveedorGroups = Object.values(groups);
         console.log("📦 Grupos por proveedor:", proveedorGroups);
 
+        for (const group of proveedorGroups) {
+            const quoted = await api.quoteOrder(this.orderPayload(group));
+            if (!quoted.success) { this.showToast(quoted.error, 'error'); return false; }
+            group.quote = quoted.data;
+        }
         if (!await this.showCheckoutConfirmationModal(proveedorGroups)) {
             return false;
         }
@@ -489,7 +496,7 @@ window.CartModule = {
                 console.log(`📝 Creando pedido para proveedor: ${group.proveedorNombre}`);
                 const result = await this._createOrderForProveedor(group);
                 if (result.success) {
-                    ordersCreated.push({ id: result.orderId, proveedor: group.proveedorNombre });
+                    ordersCreated.push({ id: result.orderId, proveedor: group.proveedorNombre, groupKey: `${group.proveedorId}:${group.items[0].sucursalOrigenId}` });
                     this.showToast(`✅ Pedido #${result.orderId} - ${group.proveedorNombre}`, 'success');
                 } else {
                     allSuccess = false;
@@ -504,7 +511,8 @@ window.CartModule = {
         }
 
         if (ordersCreated.length > 0) {
-            this.cart = [];
+            const successful = new Set(ordersCreated.map(order => order.groupKey));
+            this.cart = this.cart.filter(item => !successful.has(`${item.proveedorId}:${item.sucursalOrigenId}`));
             this.saveCart();
             this.closeCart();
             await api.refreshMyData();
@@ -531,47 +539,46 @@ window.CartModule = {
             const existing = document.getElementById('checkoutConfirmationModal');
             if (existing) existing.remove();
 
-            const subtotal = this.cart.reduce((s, i) => s + ((i.price || 0) * (i.quantity || 1)), 0);
-            const ahorro = this.cart.reduce((s, i) => {
-                if (i.originalPrice) return s + ((i.originalPrice - i.price) * (i.quantity || 1));
-                return s;
-            }, 0);
-            const total = subtotal - ahorro;
+            const net = proveedorGroups.reduce((sum, group) => sum + Number(group.quote.subtotal), 0);
+            const ahorro = proveedorGroups.reduce((sum, group) => sum + Number(group.quote.ahorro), 0);
+            const subtotal = net + ahorro;
+            const impuesto = proveedorGroups.reduce((sum, group) => sum + Number(group.quote.impuesto), 0);
+            const total = proveedorGroups.reduce((sum, group) => sum + Number(group.quote.totalneto), 0);
 
             const modalHTML = `
                 <div id="checkoutConfirmationModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:9999; display:flex; justify-content:center; align-items:center;">
                     <div style="background:white; border-radius:16px; max-width:600px; width:90%; max-height:85vh; overflow-y:auto; padding:30px; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                             <h3 style="margin:0;"><i class="fas fa-check-circle" style="color:#10b981;"></i> Confirmar Pedido</h3>
-                            <button onclick="document.getElementById('checkoutConfirmationModal').remove()" 
+                            <button id="btnCloseCheckout"
                                     style="background:none; border:none; font-size:28px; cursor:pointer; color:#94a3b8;">&times;</button>
                         </div>
                         
                         <div style="background:#f8fafc; padding:16px; border-radius:10px; margin-bottom:16px;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                                 <span><strong>Subtotal:</strong></span>
-                                <span>$${subtotal.toFixed(2)}</span>
+                                <span>${appUtils.currencySymbol()}${subtotal.toFixed(2)}</span>
                             </div>
                             ${ahorro > 0 ? `
                                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; color:#10b981;">
                                     <span><strong>Descuentos:</strong></span>
-                                    <span>-$${ahorro.toFixed(2)}</span>
+                                    <span>-${appUtils.currencySymbol()}${ahorro.toFixed(2)}</span>
                                 </div>
                             ` : ''}
                             <div style="border-top:1px solid #e2e8f0; padding-top:10px; display:flex; justify-content:space-between;">
-                                <span style="font-weight:800; font-size:1.1em;">Total:</span>
-                                <span style="font-weight:800; font-size:1.1em; color:#2563eb;">$${total.toFixed(2)}</span>
+                                <span style="font-weight:800; font-size:1.1em;">Total con IVA 15 %:</span>
+                                <span style="font-weight:800; font-size:1.1em; color:#2563eb;">${appUtils.currencySymbol()}${total.toFixed(2)}</span>
                             </div>
                         </div>
 
                         <div style="margin-bottom:16px;">
                             <h4 style="margin-top:0; margin-bottom:10px; font-size:0.95rem;">📦 Resumen de Pedidos:</h4>
                             ${proveedorGroups.map(group => {
-                                const groupTotal = group.items.reduce((s, i) => s + ((i.price || 0) * (i.quantity || 1)), 0);
+                                const groupTotal = Number(group.quote.totalneto);
                                 return `
                                     <div style="padding:10px 14px; background:#f1f5f9; border-left:4px solid #2563eb; margin-bottom:8px; border-radius:4px;">
                                         <div><strong>${this.escapeHtml(group.proveedorNombre)}</strong></div>
-                                        <div style="font-size:0.85rem; color:#64748b;">${group.items.length} producto(s) - $${groupTotal.toFixed(2)}</div>
+                                        <div style="font-size:0.85rem; color:#64748b;">${group.items.length} producto(s) - ${appUtils.currencySymbol()}${groupTotal.toFixed(2)}</div>
                                     </div>
                                 `;
                             }).join('')}
@@ -599,6 +606,7 @@ window.CartModule = {
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+            document.getElementById('btnCloseCheckout').onclick = () => { document.getElementById('checkoutConfirmationModal').remove(); resolve(false); };
             document.getElementById('btnCancelCheckout').addEventListener('click', () => {
                 document.getElementById('checkoutConfirmationModal').remove();
                 resolve(false);
@@ -609,6 +617,13 @@ window.CartModule = {
                 resolve(true);
             });
         });
+    },
+
+    orderPayload: function(group) {
+        return {proveedor_id: String(group.proveedorId), sucursal_origen_id: Number(group.items[0]?.sucursalOrigenId),
+            sucursal_entrega_id: Number(this.selectedBranch?.id), metodo_pago_id: Number(this.selectedPaymentMethod?.id),
+            moneda_id: Number(localStorage.getItem('marketplaceCurrency') || 1),
+            items: group.items.map(item => ({producto_id: Number(item.id), cantidad: Number(item.quantity || 1)}))};
     },
 
     _createOrderForProveedor: async function(group) {
@@ -632,24 +647,8 @@ window.CartModule = {
         console.log(`📍 Sucursal Entrega: ${this.selectedBranch.id}`);
         console.log(`💳 Método Pago: ${this.selectedPaymentMethod.id}`);
 
-        const itemsData = group.items.map(item => ({
-            producto_id: parseInt(item.id),
-            cantidad: parseInt(item.quantity || 1),
-            precio_unitario: parseFloat(item.price || 0),
-            descuento: item.originalPrice ? parseFloat((item.originalPrice - item.price)) : 0
-        }));
-
-        const payload = {
-            proveedor_id: parseInt(group.proveedorId),
-            sucursal_origen_id: parseInt(sucursalOrigenId) || 1,
-            sucursal_entrega_id: parseInt(this.selectedBranch.id),
-            metodo_pago_id: parseInt(this.selectedPaymentMethod.id) || 1,
-            moneda_id: 1,
-            comentario: `Pedido - ${new Date().toLocaleString()} - ${group.proveedorNombre}`,
-            items: itemsData
-        };
-
-        console.log("📤 Enviando payload:", JSON.stringify(payload, null, 2));
+        const payload = this.orderPayload(group);
+        payload.quote_token = group.quote.quote_token;
 
         const result = await api.createOrder(payload);
         console.log("📥 Respuesta:", result);

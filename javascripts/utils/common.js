@@ -10,6 +10,12 @@ window.appUtils = {
             return value;
         } catch { return fallback; }
     },
+    currencySymbol(currencyId = null) {
+        const selected = String(currencyId || localStorage.getItem('marketplaceCurrency') || 1);
+        const currency = this.readJSON('catalogos', {}).monedas?.find(item => String(item.id) === selected);
+        return currency?.simbolo || 'C$';
+    },
+    money(value, currencyId = null) { return this.currencySymbol(currencyId) + Number(value || 0).toFixed(2); },
     escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, char => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
