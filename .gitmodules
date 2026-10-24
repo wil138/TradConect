@@ -1,0 +1,3 @@
+[submodule "TradConnect_Api"]
+	path = TradConnect_Api
+	url = https://github.com/wil138/Tradconnect_api.git
