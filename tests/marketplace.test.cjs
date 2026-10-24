@@ -33,3 +33,26 @@ test('hidden tab skips recurring refresh',async()=>{
  const {ctx,m,intervals}=load();let calls=0;ctx.api.getMarketplaceProducts=async()=>{calls++;return {success:true,data:[]};};await m.init();assert.equal(calls,1);
  ctx.document.hidden=true;await [...intervals.values()][0].fn();assert.equal(calls,1);m.destroy();
 });
+test('product mapping retains promotion and branch data without inventing an origin',()=>{
+ const {m}=load();
+ m.acceptProducts([{id:17,nombreproducto:'Frijol',precioventa:'100',precio_final:'85',precio_original:'100',descuento:15,promocion_activa:true,cantidadminimapedido:2,esperecedero:true,diasvidautil:30,empresa_id:4,empresa_nombre:'Proveedor Norte',categoriaid:3,categoria_nombre:'Granos',unidadmedidaid:2,unidad_nombre:'Kilogramo',sucursal_origen_id:8,inventario:[{sucursal_id:8,sucursal_nombre:'Central',stock:12,direccion:'Mercado Central'}],promociones:[{descripcion:'Oferta mayorista',porcentaje_descuento:15,cantidad_minima:2}]}]);
+ const product=m.products[0];
+ assert.equal(product.stock_disponible,12);
+ assert.equal(product.cantidad_minima,2);
+ assert.equal(product.promociones[0].descripcion,'Oferta mayorista');
+ assert.equal(product.inventario[0].direccion,'Mercado Central');
+ assert.equal(product.origin,'');
+ assert.equal(product.raw.categoriaid,3);
+});
+test('product detail includes branch availability and active promotion with escaped data',()=>{
+ const {m,ctx}=load();let html='',inserted=false;const modal={dataset:{}};
+ ctx.document.getElementById=id=>id==='productDetailModal'&&inserted?modal:null;
+ ctx.document.body={insertAdjacentHTML:(_position,value)=>{html=value;inserted=true;}};
+ m._openDetailModal({id:17,name:'Frijol <rojo>',description:'Cosecha & limpia',price:85,originalPrice:100,discount:15,isOffer:true,category:'Granos',categoryId:3,proveedorId:4,proveedorNombre:'Proveedor Norte',sucursalOrigenId:8,img:'assets/product-placeholder.svg',unidad:'Kilogramo',unitId:2,cantidad_minima:2,es_perecedero:true,dias_vida_util:30,stock_disponible:12,origin:'',raw:{},inventario:[{sucursal_id:8,sucursal_nombre:'Central',stock:12,direccion:'Mercado Central'}],promociones:[{descripcion:'Oferta mayorista',porcentaje_descuento:15,cantidad_minima:2}]});
+ assert.match(html,/Frijol &lt;rojo&gt;/);
+ assert.match(html,/Mercado Central/);
+ assert.match(html,/Oferta mayorista/);
+ assert.match(html,/Cantidad mínima de compra/);
+ assert.match(html,/Añadir al carrito \(2\)/);
+ assert.ok(!html.includes('Nicaragua'));
+});

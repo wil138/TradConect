@@ -45,6 +45,18 @@
         <canvas id="transChart"></canvas>
     </div>
 
+    
+
+    <section class="business-alerts-panel" aria-labelledby="businessAlertsTitle">
+        <div>
+            <h3 id="businessAlertsTitle">Avisos del negocio</h3>
+            <p>Seguimiento basado en pedidos e inventario disponibles.</p>
+        </div>
+        <div id="businessAlerts" class="business-alerts-list" role="status" aria-live="polite">
+            <p class="business-alerts-empty">Preparando avisos...</p>
+        </div>
+    </section>
+
     <!-- 🟣 BI -->
     <h3 class="section-title">Crecimiento Estratégico</h3>
 
@@ -64,10 +76,12 @@
             <h3>Importe acumulado de pedidos</h3>
             <canvas id="forecastChart"></canvas>
         </div>
-        <!-- <div class="card">
-            <h3>Predicción</h3>
-            <canvas id="predictionChart"></canvas>
-        </div> -->
+        
+        <div class="card">
+        <h3>Ventas de los últimos 7 días</h3>
+        <p class="chart-description">Importe diario de pedidos no cancelados, en la moneda seleccionada.</p>
+        <canvas id="dailySalesChart"></canvas>
+    </div>
 
     </div>
 

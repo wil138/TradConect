@@ -44,6 +44,17 @@ test('order export uses current filters and ignores IDs absent from role-scoped 
     orders.exportReport('csv', 99);
     assert.equal(exported, null);
 });
+test('order statuses map to styled badges including provider and fallback states', () => {
+    const orders = load().window.orders;
+    assert.equal(orders._getBadgeClass('Pendiente'), 'badge-warning');
+    assert.equal(orders._getBadgeClass('Confirmado'), 'badge-info');
+    assert.equal(orders._getBadgeClass('En preparación'), 'badge-preparing');
+    assert.equal(orders._getBadgeClass(' en camino '), 'badge-in-transit');
+    assert.equal(orders._getBadgeClass('Enviado'), 'badge-primary');
+    assert.equal(orders._getBadgeClass('Entregado'), 'badge-success');
+    assert.equal(orders._getBadgeClass('Cancelado'), 'badge-danger');
+    assert.equal(orders._getBadgeClass('Estado desconocido'), 'badge-secondary');
+});
 test('analytics exports selected period and currency with separate totals', () => {
     const { reportExport: exporter } = load();
     const report = exporter.analyticsReport({role:'client', start:'2026-01-01', end:'2026-02-01', currency:'Córdoba', data:{ventas:[{fecha__fecha:'2026-01',total_ventas:'23',total_pedidos:1,cantidad_items:2}], estados:[], productos:[], categorias:[], clientes:[], feedback:{disponible:false}}});

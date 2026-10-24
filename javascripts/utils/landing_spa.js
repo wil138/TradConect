@@ -19,6 +19,7 @@ async function showSpaAndInit() {
     
     if (landingWrapper) landingWrapper.style.display = 'none';
     if (spaWrapper) spaWrapper.style.display = 'block';
+    window.notifications?.refresh();
 
     // Leer datos ya guardados por api.js
     const userName = localStorage.getItem('userName') || 'Usuario';
@@ -267,6 +268,7 @@ function checkAndRestoreSession() {
         
         if (landingWrapper) landingWrapper.style.display = 'none';
         if (spaWrapper) spaWrapper.style.display = 'block';
+        window.notifications?.refresh();
         
         // Actualizar header
         const userNameSpan = document.getElementById('spaUserName');

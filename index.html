@@ -228,10 +228,22 @@
                 <section class="section">
                     <h2 class="section-title">Aliados estratégicos</h2>
                     <div class="partner-logos">
-                        <img src="https://placehold.co/120x50?text=Logo+1" alt="Aliado 1">
-                        <img src="https://placehold.co/120x50?text=Logo+2" alt="Aliado 2">
-                        <img src="https://placehold.co/120x50?text=Logo+3" alt="Aliado 3">
-                        <img src="https://placehold.co/120x50?text=Logo+4" alt="Aliado 4">
+                        <article class="partner-logo-card">
+                            <span class="partner-logo-mark partner-logo-produce" aria-hidden="true"><i class="fas fa-seedling"></i></span>
+                            <span class="partner-logo-name">Producción local</span>
+                        </article>
+                        <article class="partner-logo-card">
+                            <span class="partner-logo-mark partner-logo-food" aria-hidden="true"><i class="fas fa-utensils"></i></span>
+                            <span class="partner-logo-name">Gastronomía</span>
+                        </article>
+                        <article class="partner-logo-card">
+                            <span class="partner-logo-mark partner-logo-supply" aria-hidden="true"><i class="fas fa-boxes-stacked"></i></span>
+                            <span class="partner-logo-name">Abastecimiento</span>
+                        </article>
+                        <article class="partner-logo-card">
+                            <span class="partner-logo-mark partner-logo-delivery" aria-hidden="true"><i class="fas fa-truck-fast"></i></span>
+                            <span class="partner-logo-name">Distribución local</span>
+                        </article>
                     </div>
                 </section>
 
@@ -437,8 +449,17 @@
                     <span class="nombrelogo">Tradconnect</span>
                 </div>
             </div>
+            <section class="sidebar-user" id="sidebarUserCard" aria-label="Usuario con sesión iniciada">
+                <div class="sidebar-user-avatar" id="sidebarUserAvatar" aria-hidden="true">U</div>
+                <div class="sidebar-user-details">
+                    <span class="sidebar-user-name" id="sidebarUserName">Usuario</span>
+                    <span class="sidebar-user-role" id="sidebarUserRole">Cuenta</span>
+                    <span class="sidebar-user-company" id="sidebarUserCompany"></span>
+                </div>
+            </section>
             <div id="menu"></div>
-            <button id="logoutBtnSidebar" class="menu-item" style="margin-top:auto; color:#dc2626;">
+            <button type="button" class="theme-toggle sidebar-theme-toggle" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">Modo oscuro</button>
+            <button id="logoutBtnSidebar" class="menu-item" style="color:#dc2626;">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
             </button>
         </div>
@@ -454,12 +475,25 @@
                         <i class="fas fa-search"></i>
                         <input type="text" id="globalSearch" placeholder="Buscar productos...">
                     </div>
-                    <div class="user-actions"><button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">Modo oscuro</button>
+                    <div class="user-actions">
                         <div class="cart-icon-wrapper" id="cartToggle" onclick="window.toggleCart()">
                             <i class="fas fa-shopping-cart"></i>
                             <span id="cartCount">0</span>
                         </div>
-                        <i class="far fa-bell"></i>
+                        <div class="notification-menu" id="notificationMenu">
+                            <button type="button" class="notification-toggle" id="notificationToggle"
+                                aria-label="Avisos del negocio" aria-expanded="false" aria-controls="notificationPanel">
+                                <i class="far fa-bell" aria-hidden="true"></i>
+                                <span class="notification-count" id="notificationCount" hidden>0</span>
+                            </button>
+                            <section class="notification-panel" id="notificationPanel" aria-labelledby="notificationTitle" hidden>
+                                <div class="notification-panel-header">
+                                    <h2 id="notificationTitle">Avisos del negocio</h2>
+                                    <span id="notificationSummary">Cargando avisos...</span>
+                                </div>
+                                <div class="notification-list" id="notificationList" role="status" aria-live="polite"></div>
+                            </section>
+                        </div>
                         <div class="user-profile">
                             <div class="user-info-text">
                                 <span class="user-name" id="spaUserName">Cargando...</span>
@@ -714,6 +748,7 @@
     <script src="javascripts/inventory.js"></script>
     <script src="javascripts/analytics.js"></script>
     <script src="javascripts/dashboard.js"></script>
+    <script src="javascripts/notifications.js"></script>
 
 
 <script>window.theme.init();</script>

@@ -28,3 +28,7 @@ test('server permission errors leave administrative controls disabled',async()=>
 test('display formatting preserves zero, labels booleans and translates fields',()=>{
  const {module:m}=load();assert.equal(m.displayValue(0),'0');assert.equal(m.displayValue(false),'No');assert.equal(m.fieldLabel('categoria_id_sql'),'Categoría ID SQL');
 });
+test('document CRUD feedback assigns a semantic visual state to the message',()=>{
+ const {module:m,node}=load();m.status('Documento guardado','success');assert.equal(node('mongoStatus').textContent,'Documento guardado');assert.equal(node('mongoStatus').className,'mongo-status is-success');
+ m.status('No se pudo guardar','error');assert.equal(node('mongoStatus').className,'mongo-status is-error');
+});

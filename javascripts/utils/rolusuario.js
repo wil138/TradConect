@@ -44,8 +44,34 @@ function getCurrentRole() {
     return role;
 }
 
+function renderSidebarUser() {
+    const user = appUtils.readJSON('user', {});
+    const company = appUtils.readJSON('company', {});
+    const name = localStorage.getItem('userName') || user.nombreusuario || 'Usuario';
+    const role = user.rol_nombre || ({
+        client: 'Cliente',
+        provider: 'Proveedor',
+        admin: 'Administrador',
+        staff: 'Personal'
+    }[getCurrentRole()] || 'Usuario');
+    const companyName = company.razonsocial || '';
+    const nameElement = document.getElementById('sidebarUserName');
+    const roleElement = document.getElementById('sidebarUserRole');
+    const companyElement = document.getElementById('sidebarUserCompany');
+    const avatarElement = document.getElementById('sidebarUserAvatar');
+
+    if (nameElement) nameElement.textContent = name;
+    if (roleElement) roleElement.textContent = role;
+    if (companyElement) {
+        companyElement.textContent = companyName || localStorage.getItem('userEmail') || user.correoelectronico || '';
+        companyElement.title = companyName || '';
+    }
+    if (avatarElement) avatarElement.textContent = String(name).trim().charAt(0).toLocaleUpperCase() || 'U';
+}
+
 function renderMenu() {
     const menuContainer = document.getElementById("menu");
+    renderSidebarUser();
     if (!menuContainer) return;
     const role = getCurrentRole();
     console.log("🎨 Renderizando menú para rol:", role);
@@ -114,4 +140,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 window.toggleMenu = toggleMenu;
 window.closeAll = closeAll;
+window.renderSidebarUser = renderSidebarUser;
 window.updateRoleFromStorage = updateRoleFromStorage;

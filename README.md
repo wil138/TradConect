@@ -171,7 +171,8 @@ TradConect/
 | `javascripts/inventory.js` | Gestión de productos, inventario y promociones. |
 | `javascripts/profile.js` | Gestión del perfil, datos de empresa y sucursales. |
 | `javascripts/analytics.js` | Consulta y presentación de analítica de cliente o proveedor. |
-| `javascripts/dashboard.js` | Indicadores y actividad del proveedor. |
+| `javascripts/dashboard.js` | Indicadores, avisos operativos y gráficas de actividad/ventas diarias del proveedor. |
+| `javascripts/notifications.js` | Campanita accesible con avisos actuales de pedidos e inventario. |
 | `javascripts/feedback.js` | Formularios de feedback y sus colecciones. |
 | `javascripts/documents.js` | Consulta, exportación y alta administrativa de documentos. |
 | `javascripts/utils/api.js` | Cliente HTTP común: JSON, JWT, refresh, caché pública, adaptadores por recurso y conteo de errores en memoria. |
@@ -278,6 +279,7 @@ reales.
 | Archivo | Área cubierta |
 |---|---|
 | `tests/regression.test.cjs` | Funciones compartidas, API, router, roles, carrito y formato monetario. |
+| `tests/notifications.test.cjs` | Avisos activos y presentación segura en la campanita. |
 | `tests/marketplace.test.cjs` | Comportamiento de búsqueda y productos de marketplace. |
 | `tests/registration.test.cjs` | Validaciones de registro en el cliente. |
 | `tests/documents.test.cjs` | Interfaz y llamadas administrativas de documentos. |

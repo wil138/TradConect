@@ -315,29 +315,38 @@ window.marketplace = {
     escapeHtml: appUtils.escapeHtml,
 
     acceptProducts: function(data) {
-        this.products = data.map(p => ({
-                    id: p.id,
-                    name: p.nombreproducto || 'Sin nombre',
-                    description: p.descripcion || 'Sin descripción',
-                    price: parseFloat(p.precio_final) || 0,
-                    originalPrice: parseFloat(p.precio_original) || null,
-                    discount: p.descuento || 0,
-                    isOffer: p.promocion_activa || false,
-                    category: p.categoria_nombre || "General",
-                    proveedorId: p.empresa_id,
-                    proveedorNombre: p.empresa_nombre || 'Proveedor',
-                    sucursalOrigenId: p.sucursal_origen_id || null,
-                    origin: "Nicaragua",
-                    img: p.imagenurl && !p.imagenurl.includes('example.invalid') ? p.imagenurl : 'assets/product-placeholder.svg',
-                    stock_disponible: p.inventario?.find(inv => inv.sucursal_id === p.sucursal_origen_id)?.stock || 0,
-                    unidad: p.unidad_nombre || 'Unidad',
-                    cantidad_minima: p.cantidadminimapedido || 1,
-                    es_perecedero: p.esperecedero || false,
-                    dias_vida_util: p.diasvidautil || null,
-                    inventario: p.inventario || []
-                }));
-
-                this.categories = ["Todos", ...new Set(this.products.map(p => p.category))];
+        this.products = data.map(p => {
+            const inventario = Array.isArray(p.inventario) ? p.inventario : [];
+            const stock = inventario.reduce((total, branch) => total + (Number(branch.stock) || 0), 0);
+            const originalPrice = Number(p.precio_original ?? p.precioventa);
+            const minimumQuantity = Number(p.cantidadminimapedido || 1);
+            return {
+                id: p.id,
+                raw: p,
+                name: p.nombreproducto || 'Sin nombre',
+                description: p.descripcion || '',
+                price: Number(p.precio_final ?? p.precioventa) || 0,
+                originalPrice: Number.isFinite(originalPrice) ? originalPrice : null,
+                discount: Number(p.descuento) || 0,
+                isOffer: Boolean(p.promocion_activa),
+                category: p.categoria_nombre || 'General',
+                categoryId: p.categoriaid,
+                proveedorId: p.empresa_id,
+                proveedorNombre: p.empresa_nombre || 'Proveedor',
+                sucursalOrigenId: p.sucursal_origen_id || null,
+                origin: p.origen || p.origin || '',
+                img: p.imagenurl && !p.imagenurl.includes('example.invalid') ? p.imagenurl : 'assets/product-placeholder.svg',
+                stock_disponible: stock,
+                unidad: p.unidad_nombre || 'Unidad',
+                unitId: p.unidadmedidaid,
+                cantidad_minima: minimumQuantity,
+                es_perecedero: Boolean(p.esperecedero),
+                dias_vida_util: p.diasvidautil ?? null,
+                inventario,
+                promociones: Array.isArray(p.promociones) ? p.promociones : []
+            };
+        });
+        this.categories = ['Todos', ...new Set(this.products.map(p => p.category))];
     },
 
     loadProducts: async function(filters = {}, forceRefresh = false, silent = false) {
@@ -419,11 +428,12 @@ window.marketplace = {
             const nameEscaped = this.escapeHtml(p.name);
             const vendorEscaped = this.escapeHtml(p.proveedorNombre);
 
-            const offerHtml = p.isOffer ? `
+            const hasOffer = p.isOffer && p.originalPrice !== null;
+            const offerHtml = hasOffer ? `
                 <div class="offer-badge"><i class="fas fa-fire"></i> Oferta</div>
                 <div class="discount-badge">-${p.discount}%</div>
             ` : '';
-            const priceHtml = p.isOffer ? `
+            const priceHtml = hasOffer ? `
                 <span class="original-price">${appUtils.currencySymbol()}${p.originalPrice.toFixed(2)}</span>
                 <span class="offer-price">${appUtils.currencySymbol()}${p.price.toFixed(2)}</span>
             ` : `<span>${appUtils.currencySymbol()}${p.price.toFixed(2)}</span>`;
@@ -437,7 +447,7 @@ window.marketplace = {
                     <div class="product-info">
                         <div class="product-vendor">${vendorEscaped}</div>
                         <div class="product-title">${nameEscaped}</div>
-                        <div class="product-origin"><i class="fas fa-map-marker-alt"></i> ${p.origin}</div>
+                        ${p.origin ? `<div class="product-origin"><i class="fas fa-map-marker-alt"></i> ${this.escapeHtml(p.origin)}</div>` : ''}
                         <div class="product-price">${priceHtml}</div>
 
                         <div style="margin-top:10px;">
@@ -525,8 +535,37 @@ window.marketplace = {
         const nameEscaped = this.escapeHtml(product.name);
         const vendorEscaped = this.escapeHtml(product.proveedorNombre);
         const categoryEscaped = this.escapeHtml(product.category);
-        const descriptionEscaped = this.escapeHtml(product.description);
-        const unitEscaped = this.escapeHtml(product.unidad);
+        const descriptionEscaped = this.escapeHtml(product.description || 'No hay descripción registrada.');
+        const originalPrice = product.originalPrice;
+        const priceHtml = product.isOffer && originalPrice !== null
+            ? `<span class="detail-original-price">${this.escapeHtml(appUtils.money(originalPrice))}</span> <span class="detail-current-price">${this.escapeHtml(appUtils.money(product.price))}</span> <small>Descuento: ${this.escapeHtml(product.discount)}%</small>`
+            : this.escapeHtml(appUtils.money(product.price));
+        const raw = product.raw || {};
+        const inventoryHtml = product.inventario.length
+            ? product.inventario.map(branch => `
+                <li class="product-detail-inventory">
+                    <strong>${this.escapeHtml(branch.sucursal_nombre || `Sucursal ${branch.sucursal_id ?? ''}`)}</strong>
+                    <span>Stock: ${this.escapeHtml(branch.stock ?? branch.stockdisponible ?? 'No disponible')}</span>
+                    ${branch.direccion ? `<span>Dirección: ${this.escapeHtml(branch.direccion)}</span>` : ''}
+                    ${branch.telefono ? `<span>Teléfono: ${this.escapeHtml(branch.telefono)}</span>` : ''}
+                    ${branch.horario ? `<span>Horario: ${this.escapeHtml(branch.horario)}</span>` : ''}
+                </li>`).join('')
+            : '<li>No hay disponibilidad por sucursal registrada.</li>';
+        const promotionsHtml = product.promociones.length
+            ? product.promociones.map(promotion => `
+                <li class="product-detail-promotion">
+                    <strong>${this.escapeHtml(promotion.descripcion || 'Promoción activa')}</strong>
+                    <span>Descuento: ${this.escapeHtml(promotion.porcentaje_descuento ?? product.discount)}%</span>
+                    ${promotion.cantidad_minima != null ? `<span>Compra mínima: ${this.escapeHtml(promotion.cantidad_minima)}</span>` : ''}
+                    ${promotion.fecha_inicio ? `<span>Desde: ${this.escapeHtml(promotion.fecha_inicio)}</span>` : ''}
+                    ${promotion.fecha_fin ? `<span>Hasta: ${this.escapeHtml(promotion.fecha_fin)}</span>` : ''}
+                </li>`).join('')
+            : '<li>No hay promociones activas.</li>';
+        const detailItem = (label, value) => `
+            <div class="info-item">
+                <label>${this.escapeHtml(label)}</label>
+                <span>${this.escapeHtml(value == null || value === '' ? 'No especificado' : value)}</span>
+            </div>`;
 
         const modalHTML = `
             <div class="detail-modal-overlay active" id="productDetailModal" onclick="if(event.target===this) document.getElementById('productDetailModal').remove()">
@@ -538,7 +577,7 @@ window.marketplace = {
                         <div>
                             <h2>${nameEscaped}</h2>
                             <div class="vendor"><i class="fas fa-building"></i> ${vendorEscaped}</div>
-                            <div style="margin-top:4px; font-size:0.85rem; color:#64748b;">
+                            <div class="product-detail-category">
                                 <i class="fas fa-tag"></i> ${categoryEscaped}
                             </div>
                         </div>
@@ -546,40 +585,36 @@ window.marketplace = {
 
                     <div class="detail-modal-body">
                         <div class="info-item price">
-                            <label>Precio</label>
-                            <span>${product.isOffer ? `<span style="text-decoration:line-through;font-size:0.9rem;color:#94a3b8;">${appUtils.currencySymbol()}${product.originalPrice.toFixed(2)}</span> <span style="color:#ef4444;">${appUtils.currencySymbol()}${product.price.toFixed(2)}</span>` : `${appUtils.currencySymbol()}${product.price.toFixed(2)}`}</span>
+                            <label>Precio por ${this.escapeHtml(product.unidad || 'unidad')}</label>
+                            <span>${priceHtml}</span>
                         </div>
-                        <div class="info-item">
-                            <label>Unidad</label>
-                            <span>${unitEscaped}</span>
-                        </div>
-                        <div class="info-item">
-                            <label>Cantidad mínima</label>
-                            <span>${product.cantidad_minima}</span>
-                        </div>
-                        <div class="info-item">
-                            <label>Stock disponible</label>
-                            <span>${product.stock_disponible}</span>
-                        </div>
-                        ${product.es_perecedero ? `
-                        <div class="info-item">
-                            <label>Vida útil</label>
-                            <span>${product.dias_vida_util || 'N/A'} días</span>
-                        </div>` : ''}
-                        <div class="info-item" style="grid-column: 1 / -1;">
+                        ${detailItem('Identificador', product.id)}
+                        ${detailItem('ID de empresa proveedora', product.proveedorId)}
+                        ${detailItem('ID de categoría', product.categoryId)}
+                        ${detailItem('ID de unidad', product.unitId)}
+                        ${detailItem('Cantidad mínima de compra', product.cantidad_minima)}
+                        ${detailItem('Stock total disponible', product.stock_disponible)}
+                        ${detailItem('Producto perecedero', product.es_perecedero ? 'Sí' : 'No')}
+                        ${product.es_perecedero ? detailItem('Vida útil', product.dias_vida_util == null ? null : `${product.dias_vida_util} días`) : ''}
+                        ${product.origin ? detailItem('Origen', product.origin) : ''}
+                        <div class="info-item product-detail-description">
                             <label>Descripción</label>
-                            <span style="font-weight:400; font-size:0.95rem;">${descriptionEscaped}</span>
+                            <span>${descriptionEscaped}</span>
                         </div>
-                        <div class="info-item" style="grid-column: 1 / -1;">
-                            <label>Origen</label>
-                            <span><i class="fas fa-map-marker-alt"></i> ${product.origin}</span>
-                        </div>
+                        <section class="product-detail-section">
+                            <h3>Disponibilidad por sucursal</h3>
+                            <ul>${inventoryHtml}</ul>
+                        </section>
+                        <section class="product-detail-section">
+                            <h3>Promociones activas</h3>
+                            <ul>${promotionsHtml}</ul>
+                        </section>
                     </div>
 
                     <div class="detail-modal-footer">
                         <button class="btn-close" onclick="document.getElementById('productDetailModal').remove()">Cerrar</button>
-                        <button class="btn-add-cart" onclick="window.marketplace._addFromModal(${product.id})">
-                            <i class="fas fa-cart-plus"></i> Añadir al carrito (1)
+                        <button class="btn-add-cart" onclick="window.marketplace._addFromModal(${Number(product.id)})">
+                            <i class="fas fa-cart-plus"></i> Añadir al carrito (${this.escapeHtml(product.cantidad_minima)})
                         </button>
                     </div>
                 </div>
@@ -605,7 +640,7 @@ window.marketplace = {
                 sucursalOrigenId: product.sucursalOrigenId,
                 img: product.img,
                 inventario: product.inventario
-            }, 1);
+            }, Number(product.cantidad_minima) || 1);
             this.showToast(`${product.name} añadido al carrito`);
             const modal = document.getElementById('productDetailModal');
             if (modal) modal.remove();

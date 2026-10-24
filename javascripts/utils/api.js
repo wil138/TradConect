@@ -256,6 +256,7 @@ const api = {
                 localStorage.setItem('pedidos_comprador', JSON.stringify(data.pedidos_comprador || []));
                 localStorage.setItem('pedidos_proveedor', JSON.stringify(data.pedidos_proveedor || []));
 
+                window.notifications?.refresh();
                 console.log("✅ Datos refrescados correctamente");
                 return true;
             }

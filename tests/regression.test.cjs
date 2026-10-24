@@ -10,15 +10,22 @@ function context() {
     ctx.appUtils = ctx.window.appUtils;
     return ctx;
 }
+function dateOffset(days, hour = 12) {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    date.setHours(hour, 0, 0, 0);
+    const pad = value => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:00:00`;
+}
 
 test('dashboard derives pending orders, customers and sales from company orders in selected currency', () => {
     const ctx = context();
     ctx.localStorage.setItem('marketplaceCurrency', '1');
     ctx.localStorage.setItem('pedidos_proveedor', JSON.stringify([
-        {id:1, monedaid:1, restauranteid:'a', estado_actual:'Pendiente', totalneto:'100', fechapedido:'2026-10-10T12:00:00Z'},
-        {id:2, monedaid:1, restauranteid:'a', estado_actual:'Entregado', totalneto:'50', fechapedido:'2026-10-11T12:00:00Z'},
-        {id:3, monedaid:1, restauranteid:'b', estado_actual:'Cancelado', totalneto:'80', fechapedido:'2026-10-12T12:00:00Z'},
-        {id:4, monedaid:2, restauranteid:'c', estado_actual:'Pendiente', totalneto:'900', fechapedido:'2026-10-13T12:00:00Z'}
+        {id:1, monedaid:1, restauranteid:'a', estado_actual:'Pendiente', totalneto:'100', fechapedido:dateOffset(1)},
+        {id:2, monedaid:1, restauranteid:'a', estado_actual:'Entregado', totalneto:'50', fechapedido:dateOffset(2)},
+        {id:3, monedaid:1, restauranteid:'b', estado_actual:'Cancelado', totalneto:'80', fechapedido:dateOffset(3)},
+        {id:4, monedaid:2, restauranteid:'c', estado_actual:'Pendiente', totalneto:'900', fechapedido:dateOffset(4)}
     ]));
     vm.runInContext(readFileSync('javascripts/dashboard.js', 'utf8'), ctx);
     const dashboard = ctx.window.dashboard;
@@ -28,6 +35,78 @@ test('dashboard derives pending orders, customers and sales from company orders 
     assert.equal(dashboard.data.pendientes, 1);
     assert.equal(dashboard.data.clientes, 1);
     assert.equal(dashboard.salesData.data.reduce((a,b) => a+b, 0), 150);
+    assert.deepEqual(JSON.parse(JSON.stringify(dashboard.dailySalesData.data.filter(value => value > 0))), [50, 100]);
+    assert.equal(dashboard.dailySalesData.labels.length, 7);
+    assert.equal(dashboard.dailySalesData.data.length, 7);
+});
+test('daily sales group same-date orders and exclude cancelled, invalid-date and other-currency orders', () => {
+    const ctx = context();
+    ctx.localStorage.setItem('marketplaceCurrency', '1');
+    ctx.localStorage.setItem('pedidos_proveedor', JSON.stringify([
+        {id:1, monedaid:1, estado_actual:'Pendiente', totalneto:'30', fechapedido:dateOffset(2, 8)},
+        {id:2, monedaid:1, estado_actual:'Entregado', totalneto:'20', fechapedido:dateOffset(2, 16)},
+        {id:3, monedaid:1, estado_actual:'Cancelado', totalneto:'90', fechapedido:dateOffset(2, 18)},
+        {id:4, monedaid:1, estado_actual:'Enviado', totalneto:'40', fechapedido:'fecha-invalida'},
+        {id:5, monedaid:2, estado_actual:'Entregado', totalneto:'70', fechapedido:dateOffset(1)}
+    ]));
+    vm.runInContext(readFileSync('javascripts/dashboard.js', 'utf8'), ctx);
+    const dashboard = ctx.window.dashboard;
+    dashboard.loadFromStorage();
+    assert.deepEqual(JSON.parse(JSON.stringify(dashboard.dailySalesData.data)), [0, 0, 0, 0, 50, 0, 0]);
+    assert.equal(dashboard.dailySalesData.labels.length, 7);
+});
+test('daily sales chart uses the dashboard purple palette', () => {
+    const ctx = context();
+    let chartConfig;
+    ctx.Chart = function(_canvas, config) { chartConfig = config; };
+    ctx.document = {getElementById: id => id === 'dailySalesChart' ? {} : null};
+    vm.runInContext(readFileSync('javascripts/dashboard.js', 'utf8'), ctx);
+    ctx.window.dashboard.dailySalesData = {labels: ['lun', 'mar'], data: [5, 8]};
+    ctx.window.dashboard.createDailySalesChart();
+    assert.equal(chartConfig.data.datasets[0].borderColor, '#7c3aed');
+    assert.equal(chartConfig.data.datasets[0].backgroundColor, 'rgba(167, 139, 250, 0.72)');
+});
+test('landing strategic ecosystem displays four original partner category marks', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const section = html.match(/<h2 class="section-title">Aliados estratégicos<\/h2>([\s\S]*?)<\/section>/)?.[1];
+    assert.ok(section);
+    assert.equal((section.match(/class="partner-logo-card"/g) || []).length, 4);
+    assert.match(section, /Producción local/);
+    assert.match(section, /Gastronomía/);
+    assert.match(section, /Abastecimiento/);
+    assert.match(section, /Distribución local/);
+    assert.doesNotMatch(section, /placehold\.co/);
+});
+test('dashboard business alerts report order progress and low stock from stored API data', () => {
+    const ctx = context();
+    ctx.localStorage.setItem('userRole', 'provider');
+    ctx.localStorage.setItem('pedidos_proveedor', JSON.stringify([
+        {id: 1, monedaid: 1, estado_actual: 'Pendiente'},
+        {id: 2, monedaid: 1, estado_actual: 'Enviado'},
+        {id: 3, monedaid: 1, estado_actual: 'Cancelado'}
+    ]));
+    ctx.localStorage.setItem('inventario', JSON.stringify([
+        {productoid: 7, stockdisponible: 2, stockminimo: 5}
+    ]));
+    ctx.localStorage.setItem('productos', JSON.stringify([
+        {id: 7, nombreproducto: 'Arroz'}
+    ]));
+    vm.runInContext(readFileSync('javascripts/dashboard.js', 'utf8'), ctx);
+    const dashboard = ctx.window.dashboard;
+    dashboard.loadFromStorage();
+    const alerts = dashboard.getBusinessAlerts();
+    assert.equal(alerts.length, 4);
+    assert.match(alerts[0].message, /1 pedido requiere seguimiento/);
+    assert.match(alerts[1].message, /0 confirmados · 1 enviado/);
+    assert.match(alerts[2].message, /1 pedido cancelado/);
+    assert.match(alerts[3].message, /Arroz: quedan 2; mínimo 5/);
+});
+test('dashboard order statuses distinguish preparation and transit badge colors', () => {
+    const ctx = context();
+    vm.runInContext(readFileSync('javascripts/dashboard.js', 'utf8'), ctx);
+    const dashboard = ctx.window.dashboard;
+    assert.equal(dashboard._getBadgeClass('En preparación'), 'badge-preparing');
+    assert.equal(dashboard._getBadgeClass('En camino'), 'badge-in-transit');
 });
 test('stored data recovers from invalid JSON and wrong collection types', () => {
     const ctx = context();
@@ -101,6 +180,52 @@ test('API maps administrative roles independently from clients', () => {
     assert.equal(ctx.window.api.resolveRole('Proveedor'), 'provider');
     assert.equal(typeof ctx.window.api.getProducts, 'function');
     assert.equal(typeof ctx.window.api.getInventory, 'function');
+});
+
+test('sidebar shows the signed-in account name, role, company and avatar initial', () => {
+    const values = new Map([
+        ['userName', 'Ana López'],
+        ['userEmail', 'ana@example.com'],
+        ['userRole', 'provider'],
+        ['user', JSON.stringify({ nombreusuario: 'Ana López', rol_nombre: 'Proveedor' })],
+        ['company', JSON.stringify({ razonsocial: 'Alimentos del Norte' })]
+    ]);
+    const elements = Object.fromEntries(
+        ['sidebarUserName', 'sidebarUserRole', 'sidebarUserCompany', 'sidebarUserAvatar']
+            .map(id => [id, { textContent: '', title: '' }])
+    );
+    const ctx = vm.createContext({
+        window: {},
+        console,
+        localStorage: {
+            getItem: key => values.get(key) ?? null,
+            setItem: (key, value) => values.set(key, value)
+        },
+        document: {
+            getElementById: id => elements[id] || null,
+            addEventListener() {}
+        }
+    });
+    vm.runInContext(readFileSync('javascripts/utils/common.js', 'utf8'), ctx);
+    ctx.appUtils = ctx.window.appUtils;
+    vm.runInContext(readFileSync('javascripts/utils/rolusuario.js', 'utf8'), ctx);
+    ctx.window.renderSidebarUser();
+
+    assert.equal(elements.sidebarUserName.textContent, 'Ana López');
+    assert.equal(elements.sidebarUserRole.textContent, 'Proveedor');
+    assert.equal(elements.sidebarUserCompany.textContent, 'Alimentos del Norte');
+    assert.equal(elements.sidebarUserAvatar.textContent, 'A');
+});
+
+test('theme control is placed in the authenticated sidebar, not the SPA header', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const sidebar = html.match(/<div class="sidebar">([\s\S]*?)<\/div>\s*<div class="overlay"/)?.[1];
+    const header = html.match(/<div class="user-actions">([\s\S]*?)<\/div>/)?.[1];
+    assert.ok(sidebar);
+    assert.match(sidebar, /class="theme-toggle sidebar-theme-toggle" data-theme-toggle/);
+    assert.match(sidebar, /id="logoutBtnSidebar"/);
+    assert.ok(header);
+    assert.doesNotMatch(header, /data-theme-toggle/);
 });
 
 test('checkout preserves string company IDs and fractional quantities without accepting client prices', () => {

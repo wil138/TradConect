@@ -2,6 +2,7 @@
 window.dashboard = {
     data: null,
     salesData: null,
+    dailySalesData: null,
     recentOrders: [],
     userRole: 'provider', // o 'client' según corresponda
 
@@ -20,6 +21,13 @@ window.dashboard = {
         this.renderKPIs();
         this.renderCharts();
         this.renderRecentOrders();
+        this.renderBusinessAlerts();
+        window.notifications?.refresh();
+        const alerts = document.getElementById('businessAlerts');
+        alerts?.addEventListener('click', event => {
+            const button = event.target.closest('[data-alert-module]');
+            if (button) window.router?.navigateTo(button.dataset.alertModule);
+        }, { signal: events.signal });
         // Escuchar cambios en localStorage (para actualizar si otro módulo modifica datos)
         this.setupStorageListener();
     },
@@ -57,6 +65,7 @@ window.dashboard = {
         activos.forEach(p => {
             if (p.fechapedido) {
                 const fecha = new Date(p.fechapedido);
+                if (Number.isNaN(fecha.getTime())) return;
                 const mes = `${fecha.getFullYear()}-${String(fecha.getMonth()+1).padStart(2,'0')}`;
                 ventasPorMes[mes] = (ventasPorMes[mes] || 0) + (parseFloat(p.totalneto) || 0);
             }
@@ -68,6 +77,21 @@ window.dashboard = {
             return new Date(year, month-1).toLocaleString('es-ES', { month: 'short', year: 'numeric' });
         });
         const data = mesesOrdenados.map(m => ventasPorMes[m]);
+        const ventasPorDia = {};
+        activos.forEach(order => {
+            if (!order.fechapedido) return;
+            const fecha = new Date(order.fechapedido);
+            if (Number.isNaN(fecha.getTime())) return;
+            const dayKey = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+            ventasPorDia[dayKey] = (ventasPorDia[dayKey] || 0) + (parseFloat(order.totalneto) || 0);
+        });
+        const hoy = new Date();
+        hoy.setHours(12, 0, 0, 0);
+        const ultimosSieteDias = Array.from({ length: 7 }, (_, index) => {
+            const fecha = new Date(hoy);
+            fecha.setDate(hoy.getDate() - 6 + index);
+            return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+        });
 
         // ====== PEDIDOS RECIENTES (últimos 5) ======
         const recent = [...pedidos]
@@ -77,7 +101,20 @@ window.dashboard = {
         // Guardar en this
         this.data = { total_ventas, total_pedidos, stockBajo, pendientes, clientes };
         this.salesData = { labels, data };
+        this.dailySalesData = {
+            labels: ultimosSieteDias.map(day => new Date(`${day}T12:00:00`).toLocaleDateString('es-NI', { weekday: 'short', day: '2-digit', month: 'short' })),
+            data: ultimosSieteDias.map(day => ventasPorDia[day] || 0)
+        };
         this.recentOrders = recent;
+        this.inventoryAlerts = inventario
+            .map(item => {
+                const stock = Number(item.stockdisponible ?? item.stock ?? NaN);
+                const minimum = Number(item.stockminimo ?? 10);
+                const productId = item.productoid ?? item.producto_id;
+                const product = productos.find(candidate => String(candidate.id) === String(productId));
+                return { item, stock, minimum, product };
+            })
+            .filter(alert => Number.isFinite(alert.stock) && Number.isFinite(alert.minimum) && alert.stock < alert.minimum);
 
         // También actualizar estadísticas en localStorage si quieres cachear los cálculos
         const updatedStats = {
@@ -135,6 +172,7 @@ window.dashboard = {
 
         // Gráfico de transacciones (puedes usar datos de ventas por hora si los tienes en pedidos)
         this.createTransactionalChart(Object.values(this.statusData || {}));
+        this.createDailySalesChart();
         // Gráfico de crecimiento (ventas mensuales)
         this.createGrowthChart(sales.labels, sales.data);
         // Gráfico de regiones (si tienes datos de región en pedidos, puedes calcular)
@@ -171,13 +209,77 @@ window.dashboard = {
 
     _getBadgeClass: function(estado) {
         const map = {
-            'Pendiente': 'badge-warning',
-            'Confirmado': 'badge-info',
-            'Enviado': 'badge-primary',
-            'Entregado': 'badge-success',
-            'Cancelado': 'badge-danger',
+            pendiente: 'badge-warning',
+            confirmado: 'badge-info',
+            'en preparación': 'badge-preparing',
+            'en camino': 'badge-in-transit',
+            enviado: 'badge-primary',
+            entregado: 'badge-success',
+            cancelado: 'badge-danger',
         };
-        return map[estado] || 'badge-secondary';
+        return map[String(estado || '').trim().toLocaleLowerCase()] || 'badge-secondary';
+    },
+
+    getBusinessAlerts: function() {
+        const alerts = [];
+        const orders = appUtils.readJSON(
+            this.userRole === 'provider' ? 'pedidos_proveedor' : 'pedidos_comprador',
+            []
+        );
+        const countStatus = status => orders.filter(order =>
+            String(order.estado_actual || '').trim().toLocaleLowerCase() === status
+        ).length;
+        const pending = countStatus('pendiente');
+        const confirmed = countStatus('confirmado');
+        const sent = countStatus('enviado');
+        const cancelled = countStatus('cancelado');
+        if (pending) alerts.push({
+            type: 'warning', title: 'Pedidos pendientes',
+            message: `${pending} pedido${pending === 1 ? '' : 's'} requiere${pending === 1 ? '' : 'n'} seguimiento.`,
+            module: 'orders'
+        });
+        if (confirmed || sent) alerts.push({
+            type: 'info', title: 'Pedidos en proceso',
+            message: `${confirmed} confirmado${confirmed === 1 ? '' : 's'} · ${sent} enviado${sent === 1 ? '' : 's'}.`,
+            module: 'orders'
+        });
+        if (cancelled) alerts.push({
+            type: 'danger', title: 'Pedidos cancelados',
+            message: `${cancelled} pedido${cancelled === 1 ? '' : 's'} cancelado${cancelled === 1 ? '' : 's'} para revisar.`,
+            module: 'orders'
+        });
+
+        const lowStock = this.inventoryAlerts || [];
+        for (const alert of lowStock.slice(0, 5)) {
+            const productName = alert.product?.nombreproducto || alert.item.producto_nombre || `Producto ${alert.item.productoid ?? ''}`.trim();
+            alerts.push({
+                type: 'warning', title: 'Stock bajo',
+                message: `${productName}: quedan ${alert.stock}; mínimo ${alert.minimum}.`,
+                module: 'inventory'
+            });
+        }
+        if (lowStock.length > 5) alerts.push({
+            type: 'warning', title: 'Más productos con stock bajo',
+            message: `${lowStock.length - 5} productos adicionales están por debajo del mínimo.`,
+            module: 'inventory'
+        });
+        return alerts;
+    },
+
+    renderBusinessAlerts: function() {
+        const container = document.getElementById('businessAlerts');
+        if (!container) return;
+        const alerts = this.getBusinessAlerts();
+        if (!alerts.length) {
+            container.innerHTML = '<p class="business-alerts-empty">No hay alertas operativas con los datos actuales.</p>';
+            return;
+        }
+        container.innerHTML = alerts.map(alert => `
+            <article class="business-alert business-alert-${alert.type}">
+                <div><strong>${appUtils.escapeHtml(alert.title)}</strong><p>${appUtils.escapeHtml(alert.message)}</p></div>
+                <button type="button" data-alert-module="${alert.module}">Revisar</button>
+            </article>
+        `).join('');
     },
 
     // ========== GRÁFICOS (mismos de antes) ==========
@@ -204,6 +306,36 @@ window.dashboard = {
                 scales: {
                     x: { ticks: { color: "#888" }, grid: { display: false } },
                     y: { ticks: { color: "#888" }, grid: { color: "#eee" } }
+                }
+            }
+        });
+    },
+
+    createDailySalesChart: function() {
+        const canvas = document.getElementById('dailySalesChart');
+        if (!canvas) return;
+        if (canvas.chart) canvas.chart.destroy();
+        const sales = this.dailySalesData || { labels: [], data: [] };
+        canvas.chart = new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: sales.labels.length ? sales.labels : ['Sin datos'],
+                datasets: [{
+                    label: `Ventas diarias (${appUtils.currencySymbol()})`,
+                    data: sales.data.length ? sales.data : [0],
+                    backgroundColor: 'rgba(167, 139, 250, 0.72)',
+                    borderColor: '#7c3aed',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#555' } } },
+                scales: {
+                    x: { ticks: { color: '#888' }, grid: { display: false } },
+                    y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#eee' } }
                 }
             }
         });
@@ -310,6 +442,8 @@ window.dashboard = {
                 this.renderKPIs();
                 this.renderCharts();
                 this.renderRecentOrders();
+                this.renderBusinessAlerts();
+                window.notifications?.refresh();
             }
         }, { signal: this._events.signal });
     },
@@ -335,6 +469,8 @@ window.dashboard = {
         this.renderKPIs();
         this.renderCharts();
         this.renderRecentOrders();
+        this.renderBusinessAlerts();
+        window.notifications?.refresh();
         this.showNotification('✅ Dashboard actualizado', 'success');
     },
 

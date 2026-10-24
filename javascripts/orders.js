@@ -139,14 +139,16 @@ window.orders = {
     // =========================================================
     _getBadgeClass: function (estado) {
         const map = {
-            'Pendiente':  'badge-warning',
-            'Confirmado': 'badge-info',
-            'Enviado':    'badge-primary',
-            'Entregado':  'badge-success',
-            'Cancelado':  'badge-danger',
-            'Completado': 'badge-success',
+            pendiente: 'badge-warning',
+            confirmado: 'badge-info',
+            'en preparación': 'badge-preparing',
+            'en camino': 'badge-in-transit',
+            enviado: 'badge-primary',
+            entregado: 'badge-success',
+            cancelado: 'badge-danger',
+            completado: 'badge-success',
         };
-        return map[estado] || 'badge-secondary';
+        return map[String(estado || '').trim().toLocaleLowerCase()] || 'badge-secondary';
     },
 
     _getEstadoOptions: function (currentEstado) {

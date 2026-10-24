@@ -35,7 +35,7 @@ window.documents = {
         this.status('Cargando colecciones...');
         const result = await api.getDocumentSchemas();
         if (generation !== this.generation) return;
-        if (!result.success) { this.status(result.error); return; }
+        if (!result.success) { this.status(result.error, 'error'); return; }
         this.schemas = result.data;
         const select = document.getElementById('mongoCollection');
         select.replaceChildren();
@@ -65,7 +65,12 @@ window.documents = {
         for (const id of ['mongoCollection', 'mongoPrevious', 'mongoNext']) document.getElementById(id).disabled = !enabled;
         document.querySelector('#mongoForm button[type="submit"]').disabled = !enabled;
     },
-    status(message) { const node = document.getElementById('mongoStatus'); if (node) node.textContent = message; },
+    status(message, type = 'info') {
+        const node = document.getElementById('mongoStatus');
+        if (!node) return;
+        node.textContent = message;
+        node.className = `mongo-status is-${type}`;
+    },
     collection() { return document.getElementById('mongoCollection').value; },
     fieldSchema(property, schema) {
         let field = property.anyOf?.find(item => item.type !== 'null') || property;
@@ -118,12 +123,12 @@ window.documents = {
             const generation = this.generation;
             const result = await api.createDocument(collection, payload);
             if (generation !== this.generation || collection !== this.collection()) return;
-            if (!result.success) { this.status(result.error); return; }
+            if (!result.success) { this.status(result.error, 'error'); return; }
             form.reset();
             this.offset = 0;
             await this.load();
-            this.status('Documento guardado: ' + result.data._id);
-        } catch (error) { this.status('Revisa los datos: ' + error.message); }
+            this.status('Documento guardado: ' + result.data._id, 'success');
+        } catch (error) { this.status('Revisa los datos: ' + error.message, 'error'); }
         finally { button.disabled = false; }
     },
     async load() {
@@ -138,11 +143,10 @@ window.documents = {
         container.replaceChildren();
         document.getElementById('mongoPrevious').disabled = offset === 0;
         document.getElementById('mongoNext').disabled = !result.success || result.data.results.length < 50;
-        if (!result.success) { this.status(result.error); return; }
+        if (!result.success) { this.status(result.error, 'error'); return; }
         this.status(result.data.results.length ? `${this.collectionLabel(collection)}: ${result.data.results.length} documentos. Página ${Math.floor(offset / 50) + 1}.` : 'No hay documentos en esta página.');
         const fields = Object.keys(this.schemas[collection].properties).filter(name => name !== 'password_hash');
-        const columns = fields.filter(name => !name.endsWith('_id') && !name.endsWith('_id_sql')).slice(0, 3);
-        if (!columns.length) columns.push(...fields.slice(0, 3));
+        const columns = fields;
         const wrapper = document.createElement('div'); wrapper.className = 'table-wrapper';
         const table = document.createElement('table'), head = document.createElement('thead'), header = document.createElement('tr');
         for (const label of ['Identificador', ...columns.map(name => this.fieldLabel(name)), 'Detalle']) {
