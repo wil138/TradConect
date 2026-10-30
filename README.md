@@ -279,6 +279,7 @@ reales.
 | Archivo | Área cubierta |
 |---|---|
 | `tests/regression.test.cjs` | Funciones compartidas, API, router, roles, carrito y formato monetario. |
+| `tests/api-connection.test.cjs` | Carga de configuración y verificación de conexión HTTP desde el cliente API. |
 | `tests/notifications.test.cjs` | Avisos activos y presentación segura en la campanita. |
 | `tests/marketplace.test.cjs` | Comportamiento de búsqueda y productos de marketplace. |
 | `tests/registration.test.cjs` | Validaciones de registro en el cliente. |
@@ -299,12 +300,15 @@ Desde `TradConnect_Api/`:
 
 ```powershell
 python manage.py check
+python manage.py test TradConnect.tests
 python manage.py test Tradconnect_no_sql
 ```
 
-Las pruebas de API no garantizan conectividad con las bases reales. Antes de
-probar flujos completos, verifica `/api/conexiones/` y utiliza registros de
-prueba en SQL Server y MongoDB.
+`TradConnect.tests` verifica la configuración y el estado de la API sin requerir
+una base activa. Para validar una instalación real, consulta
+`/api/conexiones/`: además de la conexión SQL, verifica las tablas esperadas por
+los modelos y devuelve HTTP 503 con `missing_tables` si el esquema está
+incompleto. El endpoint no crea ni modifica tablas.
 
 ## Seguridad y datos de configuración
 

@@ -55,7 +55,7 @@ async function showSpaAndInit() {
 }
 
 async function handleLogin(usernameOrEmail, password) {
-    if (!usernameOrEmail || !password) {
+    if (typeof usernameOrEmail !== 'string' || !usernameOrEmail.trim() || typeof password !== 'string' || !password) {
         showToast('Ingrese usuario/email y contraseña', true);
         return;
     }
@@ -67,43 +67,32 @@ async function handleLogin(usernameOrEmail, password) {
         loginBtn.disabled = true;
     }
     
-    // Usar la API real que ya maneja el rol correctamente
     let result;
-    if (window.api && typeof window.api.login === 'function') {
-        result = await window.api.login(usernameOrEmail, password);
-    } else {
-        // Fallback solo si no existe API
-        const users = appUtils.readJSON('fakeUsers', []);
-        const user = users.find(u => (u.username === usernameOrEmail || u.email === usernameOrEmail) && u.password === password);
-        if (user) {
-            result = { 
-                success: true, 
-                user: { 
-                    nombreusuario: user.name || user.username, 
-                    correoelectronico: user.email, 
-                    rol: user.role
-                }
-            };
-        } else {
-            result = { success: false, error: 'Credenciales inválidas' };
+    try {
+        result = window.api && typeof window.api.login === 'function'
+            ? await window.api.login(usernameOrEmail.trim(), password)
+            : { success: false, error: 'El servicio de inicio de sesión no está disponible.' };
+    } catch (error) {
+        result = { success: false, error: error.message || 'No se pudo conectar con el servidor.' };
+    } finally {
+        if (loginBtn) {
+            loginBtn.innerHTML = originalText;
+            loginBtn.disabled = false;
         }
     }
     
-    if (loginBtn) {
-        loginBtn.innerHTML = originalText;
-        loginBtn.disabled = false;
-    }
-    
-    if (result.success) {
-        // api.js ya guardó todo en localStorage incluyendo el rol correcto
+    if (result?.success) {
         await showSpaAndInit();
         closeLoginModal();
-        const userName = localStorage.getItem('userName') || usernameOrEmail;
+        const userName = localStorage.getItem('userName') || usernameOrEmail.trim();
         showToast(`✅ Bienvenido ${userName}`);
     } else {
-        let errorMsg = result.error || 'Credenciales inválidas';
-        if (errorMsg.includes('401') || errorMsg.includes('inválidas')) errorMsg = 'Usuario o contraseña incorrectos';
-        else if (errorMsg.includes('network')) errorMsg = 'Error de conexión con el servidor';
+        let errorMsg = result?.error || 'No se pudo iniciar sesión.';
+        if (/401|403|credenciales|contrase(?:n|ñ)a.*incorrect|usuario.*incorrect/i.test(errorMsg)) {
+            errorMsg = 'Usuario/correo o contraseña incorrectos.';
+        } else if (/network|failed to fetch|conexi[oó]n|servidor.*no disponible/i.test(errorMsg)) {
+            errorMsg = 'No se pudo conectar con el servidor. Intenta de nuevo.';
+        }
         showToast(errorMsg, true);
     }
 }

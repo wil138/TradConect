@@ -11,6 +11,8 @@ trad
 **/configurar-entorno.ps1
 
 # Exportaciones locales de datos reales
+TradConnect_Api
+
 TradConnect_Api/datos_limpios*.jsonl
 
 TradConnect_Api/exportaciones*/

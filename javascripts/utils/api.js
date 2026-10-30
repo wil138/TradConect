@@ -63,12 +63,19 @@ const api = {
         }
     },
     resolveRole(name) {
-        const value = String(name).toLowerCase();
+        const value = String(name ?? '').trim().toLowerCase();
         return value === 'proveedor' ? 'provider' : ['cliente','restaurante'].includes(value) ? 'client' : ['admin','administrador'].includes(value) ? 'admin' : 'staff';
     },
     formatError(data) {
-        const value = data.error || data.detail || data.message || data;
-        return typeof value === 'string' ? value : JSON.stringify(value);
+        if (typeof data === 'string') return data || 'Error en la petición';
+        if (!data || typeof data !== 'object' || Array.isArray(data)) return 'Error en la petición';
+        const value = data.error || data.detail || data.message;
+        if (typeof value === 'string') return value;
+        if (value != null) return JSON.stringify(value);
+        const fields = Object.entries(data)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : String(messages)}`)
+            .join('; ');
+        return fields || 'Error en la petición';
     },
     async readResponse(response) {
         const text = await response.text();
@@ -120,8 +127,7 @@ const api = {
 
             const data = await this.readResponse(response);
             if (!response.ok) {
-                const errorMsg = data.error || data.detail || data.message || Object.entries(data).map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : String(messages)}`).join('; ') || 'Error en la petición';
-                throw new Error(errorMsg);
+                throw new Error(this.formatError(data));
             }
             if (options.method && !['GET','HEAD'].includes(options.method.toUpperCase())) this.invalidateMarketplaceCache();
             return { success: true, data };
@@ -163,8 +169,7 @@ const api = {
             status = response.status;
             const data = await this.readResponse(response);
             if (!response.ok) {
-                const errorMsg = data.error || data.detail || data.message || Object.entries(data).map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : String(messages)}`).join('; ') || 'Error en la petición';
-                throw new Error(errorMsg);
+                throw new Error(this.formatError(data));
             }
             if (useCache) {
                 localStorage.setItem(cacheKeyFinal, JSON.stringify({ timestamp: Date.now(), data }));
@@ -240,7 +245,7 @@ const api = {
                 const empresa = data.empresa || {};
                 localStorage.setItem('user', JSON.stringify(usuario));
                 localStorage.setItem('company', JSON.stringify(empresa));
-                localStorage.setItem('userName', usuario.nombreusuario || 'Usuario');
+                localStorage.setItem('userName', usuario.nombreusuario || usuario.correoelectronico || 'Usuario');
                 localStorage.setItem('userEmail', usuario.correoelectronico || '');
 
                 const role = this.resolveRole(usuario.rol_nombre || '');
@@ -276,7 +281,7 @@ const api = {
     // =========================================================
     async login(usernameOrEmail, password) {
         const result = await this.publicRequest(
-            '/auth/dump-all/',
+            '/auth/login/',
             {
                 method: 'POST',
                 body: JSON.stringify({ username: usernameOrEmail, password })
@@ -287,30 +292,47 @@ const api = {
 
         if (result.success) {
             const data = result.data;
-            console.log("✅ Datos recibidos de dump-all:", data);
+            const usuario = data?.usuario;
+            const tokens = data?.tokens;
+            if (!data || typeof data !== 'object' || Array.isArray(data)
+                || !usuario || typeof usuario !== 'object' || Array.isArray(usuario)
+                || typeof usuario.rol_nombre !== 'string' || !usuario.rol_nombre.trim()
+                || !tokens || typeof tokens.access !== 'string' || !tokens.access
+                || typeof tokens.refresh !== 'string' || !tokens.refresh) {
+                recordApiError('/auth/login/', 'INVALID_RESPONSE');
+                return { success: false, error: 'La API devolvió datos de sesión incompletos. Intenta de nuevo o contacta soporte.' };
+            }
+            console.log("✅ Datos de sesión recibidos de la API");
 
-            localStorage.setItem('access_token', data.tokens.access);
-            localStorage.setItem('refresh_token', data.tokens.refresh);
+            const empresa = data.empresa && typeof data.empresa === 'object' && !Array.isArray(data.empresa)
+                ? data.empresa
+                : {};
+            localStorage.setItem('access_token', tokens.access);
+            localStorage.setItem('refresh_token', tokens.refresh);
 
-            const usuario = data.usuario || {};
-            const empresa = data.empresa || {};
             localStorage.setItem('user', JSON.stringify(usuario));
             localStorage.setItem('company', JSON.stringify(empresa));
-            localStorage.setItem('userName', usuario.nombreusuario || 'Usuario');
+            localStorage.setItem(
+                'userName',
+                (typeof usuario.nombreusuario === 'string' && usuario.nombreusuario.trim())
+                    || (typeof usuario.correoelectronico === 'string' && usuario.correoelectronico.trim())
+                    || (typeof usernameOrEmail === 'string' && usernameOrEmail.trim())
+                    || 'Usuario'
+            );
             localStorage.setItem('userEmail', usuario.correoelectronico || '');
 
             const role = this.resolveRole(usuario.rol_nombre || '');
                 localStorage.setItem('userRole', role);
 
-            localStorage.setItem('catalogos', JSON.stringify(data.catalogos || {}));
+            localStorage.setItem('catalogos', JSON.stringify(data.catalogos && typeof data.catalogos === 'object' ? data.catalogos : {}));
                 localStorage.setItem('marketplaceCurrency', String(data.moneda_catalogo_id || 1));
-            localStorage.setItem('sucursales', JSON.stringify(data.sucursales || []));
-            localStorage.setItem('productos', JSON.stringify(data.productos || []));
-            localStorage.setItem('inventario', JSON.stringify(data.inventario || []));
-            localStorage.setItem('promociones', JSON.stringify(data.promociones || []));
-            localStorage.setItem('estadisticas', JSON.stringify(data.estadisticas || {}));
-            localStorage.setItem('pedidos_comprador', JSON.stringify(data.pedidos_comprador || []));
-            localStorage.setItem('pedidos_proveedor', JSON.stringify(data.pedidos_proveedor || []));
+            localStorage.setItem('sucursales', JSON.stringify(Array.isArray(data.sucursales) ? data.sucursales : []));
+            localStorage.setItem('productos', JSON.stringify(Array.isArray(data.productos) ? data.productos : []));
+            localStorage.setItem('inventario', JSON.stringify(Array.isArray(data.inventario) ? data.inventario : []));
+            localStorage.setItem('promociones', JSON.stringify(Array.isArray(data.promociones) ? data.promociones : []));
+            localStorage.setItem('estadisticas', JSON.stringify(data.estadisticas && typeof data.estadisticas === 'object' ? data.estadisticas : {}));
+            localStorage.setItem('pedidos_comprador', JSON.stringify(Array.isArray(data.pedidos_comprador) ? data.pedidos_comprador : []));
+            localStorage.setItem('pedidos_proveedor', JSON.stringify(Array.isArray(data.pedidos_proveedor) ? data.pedidos_proveedor : []));
 
             console.log("📦 Datos guardados en localStorage");
             return { success: true, user: usuario, company: empresa };

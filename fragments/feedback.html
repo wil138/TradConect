@@ -1,8 +1,9 @@
 <section class="mongo-panel">
-<h1 id="feedbackTitle">Atenci?n y preferencias</h1>
+<h1 id="feedbackTitle">Atención y preferencias</h1>
+<p>Consulta los registros de tu empresa. Las categorías, productos y métodos de pago forman parte de tus preferencias; las respuestas se muestran dentro de cada comentario.</p>
 <p id="feedbackStatus" role="status" aria-live="polite"></p>
-<label for="feedbackType">Tipo de registro</label><select id="feedbackType"></select>
-<form id="feedbackForm"><div id="feedbackFields" class="mongo-fields"></div><button class="btn-primary" type="submit">Enviar</button></form>
+<label for="feedbackType">Tipo de registro</label><select id="feedbackType" aria-controls="feedbackResults"></select>
+<form id="feedbackForm"><div id="feedbackFields" class="mongo-fields"></div><button class="btn-primary" type="submit">Enviar registro</button></form>
 <h2>Registros de mi empresa</h2><div id="feedbackResults" class="mongo-results"></div>
-<button id="feedbackPrevious" type="button">Anterior</button><button id="feedbackNext" type="button">Siguiente</button>
+<button id="feedbackPrevious" type="button" aria-label="Página anterior">Anterior</button><button id="feedbackNext" type="button" aria-label="Página siguiente">Siguiente</button>
 </section>

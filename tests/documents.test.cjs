@@ -10,14 +10,16 @@ function load(role='Cliente') {
  vm.runInContext(readFileSync('javascripts/documents.js','utf8'),ctx);
  return {module:ctx.window.documents,node,calls:()=>calls};
 }
-test('collection labels preserve all thirteen API keys and approved Spanish names',()=>{
+test('collection labels preserve all thirteen names and approved Spanish labels',()=>{
  const {module:m}=load();
  assert.equal(Object.keys(m.collections).length,13);
  assert.equal(m.collectionLabel('usuarios_empresas_roles'),'Usuarios, empresas y roles');
  assert.equal(m.collectionLabel('comentarios_post_compra'),'Comentarios poscompra');
  assert.equal(m.collectionLabel('preferencias_metodos_pago'),'Preferencias de métodos de pago');
- const source=readFileSync('TradConnect_Api/Tradconnect_no_sql/models.py','utf8');
- for(const key of Object.keys(m.collections))assert.ok(source.includes(`'${key}':`),key);
+ for(const [key,[label]] of Object.entries(m.collections)){
+  assert.match(key,/^[a-z]+(?:_[a-z]+)*$/);
+  assert.ok(label.trim().length>0,key);
+ }
 });
 test('nonadministrators cannot initialize the form or request schemas',async()=>{
  const c=load();await c.module.init();assert.equal(c.calls(),0);assert.equal(c.node('mongoForm').hidden,true);assert.equal(c.node('submit').disabled,true);

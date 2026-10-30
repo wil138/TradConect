@@ -122,6 +122,61 @@ test('API accepts empty successful responses and reports non-JSON responses', as
     vm.runInContext(readFileSync('javascripts/utils/api.js', 'utf8'), ctx);
     assert.equal(JSON.stringify(await ctx.window.api.readResponse({ text: async () => '', status: 204 })), '{}');
     await assert.rejects(ctx.window.api.readResponse({ text: async () => '<html>', status: 502 }), /HTTP 502/);
+    assert.equal(ctx.window.api.formatError(null), 'Error en la petición');
+});
+
+test('login uses the current API endpoint and maps optional session fields to safe UI defaults', async () => {
+    const ctx = context();
+    const calls = [];
+    ctx.fetch = async (url, options) => {
+        calls.push({url, options});
+        return {
+            ok: true,
+            status: 200,
+            text: async () => JSON.stringify({
+                tokens: {access: 'access-token', refresh: 'refresh-token'},
+                usuario: {nombreusuario: '', correoelectronico: 'cuenta@example.com', rol_nombre: 'Proveedor'},
+                empresa: null,
+                catalogos: null,
+                sucursales: null,
+                productos: null,
+                inventario: null,
+                promociones: null,
+                pedidos_comprador: null,
+                pedidos_proveedor: null
+            })
+        };
+    };
+    vm.runInContext(readFileSync('javascripts/utils/api.js', 'utf8'), ctx);
+
+    const result = await ctx.window.api.login('cuenta@example.com', 'password');
+
+    assert.equal(result.success, true);
+    assert.equal(calls[0].url, 'http://localhost:8001/api/auth/login/');
+    assert.equal(JSON.parse(calls[0].options.body).username, 'cuenta@example.com');
+    assert.equal(ctx.localStorage.getItem('userName'), 'cuenta@example.com');
+    assert.equal(ctx.localStorage.getItem('userRole'), 'provider');
+    assert.equal(ctx.localStorage.getItem('company'), '{}');
+    assert.equal(JSON.parse(ctx.localStorage.getItem('productos')).length, 0);
+    assert.equal(ctx.localStorage.getItem('access_token'), 'access-token');
+});
+
+test('login rejects an incomplete database-backed session without storing partial tokens', async () => {
+    const ctx = context();
+    ctx.fetch = async () => ({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({usuario: {nombreusuario: 'Ana'}, empresa: null})
+    });
+    vm.runInContext(readFileSync('javascripts/utils/api.js', 'utf8'), ctx);
+
+    const result = await ctx.window.api.login('ana@example.com', 'password');
+
+    assert.equal(result.success, false);
+    assert.match(result.error, /sesión incompletos/i);
+    assert.equal(ctx.localStorage.getItem('access_token'), null);
+    assert.equal(ctx.localStorage.getItem('refresh_token'), null);
+    assert.equal(ctx.window.api.getErrorStats().byStatus.INVALID_RESPONSE, 1);
 });
 
 test('API counts failures by endpoint and status without retaining error messages', async () => {
@@ -141,6 +196,23 @@ test('API counts failures by endpoint and status without retaining error message
 
     ctx.window.api.resetErrorStats();
     assert.equal(ctx.window.api.getErrorStats().total, 0);
+});
+
+test('login never authenticates from browser-only fake users when the API is unavailable', async () => {
+    const messages = [];
+    const ctx = vm.createContext({
+        window: {addEventListener() {}},
+        document: {getElementById: () => null, querySelector: () => null, addEventListener() {}},
+        localStorage: {getItem: () => null},
+        appUtils: {readJSON: () => { throw new Error('Browser-only credentials must not be read'); }},
+        alert: message => messages.push(message),
+        console
+    });
+    vm.runInContext(readFileSync('javascripts/utils/landing_spa.js', 'utf8'), ctx);
+
+    await ctx.window.handleLogin('ana@example.com', 'password');
+
+    assert.deepEqual(messages, ['El servicio de inicio de sesión no está disponible.']);
 });
 
 test('all router fragments exist with exact filename casing and contain no startup scripts', () => {

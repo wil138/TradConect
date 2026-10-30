@@ -154,7 +154,7 @@ window.orders = {
     _getEstadoOptions: function (currentEstado) {
         const catalogos = appUtils.readJSON('catalogos', {});
         const estados = catalogos.estados_pedido || [];
-        const fallback = ['Pendiente', 'Confirmado', 'Enviado', 'Entregado', 'Cancelado'];
+        const fallback = ['Pendiente', 'Confirmado', 'En preparación', 'En camino', 'Entregado', 'Cancelado'];
         const lista = estados.length > 0
             ? estados.map(e => e.estadonombre || e.nombre || 'Sin nombre')
             : fallback;
@@ -373,6 +373,8 @@ window.orders = {
         set('totalValue', [...totals.entries()].map(([currency, total]) => appUtils.money(total, currency)).join(' / ') || appUtils.money(0));
         set('pendingOrders',   counts.Pendiente);
         set('sentOrders',      counts.Enviado);
+        set('preparingOrders',  counts['En preparación'] || 0);
+        set('inTransitOrders',  counts['En camino'] || 0);
         set('deliveredOrders', counts.Entregado);
         set('cancelledOrders', counts.Cancelado);
         set('confirmedOrders', counts.Confirmado);

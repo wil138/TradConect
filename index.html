@@ -168,11 +168,7 @@
                             <h4 style="margin-top:0.5rem;">Bebidas</h4>
                             <p>Jugos, gaseosas, vinos nacionales</p>
                         </div>
-                        <div style="text-align: center;"><i class="fas fa-tshirt"
-                                style="font-size: 2.5rem; color:#1e4a76;"></i>
-                            <h4 style="margin-top:0.5rem;">Textiles</h4>
-                            <p>Uniformes, mantelería, cojines</p>
-                        </div>
+                        
                     </div>
                 </section>
 
@@ -680,10 +676,10 @@
             <h3>Iniciar sesión</h3>
             <form id="landingLoginForm">
                 <label for="landingLoginUsername">Usuario o correo</label>
-                <input type="text" id="landingLoginUsername" placeholder="Usuario o correo electrónico" autocomplete="username" required>
+                <input type="text" id="landingLoginUsername" maxlength="150" placeholder="Usuario o correo electrónico" autocomplete="username" required>
                 <label for="landingLoginPassword">Contraseña</label>
                 <div class="landing-pass-wrapper">
-                <input type="password" id="landingLoginPassword" placeholder="Contraseña" autocomplete="current-password" required>
+                <input type="password" id="landingLoginPassword" maxlength="128" placeholder="Contraseña" autocomplete="current-password" required>
                     <i class="fas fa-eye-slash landing-toggle-pass" data-target="landingLoginPassword"></i>
                 </div>
                 <button type="submit" class="landing-btn-primary">Ingresar</button>
@@ -704,7 +700,7 @@
                 <label for="regName">Nombre o razón social del negocio</label>
                 <input type="text" id="regName" maxlength="150" placeholder="Nombre de tu negocio" autocomplete="organization" required>
                 <label for="regEmail">Correo electrónico</label>
-                <input type="email" id="regEmail" placeholder="Correo electrónico" autocomplete="email" required>
+                <input type="email" id="regEmail" maxlength="150" placeholder="Correo electrónico" autocomplete="email" required>
                 <label for="regUsername">Nombre de usuario</label>
                 <input type="text" id="regUsername" maxlength="100" placeholder="Nombre de usuario" autocomplete="username" required>
                 <label for="regPassword">Contraseña</label>
@@ -734,12 +730,12 @@
     <script src="javascripts/utils/common.js"></script>
     <script src="javascripts/utils/export.js"></script>
     <script src="javascripts/config.js"></script>
-    <script src="javascripts/feedback.js"></script>
+    <script src="javascripts/feedback.js?v=20261030-comments-2"></script>
     <script src="javascripts/documents.js"></script>
-    <script src="javascripts/utils/api.js"></script>
+    <script src="javascripts/utils/api.js?v=20261030-auth-fix"></script>
     <script src="javascripts/utils/rolusuario.js"></script>
     <script src="javascripts/utils/router.js"></script>
-    <script src="javascripts/utils/landing_spa.js"></script>
+    <script src="javascripts/utils/landing_spa.js?v=20261030-auth-fix"></script>
     <script src="javascripts/utils/landing_interactions.js"></script>
     <script src="javascripts/profile.js"></script>
     <script src="javascripts/utils/cart.js"></script>
