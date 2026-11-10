@@ -23,3 +23,4 @@ TradConnect_Api/respaldos/
 **/.django-secret-key
 
 **/conexiones.local.json
+  **/TradConnect_Api
