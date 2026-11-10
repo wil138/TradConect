@@ -7,6 +7,7 @@
     --blue-primary: #2563eb;
     --blue-hover: #1d4ed8;
     --blue-soft: #eff6ff;
+    --brand-accent: var(--blue-primary);
     --text-main: #1e293b;
     --text-light: #64748b;
     --text-muted: #64748b;
@@ -227,7 +228,7 @@ h3 {
 .rol-selector {
     cursor: pointer;
     background: var(--blue-soft);
-    border: 1px solid #dbeafe;
+    border: 1px solid var(--blue-soft);
     border-radius: 12px;
     padding: 10px;
     margin-bottom: 20px;
@@ -1149,8 +1150,8 @@ tbody tr:hover {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #eef2ff;
-    color: #6366f1;
+    background: var(--blue-soft);
+    color: var(--blue-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1306,7 +1307,7 @@ tbody tr:hover {
 .search-input:focus {
     outline: none;
     border-color: var(--blue-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgba(23, 107, 91, 0.12);
     background-color: #ffffff;
 }
 
@@ -1409,7 +1410,7 @@ tbody tr:hover {
 .form-group select:focus {
     outline: none;
     border-color: var(--blue-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgba(23, 107, 91, 0.12);
 }
 
 .form-actions {
@@ -1477,7 +1478,7 @@ tbody tr:hover {
 }
 
 .edit-btn:hover {
-    color: #3b82f6;
+    color: var(--blue-primary);
     transform: scale(1.1);
 }
 
@@ -1512,7 +1513,7 @@ tbody tr:hover {
 }
 
 .notification-info {
-    background: #3b82f6;
+    background: var(--blue-primary);
 }
 
 .filter-tabs {
@@ -1655,7 +1656,7 @@ tbody tr:hover {
     font-size: 1.8rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    background: linear-gradient(135deg, var(--blue-primary), var(--primary-dark));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -2219,8 +2220,8 @@ tbody tr:hover {
 
 .badge-info,
 .badge-reembolsadas {
-    background: #dbeafe;
-    color: #1e40af;
+    background: var(--order-status-info-bg);
+    color: var(--order-status-info-text);
 }
 
 /* Animación para notificaciones */
@@ -2312,7 +2313,7 @@ tbody tr:hover {
 .landing-logo {
     font-size: 1.8rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #2563eb, #1e40af);
+    background: linear-gradient(135deg, var(--blue-primary), var(--primary-dark));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -2335,13 +2336,13 @@ tbody tr:hover {
 }
 
 .landing-nav-links a:hover {
-    color: #2563eb;
+    color: var(--blue-primary);
 }
 
 .landing-btn-outline {
     background: transparent;
-    border: 1.5px solid #2563eb;
-    color: #2563eb;
+    border: 1.5px solid var(--blue-primary);
+    color: var(--blue-primary);
     padding: 0.5rem 1.4rem;
     border-radius: 40px;
     font-weight: 600;
@@ -2351,7 +2352,7 @@ tbody tr:hover {
 }
 
 .landing-btn-outline:hover {
-    background: #2563eb;
+    background: var(--blue-primary);
     color: white;
     transform: scale(1.02);
 }
@@ -2380,7 +2381,7 @@ tbody tr:hover {
 }
 
 .landing-hero-content h1 span {
-    color: #2563eb;
+    color: var(--blue-primary);
     position: relative;
     display: inline-block;
 }
@@ -2392,7 +2393,7 @@ tbody tr:hover {
     left: 0;
     width: 100%;
     height: 10px;
-    background: rgba(37, 99, 235, 0.2);
+    background: rgba(23, 107, 91, 0.18);
     z-index: -1;
     border-radius: 20px;
 }
@@ -2405,7 +2406,7 @@ tbody tr:hover {
 }
 
 .landing-btn-primary {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, var(--blue-primary), var(--primary-dark));
     border: none;
     color: white;
     padding: 0.9rem 2rem;
@@ -2414,12 +2415,12 @@ tbody tr:hover {
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 6px 14px rgba(23, 107, 91, 0.2);
 }
 
 .landing-btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 20px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 12px 20px rgba(23, 107, 91, 0.24);
 }
 
 .landing-hero-image {
@@ -2428,8 +2429,8 @@ tbody tr:hover {
     justify-content: center;
     gap: 2rem;
     font-size: 4rem;
-    color: #2563eb;
-    background: rgba(37, 99, 235, 0.04);
+    color: var(--blue-primary);
+    background: rgba(23, 107, 91, 0.05);
     padding: 2rem;
     border-radius: 2rem;
 }
@@ -2453,7 +2454,7 @@ tbody tr:hover {
     display: block;
     width: 70px;
     height: 3px;
-    background: linear-gradient(90deg, #2563eb, #60a5fa);
+    background: linear-gradient(90deg, var(--blue-primary), var(--primary-dark));
     margin: 1rem auto 0;
     border-radius: 4px;
 }
@@ -2483,7 +2484,7 @@ tbody tr:hover {
     border-radius: 1.5rem;
     text-align: center;
     transition: all 0.25s;
-    border: 1px solid #eef2ff;
+    border: 1px solid var(--blue-soft);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
 }
 
@@ -2491,12 +2492,12 @@ tbody tr:hover {
 .landing-step-item:hover {
     transform: translateY(-6px);
     border-color: #cbdffc;
-    box-shadow: 0 20px 30px -12px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 20px 30px -12px rgba(23, 107, 91, 0.1);
 }
 
 .landing-benefit-item i {
     font-size: 2.5rem;
-    color: #2563eb;
+    color: var(--blue-primary);
     margin-bottom: 1rem;
 }
 
@@ -2510,7 +2511,7 @@ tbody tr:hover {
     display: inline-block;
     width: 44px;
     height: 44px;
-    background: #2563eb;
+    background: var(--blue-primary);
     color: white;
     border-radius: 60px;
     line-height: 44px;
@@ -2531,13 +2532,13 @@ tbody tr:hover {
     margin: 2rem 0;
     text-align: center;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
-    border: 1px solid #eef2ff;
+    border: 1px solid var(--blue-soft);
 }
 
 .landing-stats-inline .stat-number {
     font-size: 2.6rem;
     font-weight: 800;
-    color: #2563eb;
+    color: var(--blue-primary);
     display: block;
     line-height: 1.2;
 }
@@ -2553,7 +2554,7 @@ tbody tr:hover {
     background: white;
     padding: 2rem;
     border-radius: 1.5rem;
-    border-left: 5px solid #2563eb;
+    border-left: 5px solid var(--blue-primary);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     font-size: 1rem;
     line-height: 1.5;
@@ -2576,7 +2577,7 @@ tbody tr:hover {
     border-radius: 1.2rem;
     margin-bottom: 1rem;
     overflow: hidden;
-    border: 1px solid #eef2ff;
+    border: 1px solid var(--blue-soft);
 }
 
 .landing-faq-question {
@@ -2598,7 +2599,7 @@ tbody tr:hover {
     padding: 0 1.5rem 1.2rem 1.5rem;
     display: none;
     color: #475569;
-    border-top: 1px solid #eef2ff;
+    border-top: 1px solid var(--blue-soft);
     line-height: 1.5;
 }
 
@@ -2610,7 +2611,7 @@ tbody tr:hover {
     padding: 2.5rem;
     border-radius: 2rem;
     box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08);
-    border: 1px solid #eef2ff;
+    border: 1px solid var(--blue-soft);
 }
 
 .landing-contact-input,
@@ -2629,8 +2630,8 @@ tbody tr:hover {
 .landing-contact-input:focus,
 .landing-contact-textarea:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(23, 107, 91, 0.12);
 }
 
 .landing-contact-textarea {
@@ -2728,7 +2729,7 @@ tbody tr:hover {
 }
 
 .modal-link a {
-    color: #2563eb;
+    color: var(--blue-primary);
     text-decoration: none;
     font-weight: 600;
 }
@@ -2836,7 +2837,7 @@ tbody tr:hover {
             font-weight: 800;
             text-align: center;
             margin-bottom: 1.8rem;
-            background: linear-gradient(135deg, #1e4a76, #0f3654);
+            background: linear-gradient(135deg, var(--blue-primary), var(--primary-dark));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -2873,7 +2874,7 @@ tbody tr:hover {
 
         .landing-btn-primary {
             width: 100%;
-            background: linear-gradient(135deg, #1e4a76, #0f3654);
+            background: linear-gradient(135deg, var(--blue-primary), var(--primary-dark));
             color: white;
             border: none;
             padding: 1rem;
@@ -2887,7 +2888,7 @@ tbody tr:hover {
 
         .landing-btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 25px -10px rgba(30, 74, 118, 0.4);
+            box-shadow: 0 15px 25px -10px rgba(23, 107, 91, 0.24);
         }
 
         .landing-close-modal {
@@ -2917,7 +2918,7 @@ tbody tr:hover {
         }
 
         .landing-modal-link a {
-            color: #1e4a76;
+            color: var(--blue-primary);
             font-weight: 600;
             text-decoration: none;
         }
@@ -2948,7 +2949,7 @@ tbody tr:hover {
         .logo {
             font-size: 1.8rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #1e4a76, #0f3654);
+            background: linear-gradient(135deg, var(--blue-primary), var(--primary-dark));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -2970,17 +2971,17 @@ tbody tr:hover {
 
         .btn-outline {
             background: transparent;
-            border: 1.5px solid #1e4a76;
+            border: 1.5px solid var(--blue-primary);
             padding: 0.6rem 1.5rem;
             border-radius: 3rem;
             font-weight: 600;
-            color: #1e4a76;
+            color: var(--blue-primary);
             cursor: pointer;
             transition: 0.2s;
         }
 
         .btn-outline:hover {
-            background: #1e4a76;
+            background: var(--blue-primary);
             color: white;
         }
 
@@ -3004,7 +3005,7 @@ tbody tr:hover {
         }
 
         .hero-content h1 span {
-            color: #1e4a76;
+            color: var(--blue-primary);
         }
 
         .hero-content p {
@@ -3021,7 +3022,7 @@ tbody tr:hover {
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #1e4a76, #0f3654);
+            background: linear-gradient(135deg, var(--blue-primary), var(--primary-dark));
             color: white;
             border: none;
             padding: 0.8rem 1.8rem;
@@ -3032,7 +3033,7 @@ tbody tr:hover {
 
         .hero-image {
             flex: 1;
-            background: #eef2ff;
+            background: var(--blue-soft);
             border-radius: 2rem;
             padding: 2rem;
             text-align: center;
@@ -3041,7 +3042,7 @@ tbody tr:hover {
         .hero-image i {
             font-size: 4rem;
             margin: 0 0.8rem;
-            color: #1e4a76;
+            color: var(--blue-primary);
         }
 
         .section {
@@ -3075,7 +3076,7 @@ tbody tr:hover {
             justify-content: space-around;
             flex-wrap: wrap;
             gap: 2rem;
-            background: #eef2ff;
+            background: var(--blue-soft);
             border-radius: 3rem;
             padding: 3rem 2rem;
             margin: 2rem 0;
@@ -3085,7 +3086,7 @@ tbody tr:hover {
         .stat-number {
             font-size: 3rem;
             font-weight: 800;
-            color: #1e4a76;
+            color: var(--blue-primary);
             line-height: 1;
         }
 
@@ -3093,7 +3094,7 @@ tbody tr:hover {
             background: transparent;
             padding: 1.5rem 0;
             font-style: italic;
-            border-left: 4px solid #1e4a76;
+            border-left: 4px solid var(--blue-primary);
             padding-left: 2rem;
             font-size: 1.1rem;
         }
@@ -3232,7 +3233,7 @@ tbody tr:hover {
 }
 
 .profile-header {
-    background: linear-gradient(135deg, #1e4a76 0%, #0f3654 100%);
+    background: linear-gradient(135deg, var(--blue-primary) 0%, var(--primary-dark) 100%);
     padding: 2rem;
     color: white;
 }
@@ -3305,11 +3306,11 @@ tbody tr:hover {
 
 .tab-btn:hover {
     background: #e2e8f0;
-    color: #1e4a76;
+    color: var(--blue-primary);
 }
 
 .tab-btn.active {
-    background: #1e4a76;
+    background: var(--blue-primary);
     color: white;
 }
 
@@ -3343,7 +3344,7 @@ tbody tr:hover {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #1e4a76;
+    color: var(--blue-primary);
 }
 
 .form-grid {
@@ -3385,8 +3386,8 @@ tbody tr:hover {
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #1e4a76;
-    box-shadow: 0 0 0 3px rgba(30,74,118,0.1);
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(23,107,91,0.12);
 }
 
 .form-group small {
@@ -3403,7 +3404,7 @@ tbody tr:hover {
 }
 
 .btn-save {
-    background: #1e4a76;
+    background: var(--blue-primary);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -3417,7 +3418,7 @@ tbody tr:hover {
 }
 
 .btn-save:hover {
-    background: #0f3654;
+    background: var(--primary-dark);
     transform: translateY(-2px);
 }
 
@@ -3433,7 +3434,7 @@ tbody tr:hover {
 
 .branches-header h3 {
     margin: 0;
-    color: #1e4a76;
+    color: var(--blue-primary);
 }
 
 .btn-add-branch {
@@ -3489,7 +3490,7 @@ tbody tr:hover {
 .branch-name {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e4a76;
+    color: var(--blue-primary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -3525,11 +3526,11 @@ tbody tr:hover {
 }
 
 .branch-edit-btn {
-    color: #3b82f6;
+    color: var(--blue-primary);
 }
 
 .branch-edit-btn:hover {
-    background: #dbeafe;
+    background: var(--blue-soft);
 }
 
 .branch-delete-btn {
@@ -3603,7 +3604,7 @@ tbody tr:hover {
 
 .branch-modal-header h3 {
     margin: 0;
-    color: #1e4a76;
+    color: var(--blue-primary);
 }
 
 .branch-modal-close {
@@ -3660,7 +3661,7 @@ tbody tr:hover {
 
 .notif-info i {
     font-size: 1.25rem;
-    color: #1e4a76;
+    color: var(--blue-primary);
 }
 
 .notif-info small {
@@ -3708,7 +3709,7 @@ tbody tr:hover {
 }
 
 input:checked + .slider {
-    background-color: #1e4a76;
+    background-color: var(--blue-primary);
 }
 
 input:checked + .slider:before {
@@ -3851,7 +3852,7 @@ input:checked + .slider:before {
 .kpi-value {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #1e4a76;
+    color: var(--blue-primary);
 }
 
 .chart-row {
@@ -3921,7 +3922,7 @@ input:checked + .slider:before {
     font-weight: 600;
 }
 
-.bg-primary { background: #1e4a76; color: white; }
+.bg-primary { background: var(--blue-primary); color: white; }
 .bg-success { background: #22c55e; color: white; }
 .bg-secondary { background: #94a3b8; color: white; }
 

@@ -2,6 +2,21 @@
 document.addEventListener('DOMContentLoaded', () => {
     const root = document.getElementById('landing-wrapper');
     if (!root) return;
+    const navToggle = document.getElementById('landingNavToggle');
+    const navLinks = document.getElementById('landingNavLinks');
+    if (navToggle && navLinks) {
+        navToggle.addEventListener('click', () => {
+            const expanded = navToggle.getAttribute('aria-expanded') !== 'true';
+            navToggle.setAttribute('aria-expanded', String(expanded));
+            navToggle.setAttribute('aria-label', expanded ? 'Cerrar navegación' : 'Abrir navegación');
+            navLinks.classList.toggle('is-open', expanded);
+        });
+        navLinks.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener('click', () => {
+            navToggle.setAttribute('aria-expanded', 'false');
+            navToggle.setAttribute('aria-label', 'Abrir navegación');
+            navLinks.classList.remove('is-open');
+        }));
+    }
     const requestedRole = new URLSearchParams(window.location.search).get('registro');
     if (['client', 'provider'].includes(requestedRole)) {
         openRegisterModal();
@@ -62,7 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     minutes.addEventListener('input', updateEstimate);
     updateEstimate();
     const normalize = text => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    document.getElementById('landingFaqSearch').addEventListener('input', event => {
+    const faqSearch = document.getElementById('landingFaqSearch');
+    faqSearch?.addEventListener('input', event => {
         const term = normalize(event.target.value.trim());
         let count = 0;
         root.querySelectorAll('.faq-item').forEach(item => {
@@ -73,25 +89,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const confirm = document.getElementById('regConfirmPassword');
     const password = document.getElementById('regPassword');
-    function checkConfirmation() { confirm.setCustomValidity(confirm.value && confirm.value !== password.value ? 'Las contrase\u00f1as no coinciden.' : ''); }
-    confirm.addEventListener('input', checkConfirmation);
-    password.addEventListener('input', checkConfirmation);
-    // Los FAQ existentes tambi\u00e9n se pueden abrir con teclado.
-    root.querySelectorAll('.faq-question').forEach(question => {
-        question.tabIndex = 0;
-        question.setAttribute('role', 'button');
-        question.setAttribute('aria-expanded', 'false');
-        question.addEventListener('click', () => {
-            const expanded = question.getAttribute('aria-expanded') !== 'true';
-            question.nextElementSibling.style.display = expanded ? 'block' : 'none';
-            question.setAttribute('aria-expanded', String(expanded));
-            const icon = question.querySelector('i');
-            if (icon) icon.className = expanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+    if (confirm && password) {
+        function checkConfirmation() { confirm.setCustomValidity(confirm.value && confirm.value !== password.value ? 'Las contrase\u00f1as no coinciden.' : ''); }
+        confirm.addEventListener('input', checkConfirmation);
+        password.addEventListener('input', checkConfirmation);
+    }
+    root.querySelectorAll('.faq-question').forEach(question => question.addEventListener('click', () => {
+        const expanded = question.getAttribute('aria-expanded') !== 'true';
+        question.setAttribute('aria-expanded', String(expanded));
+        question.nextElementSibling.hidden = !expanded;
+        const icon = question.querySelector('i');
+        if (icon) icon.className = expanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+    }));
+
+    const commentSearch = document.getElementById('commentSearch');
+    const commentType = document.getElementById('commentType');
+    const commentCount = document.getElementById('commentCount');
+    const examples = [...root.querySelectorAll('[data-comment-type]')];
+    function filterExamples() {
+        if (!commentSearch || !commentType || !commentCount) return;
+        const term = normalize(commentSearch.value.trim());
+        let visible = 0;
+        examples.forEach(example => {
+            const matches = (commentType.value === 'todos' || commentType.value === example.dataset.commentType)
+                && normalize(example.textContent).includes(term);
+            example.hidden = !matches;
+            if (matches) visible++;
         });
-        question.addEventListener('keydown', event => {
-            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); question.click(); }
-        });
-    });
+        commentCount.textContent = visible
+            ? `${visible} ejemplos ilustrativos`
+            : 'No encontramos ejemplos. Cambia la búsqueda o el filtro.';
+    }
+    commentSearch?.addEventListener('input', filterExamples);
+    commentType?.addEventListener('change', filterExamples);
+    filterExamples();
+
+    root.querySelectorAll('[data-open-register]').forEach(button => button.addEventListener('click', () => {
+        const role = button.dataset.openRegister;
+        openRegisterModal();
+        document.getElementById('regRole').value = role;
+        document.getElementById('regName').focus();
+    }));
+    document.getElementById('communityLogin')?.addEventListener('click', openLoginModal);
     document.addEventListener('keydown', event => {
         if (event.key !== 'Escape') return;
         if (document.getElementById('landingRegisterModal').style.display === 'flex') closeRegisterModal();

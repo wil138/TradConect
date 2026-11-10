@@ -117,7 +117,7 @@ window.CartModule = {
                 <div class="empty-state">
                     <i class="fas fa-shopping-cart" style="font-size:3rem; color:#cbd5e1;"></i>
                     <p style="color:#64748b;">Tu carrito está vacío</p>
-                    <button onclick="window.CartModule.closeCart()" class="btn-close-cart" style="background:#2563eb; color:white; border:none; padding:8px 24px; border-radius:6px; cursor:pointer; margin-top:10px;">
+                    <button onclick="window.CartModule.closeCart()" class="btn-close-cart" style="background:var(--blue-primary); color:white; border:none; padding:8px 24px; border-radius:6px; cursor:pointer; margin-top:10px;">
                         Explorar productos
                     </button>
                 </div>
@@ -202,7 +202,7 @@ window.CartModule = {
             <div style="border-top: 1px dashed #cbd5e1; margin: 8px 0;"></div>
             <div style="display: flex; justify-content: space-between; font-weight: 800; font-size:1.1rem;">
                 <span>Total estimado con IVA 15 %:</span>
-                <span style="color:#2563eb;">${appUtils.currencySymbol()}${total.toFixed(2)}</span>
+                <span style="color:var(--blue-primary);">${appUtils.currencySymbol()}${total.toFixed(2)}</span>
             </div>
         `;
         const cartTotalSpan = document.getElementById('cartTotal');
@@ -219,15 +219,15 @@ window.CartModule = {
         }
         if (this.selectedBranch) {
             branchDiv.innerHTML = `
-                <div style="margin-top: 8px; padding: 10px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                <div style="margin-top: 8px; padding: 10px; background: var(--blue-soft); border-radius: 8px; border-left: 4px solid var(--blue-primary);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <i class="fas fa-location-dot" style="color:#2563eb;"></i>
+                            <i class="fas fa-location-dot" style="color:var(--blue-primary);"></i>
                             <strong>Entrega:</strong> ${this.escapeHtml(this.selectedBranch.nombresucursal)}
                             <br><small style="color:#64748b;">${this.escapeHtml(this.selectedBranch.direccionexacta || '')}</small>
                         </div>
                         <button onclick="window.CartModule.selectBranch()" 
-                                style="background:#2563eb; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:0.8rem;">
+                                style="background:var(--blue-primary); color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:0.8rem;">
                             Cambiar
                         </button>
                     </div>
@@ -242,7 +242,7 @@ window.CartModule = {
                             <strong>Sin sucursal de entrega</strong>
                         </div>
                         <button onclick="window.CartModule.selectBranch()" 
-                                style="background:#2563eb; color:white; border:none; padding:4px 14px; border-radius:4px; cursor:pointer; font-size:0.8rem;">
+                                style="background:var(--blue-primary); color:white; border:none; padding:4px 14px; border-radius:4px; cursor:pointer; font-size:0.8rem;">
                             Seleccionar
                         </button>
                     </div>
@@ -378,7 +378,7 @@ window.CartModule = {
             <div id="branchSelectorModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:9999; display:flex; justify-content:center; align-items:center;">
                 <div style="background:white; border-radius:16px; max-width:500px; width:90%; max-height:80vh; overflow-y:auto; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h3 style="margin:0;"><i class="fas fa-location-dot" style="color:#2563eb;"></i> Selecciona sucursal de entrega</h3>
+                        <h3 style="margin:0;"><i class="fas fa-location-dot" style="color:var(--blue-primary);"></i> Selecciona sucursal de entrega</h3>
                         <button onclick="document.getElementById('branchSelectorModal').remove()" 
                                 style="background:none; border:none; font-size:28px; cursor:pointer; color:#94a3b8; padding:0 8px;">
                             &times;
@@ -389,11 +389,11 @@ window.CartModule = {
                     </div>
                     ${activeBranches.map(branch => `
                         <div class="branch-option" data-id="${branch.id}" 
-                             style="padding:14px 16px; border:2px solid ${this.selectedBranch?.id === branch.id ? '#2563eb' : '#e2e8f0'}; 
+                             style="padding:14px 16px; border:2px solid ${this.selectedBranch?.id === branch.id ? 'var(--blue-primary)' : '#e2e8f0'};
                                     border-radius:10px; margin-bottom:8px; cursor:pointer; 
-                                    transition:all 0.2s; background:${this.selectedBranch?.id === branch.id ? '#f0f7ff' : 'white'};
+                                    transition:all 0.2s; background:${this.selectedBranch?.id === branch.id ? 'var(--blue-soft)' : 'white'};
                                     display:flex; align-items:center; gap:12px;">
-                            <i class="fas fa-store" style="color:${this.selectedBranch?.id === branch.id ? '#2563eb' : '#94a3b8'}; font-size:1.2rem;"></i>
+                            <i class="fas fa-store" style="color:${this.selectedBranch?.id === branch.id ? 'var(--blue-primary)' : '#94a3b8'}; font-size:1.2rem;"></i>
                             <div>
                                 <div style="font-weight:600;">${this.escapeHtml(branch.nombresucursal)}</div>
                                 <div style="font-size:0.85rem; color:#64748b;">${this.escapeHtml(branch.direccionexacta || branch.direccion || 'Sin dirección')}</div>
@@ -567,7 +567,7 @@ window.CartModule = {
                             ` : ''}
                             <div style="border-top:1px solid #e2e8f0; padding-top:10px; display:flex; justify-content:space-between;">
                                 <span style="font-weight:800; font-size:1.1em;">Total con IVA 15 %:</span>
-                                <span style="font-weight:800; font-size:1.1em; color:#2563eb;">${appUtils.currencySymbol()}${total.toFixed(2)}</span>
+                                <span style="font-weight:800; font-size:1.1em; color:var(--blue-primary);">${appUtils.currencySymbol()}${total.toFixed(2)}</span>
                             </div>
                         </div>
 
@@ -576,7 +576,7 @@ window.CartModule = {
                             ${proveedorGroups.map(group => {
                                 const groupTotal = Number(group.quote.totalneto);
                                 return `
-                                    <div style="padding:10px 14px; background:#f1f5f9; border-left:4px solid #2563eb; margin-bottom:8px; border-radius:4px;">
+                                    <div style="padding:10px 14px; background:#f1f5f9; border-left:4px solid var(--blue-primary); margin-bottom:8px; border-radius:4px;">
                                         <div><strong>${this.escapeHtml(group.proveedorNombre)}</strong></div>
                                         <div style="font-size:0.85rem; color:#64748b;">${group.items.length} producto(s) - ${appUtils.currencySymbol()}${groupTotal.toFixed(2)}</div>
                                     </div>
@@ -720,4 +720,3 @@ if (document.readyState === 'loading') {
     }
 }
 console.log('✅ CartModule loaded (mejorado)');
-

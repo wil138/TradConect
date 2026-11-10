@@ -51,8 +51,9 @@
 - No deben usar DOMContentLoaded.
 
 #### Roles (rolusuario.js)
-- Dos roles: client y provider.
-- El menú se renderiza dinámicamente según el rol.
+- Los roles principales son client, provider y admin; los roles gerenciales se identifican como staff.
+- El menú se renderiza dinámicamente según el rol. staff solo accede al módulo mobile, sin navegación al resto de la SPA.
+- La landing explica la solución bifocal: web para restaurantes/proveedores y app móvil para gerencia; los enlaces de descarga se configuran en `TRADCONNECT_CONFIG.mobileAppLinks` (`android` e `ios`).
 - ToggleRole() cambia el rol y recarga el módulo correspondiente.
 - updateConditionalElements() muestra/oculta carrito según rol.
 

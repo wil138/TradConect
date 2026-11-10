@@ -18,7 +18,7 @@ function closeAll() {
 
 const menus = {
     admin: [{label: 'Mi Perfil', module: 'profile', icon: 'fa-user'}],
-    staff: [{label: 'Mi Perfil', module: 'profile', icon: 'fa-user'}],
+    staff: [{ label: "Acceso móvil", module: "mobile", icon: "fa-mobile-screen-button" }],
     client: [
         { label: "Atenci\u00f3n y preferencias", module: "feedback", icon: "fa-comment" },
         { label: "Marketplace", module: "marketplace", icon: "fa-shop" },

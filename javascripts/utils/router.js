@@ -8,7 +8,8 @@ const router = {
         'orders': 'fragments/orders.html',
         'inventory': 'fragments/inventory.html',
         'analytics': 'fragments/analytics.html',
-        'documents': 'fragments/documents.html'
+        'documents': 'fragments/documents.html',
+        'mobile': 'fragments/mobile.html'
     },
     currentModule: null,
 
@@ -24,10 +25,12 @@ const router = {
             return;
         }
 
+        if (localStorage.getItem('userRole') === 'staff') moduleName = 'mobile';
+
         // Si el módulo no existe, redirigir al predeterminado según rol
         if (!this.routes[moduleName]) {
             const role = localStorage.getItem('userRole');
-            moduleName = role === 'provider' ? 'dashboard' : role === 'client' ? 'marketplace' : 'profile';
+            moduleName = role === 'provider' ? 'dashboard' : role === 'client' ? 'marketplace' : role === 'staff' ? 'mobile' : 'profile';
         }
 
         const requestId = this._requestId = (this._requestId || 0) + 1;
@@ -97,7 +100,9 @@ const router = {
         const savedModule = localStorage.getItem('currentModule');
         const role = localStorage.getItem('userRole');
 
-        if (savedModule && this.routes[savedModule]) {
+        if (role === 'staff') {
+            this.loadModule('mobile');
+        } else if (savedModule && this.routes[savedModule]) {
             this.loadModule(savedModule);
         } else if (role === 'client') {
             this.loadModule('marketplace');
@@ -112,6 +117,7 @@ const router = {
     // Navegación programática
     // ----------------------------------------------
     navigateTo(moduleName) {
+        if (localStorage.getItem('userRole') === 'staff') moduleName = 'mobile';
         if (this.routes[moduleName]) {
             history.pushState({ module: moduleName }, '', `#${moduleName}`);
             this.loadModule(moduleName);

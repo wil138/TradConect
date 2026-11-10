@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>TradConnect |  Restaurantes</title>
-     <link rel="icon" href="https://placehold.co/32x32?text=TD" type="image/png">
+    <title>TradConnect | Conecta negocios locales</title>
+     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap"
         rel="stylesheet">
@@ -22,39 +22,67 @@
 
     <!-- ==================== LANDING PAGE ==================== -->
     <div id="landing-wrapper">
-        <nav class="navbar">
-            <div class="logo">TradConnect</div>
-            <div class="nav-links">
-                <a href="#inicio">Inicio</a><a href="#historia">Historia</a><a href="#beneficios">Beneficios</a>
-                <a href="#productos">Productos</a><a href="#explora-plataforma">La plataforma</a><a href="informacion/como-funciona.html">Cómo funcionamos</a><a href="informacion/comunidad.html">Comunidad</a><a href="#faq">FAQ</a><a href="#contacto">Contacto</a>
+        <a class="landing-skip-link" href="#contenido-principal">Saltar al contenido</a>
+        <nav class="navbar" aria-label="Navegación principal">
+            <a class="landing-brand" href="#inicio" aria-label="TradConnect, inicio"><i class="fas fa-link" aria-hidden="true"></i><span>TradConnect</span></a>
+            <button type="button" class="landing-nav-toggle" id="landingNavToggle" aria-expanded="false" aria-controls="landingNavLinks" aria-label="Abrir navegación"><i class="fas fa-bars" aria-hidden="true"></i></button>
+            <div class="nav-links" id="landingNavLinks">
+                <a href="#solucion-bifocal">Solución</a>
+                <a href="#guia-funcionamiento">Cómo funciona</a>
+                <a href="#guia-restaurantes">Restaurantes</a>
+                <a href="#guia-proveedores">Proveedores</a>
+                <a href="#guia-comunidad">Atención</a>
+                <a href="#faq">Preguntas</a>
+                <a href="#contacto">Contacto</a>
                 <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">Modo oscuro</button>
-                <button class="btn-outline" id="landingLoginBtn">Iniciar sesión</button>
+                <button type="button" class="btn-outline" id="landingLoginBtn"><i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i> Iniciar sesión</button>
             </div>
         </nav>
-        <main>
+        <main id="contenido-principal">
             <div class="container">
                 <!-- Hero -->
                 <div class="hero" id="inicio">
                     <div class="hero-content">
-                        <span class="landing-eyebrow">COMERCIO LOCAL EN NICARAGUA</span>
-                        <h1>Tu próximo proveedor está <span>más cerca.</span></h1>
-                        <p>La plataforma B2B que optimiza tu cadena de suministro, reduce costos y apoya la economía
-                            local.</p>
+                        <span class="landing-eyebrow"><i class="fas fa-location-dot" aria-hidden="true"></i> COMERCIO LOCAL EN NICARAGUA</span>
+                        <h1>Abastece tu negocio con <span>conexiones locales.</span></h1>
+                        <p>TradConnect reúne a restaurantes y proveedores en un espacio digital para descubrir productos, organizar pedidos y dar seguimiento a cada operación.</p>
                         <div class="hero-buttons">
-                            <button class="btn-primary" id="landingOpenRegisterBtn">Regístrate gratis</button>
+                            <button class="btn-primary" id="landingOpenRegisterBtn"><i class="fas fa-user-plus" aria-hidden="true"></i> Crear cuenta</button>
+                            <a class="btn-outline" href="#explora-plataforma">Explorar la plataforma <i class="fas fa-arrow-down" aria-hidden="true"></i></a>
                         </div>
                     </div>
                     <div class="hero-image" aria-label="Del proveedor a tu negocio en un solo lugar">
-                        <div class="supply-heading"><span class="landing-eyebrow">TU NEGOCIO, CONECTADO</span><i class="fas fa-handshake" aria-hidden="true"></i></div>
-                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-seedling" aria-hidden="true"></i></span><div><strong>Proveedores locales</strong><p>Productos para cada necesidad</p></div></div>
+                        <div class="supply-heading"><span class="landing-eyebrow">DEL CATÁLOGO A TU NEGOCIO</span><i class="fas fa-arrows-left-right" aria-hidden="true"></i></div>
+                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-store" aria-hidden="true"></i></span><div><strong>Proveedores</strong><p>Presentan productos y disponibilidad.</p></div></div>
                         <div class="supply-connector" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
-                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-box-open" aria-hidden="true"></i></span><div><strong>Todo en un solo pedido</strong><p>Explora, selecciona y organiza</p></div></div>
+                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-basket-shopping" aria-hidden="true"></i></span><div><strong>Restaurantes</strong><p>Exploran opciones y preparan pedidos.</p></div></div>
                         <div class="supply-connector" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
-                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-utensils" aria-hidden="true"></i></span><div><strong>Directo a tu restaurante</strong><p>Más tiempo para lo que haces mejor</p></div></div>
-                        <div class="supply-footnote"><i class="fas fa-location-dot" aria-hidden="true"></i> Conectando negocios en Nicaragua</div>
+                        <div class="supply-row"><span class="supply-icon"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span><div><strong>Seguimiento</strong><p>Ambas partes consultan la información de la operación.</p></div></div>
+                        <div class="supply-footnote"><i class="fas fa-circle-info" aria-hidden="true"></i> Cada cuenta muestra herramientas según su rol.</div>
                     </div>
                 </div>
 
+                <section class="section bifocal-section" id="solucion-bifocal" aria-labelledby="bifocal-title">
+                    <span class="landing-eyebrow">DOS APLICACIONES, UNA PLATAFORMA</span>
+                    <h2 class="section-title" id="bifocal-title">Una solución bifocal para cada necesidad</h2>
+                    <p class="lead">TradConnect separa la experiencia de compra y venta de las herramientas de gestión para que cada persona entre desde la aplicación que le corresponde.</p>
+                    <div class="bifocal-grid">
+                        <article class="bifocal-card">
+                            <span class="bifocal-icon" aria-hidden="true"><i class="fas fa-globe"></i></span>
+                            <h3>Web para restaurantes y proveedores</h3>
+                            <p>Explora el marketplace, coordina pedidos y administra productos, inventario y ventas desde la plataforma web.</p>
+                            <button class="btn-primary" type="button" id="bifocalWebLogin">Ingresar a la web</button>
+                        </article>
+                        <article class="bifocal-card">
+                            <span class="bifocal-icon" aria-hidden="true"><i class="fas fa-mobile-screen-button"></i></span>
+                            <h3>App móvil para gerencia</h3>
+                            <p>Los roles gerenciales y administrativos consultan su información y realizan sus funciones desde una aplicación móvil independiente. Si tu cuenta tiene uno de esos roles, inicia sesión en la app móvil. La descarga para Android y iPhone todavía no está publicada.</p>
+                            <div id="landingMobileDownloads" class="mobile-app-downloads" aria-label="Descargar la aplicación móvil">
+                                <p class="mobile-app-downloads-empty">Los enlaces oficiales aparecerán aquí cuando la app esté publicada.</p>
+                            </div>
+                        </article>
+                    </div>
+                </section>
 
                 <section class="section platform-tour" id="explora-plataforma" aria-labelledby="tour-title">
                     <span class="landing-eyebrow">UN ESPACIO PARA CADA NEGOCIO</span>
@@ -88,62 +116,134 @@
                     <div class="planning-result"><i class="fas fa-clock" aria-hidden="true"></i><span>Tu tiempo de gestión estimado</span><output id="planningResult" aria-live="polite">6.7 horas / mes</output><p>Estimación: pedidos semanales × minutos por pedido × 4 semanas. Describe tu escenario actual; no es una promesa de ahorro.</p><a href="#como-empezar" class="btn-outline">Conoce cómo empezar</a></div>
                 </section>
 
-<section class="section" id="conoce-tradconnect"><h2 class="section-title">Conoce TradConnect por dentro</h2><p class="lead">Guías para entender cada paso, elegir tu rol y conocer nuestros canales de atención.</p><div class="business-tools"><article><h3>Cómo funcionamos</h3><p>Del registro al seguimiento: conoce el recorrido de un pedido y el contexto de tus reportes.</p><a class="info-guide-link" href="informacion/como-funciona.html">Explorar la guía <span aria-hidden="true">→</span></a></article><article><h3>Guía para restaurantes</h3><p>Explora el catálogo, prepara tu compra y conserva los documentos de tus pedidos.</p><a class="info-guide-link" href="informacion/restaurantes.html">Explorar la guía <span aria-hidden="true">→</span></a></article><article><h3>Guía para proveedores</h3><p>Organiza tu oferta, gestiona pedidos recibidos y consulta tus resultados.</p><a class="info-guide-link" href="informacion/proveedores.html">Explorar la guía <span aria-hidden="true">→</span></a></article><article><h3>Comentarios y comunidad</h3><p>Explora ejemplos de opiniones y aprende a usar evaluaciones e incidencias.</p><a class="info-guide-link" href="informacion/comunidad.html">Explorar la guía <span aria-hidden="true">→</span></a></article></div></section>
+                <section class="section guide-index" id="conoce-tradconnect" aria-labelledby="guide-index-title">
+                    <span class="landing-eyebrow">GUÍAS PRÁCTICAS</span>
+                    <h2 class="section-title" id="guide-index-title">Encuentra la información para tu rol</h2>
+                    <p class="lead">Conoce el recorrido, las herramientas disponibles y los pasos para usar TradConnect. Todas las guías están aquí mismo.</p>
+                    <div class="business-tools">
+                        <a class="guide-link-card" href="#guia-funcionamiento"><i class="fas fa-route" aria-hidden="true"></i><span><strong>Cómo funciona</strong><small>Del registro al seguimiento y los reportes.</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="guide-link-card" href="#guia-restaurantes"><i class="fas fa-utensils" aria-hidden="true"></i><span><strong>Para restaurantes</strong><small>Explora, organiza pedidos y consulta tus compras.</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="guide-link-card" href="#guia-proveedores"><i class="fas fa-boxes-stacked" aria-hidden="true"></i><span><strong>Para proveedores</strong><small>Administra tu oferta y da seguimiento a las ventas.</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="guide-link-card" href="#guia-comunidad"><i class="fas fa-comments" aria-hidden="true"></i><span><strong>Atención y comunidad</strong><small>Opiniones, evaluaciones e incidencias con contexto.</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+                </section>
+
+                <section class="section landing-guide" id="guia-funcionamiento" aria-labelledby="guide-how-title">
+                    <span class="landing-eyebrow">01 · GUÍA GENERAL</span>
+                    <h2 class="section-title" id="guide-how-title">Un proceso claro para cada negocio</h2>
+                    <p class="lead">Cada cuenta accede a herramientas distintas según su actividad. La información de cada operación queda disponible en el espacio de trabajo.</p>
+                    <div class="guide-card-grid">
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-user-check" aria-hidden="true"></i></span><h3>1. Crea tu cuenta</h3><p>Elige restaurante o proveedor y registra el usuario, correo, contraseña y datos del negocio. Usa información de contacto vigente.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-magnifying-glass" aria-hidden="true"></i></span><h3>2. Encuentra tu espacio</h3><p>Restaurantes exploran el marketplace. Proveedores organizan catálogo, sucursales e inventario para presentar su oferta.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></span><h3>3. Gestiona pedidos</h3><p>Antes de confirmar, revisa productos, cantidades, sucursal y método de pago disponibles. El proveedor actualiza el seguimiento del pedido.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-chart-column" aria-hidden="true"></i></span><h3>4. Consulta resultados</h3><p>Filtra reportes por período y moneda. Las monedas se muestran por separado; los importes y cantidades reflejan los datos registrados.</p></article>
+                    </div>
+                    <aside class="guide-note"><i class="fas fa-circle-info" aria-hidden="true"></i><p>Los archivos de pedidos y análisis ayudan a organizar el trabajo: no son facturas fiscales ni confirmaciones de pago. Confirma con la otra parte cualquier condición de entrega o compra que no se muestre.</p></aside>
+                </section>
+
+                <section class="section landing-guide" id="guia-restaurantes" aria-labelledby="guide-restaurant-title">
+                    <span class="landing-eyebrow">02 · GUÍA PARA RESTAURANTES</span>
+                    <h2 class="section-title" id="guide-restaurant-title">Organiza tus compras desde un solo lugar</h2>
+                    <p class="lead">Prepara la reposición, revisa los datos de cada producto y conserva el historial de tus pedidos.</p>
+                    <div class="guide-card-grid">
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-list-check" aria-hidden="true"></i></span><h3>Prepara tu lista</h3><p>Anota productos, cantidades y unidades antes de abrir el catálogo. Así podrás comparar opciones con las necesidades de tu cocina.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-store" aria-hidden="true"></i></span><h3>Explora el marketplace</h3><p>Usa la búsqueda y las categorías para encontrar productos. Revisa la información disponible del artículo y del proveedor.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-cart-shopping" aria-hidden="true"></i></span><h3>Verifica antes de confirmar</h3><p>Comprueba las presentaciones, cantidades y precios; elige una sucursal de entrega y un método de pago disponible. Consulta al proveedor si algo no está claro.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-receipt" aria-hidden="true"></i></span><h3>Da seguimiento</h3><p>En Mis Pedidos puedes consultar detalles y estados, aplicar filtros y exportar los registros disponibles a CSV o imprimirlos.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></span><h3>Revisa tus compras</h3><p>El análisis permite consultar importes por período, moneda, productos y categorías. Actualiza los filtros antes de exportar.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-comment-dots" aria-hidden="true"></i></span><h3>Comparte tu experiencia</h3><p>Desde Atención y preferencias puedes registrar opiniones, evaluaciones e incidencias vinculadas a tus pedidos.</p></article>
+                    </div>
+                    <div class="guide-actions"><button class="btn-primary" type="button" data-open-register="client"><i class="fas fa-user-plus" aria-hidden="true"></i> Crear cuenta de restaurante</button><a class="guide-text-link" href="#faq">Consultar preguntas frecuentes <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+                </section>
+
+                <section class="section landing-guide" id="guia-proveedores" aria-labelledby="guide-provider-title">
+                    <span class="landing-eyebrow">03 · GUÍA PARA PROVEEDORES</span>
+                    <h2 class="section-title" id="guide-provider-title">Presenta tu oferta y gestiona tus pedidos</h2>
+                    <p class="lead">Mantén la información de productos e inventario organizada y revisa el avance de las ventas desde tu espacio web.</p>
+                    <div class="guide-card-grid">
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-building" aria-hidden="true"></i></span><h3>Completa tu negocio</h3><p>Revisa la información de la empresa y las sucursales para mantener al día los datos que apoyan la operación.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-box-open" aria-hidden="true"></i></span><h3>Organiza el catálogo</h3><p>Verifica nombres, categorías, unidades y precios. Usa descripciones claras para que los clientes comparen las presentaciones.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-warehouse" aria-hidden="true"></i></span><h3>Revisa existencias</h3><p>Mantén el inventario actualizado para que la disponibilidad mostrada corresponda a la información de tu negocio.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-truck-fast" aria-hidden="true"></i></span><h3>Atiende pedidos recibidos</h3><p>Busca y filtra pedidos; revisa su detalle y registra cambios de estado que reflejen lo ocurrido. Coordina directamente cualquier detalle de entrega.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span><h3>Consulta tu actividad</h3><p>El dashboard y el análisis muestran los datos disponibles de pedidos y ventas. Ajusta período y moneda antes de revisar o exportar.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-comments" aria-hidden="true"></i></span><h3>Da seguimiento a comentarios</h3><p>Consulta opiniones e incidencias relacionadas con tu empresa y registra respuestas claras y respetuosas desde las herramientas disponibles.</p></article>
+                    </div>
+                    <div class="guide-actions"><button class="btn-primary" type="button" data-open-register="provider"><i class="fas fa-user-plus" aria-hidden="true"></i> Crear cuenta de proveedor</button><a class="guide-text-link" href="#guia-comunidad">Conocer atención y comunidad <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+                </section>
+
+                <section class="section landing-guide" id="guia-comunidad" aria-labelledby="guide-community-title">
+                    <span class="landing-eyebrow">04 · ATENCIÓN Y COMUNIDAD</span>
+                    <h2 class="section-title" id="guide-community-title">Comunicación útil después de cada pedido</h2>
+                    <p class="lead">Los ejemplos de esta guía son ilustrativos. Las opiniones reales se consultan dentro de las cuentas con acceso a esos pedidos.</p>
+                    <div class="guide-card-grid">
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-star" aria-hidden="true"></i></span><h3>Opinión y evaluación</h3><p>Describe tu experiencia vinculada al pedido y valora aspectos concretos del producto o servicio.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i></span><h3>Incidencia de entrega</h3><p>Indica qué pedido y producto están involucrados, qué ocurrió y qué información necesita revisar la otra parte.</p></article>
+                        <article class="guide-card"><span class="guide-card-icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></span><h3>Cuida tus datos</h3><p>No compartas contraseñas, datos personales ni información de pago en comentarios. La plataforma organiza el intercambio, pero no garantiza resultados ni plazos.</p></article>
+                    </div>
+                    <div class="comment-controls">
+                        <label for="commentSearch">Buscar ejemplos<input id="commentSearch" type="search" placeholder="Producto, pedido, entrega..." autocomplete="off"></label>
+                        <label for="commentType">Filtrar por tema<select id="commentType"><option value="todos">Todos los temas</option><option value="compra">Compra y evaluación</option><option value="entrega">Entrega e incidencias</option><option value="respuesta">Respuesta del proveedor</option></select></label>
+                    </div>
+                    <p id="commentCount" class="comment-status" role="status" aria-live="polite"></p>
+                    <div class="community-examples">
+                        <article class="community-example" data-comment-type="compra"><span class="example-label">EJEMPLO ILUSTRATIVO</span><h3>Experiencia de compra</h3><p>“Revisé las cantidades y la sucursal antes de confirmar el pedido.”</p></article>
+                        <article class="community-example" data-comment-type="entrega"><span class="example-label">EJEMPLO ILUSTRATIVO</span><h3>Incidencia de entrega</h3><p>“Noté una diferencia en los productos recibidos y registré el pedido para solicitar una revisión.”</p></article>
+                        <article class="community-example" data-comment-type="respuesta"><span class="example-label">EJEMPLO ILUSTRATIVO</span><h3>Respuesta del proveedor</h3><p>“Recibimos el comentario y revisaremos los productos del pedido para compartir la información disponible.”</p></article>
+                    </div>
+                    <div class="guide-actions"><button class="btn-primary" type="button" id="communityLogin"><i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i> Inicia sesión para consultar tu cuenta</button><a class="guide-text-link" href="#contacto">Contactar a TradConnect <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+                </section>
                 <!-- Historia -->
-                <section id="historia" class="section">
-                    <h2 class="section-title">Nuestra historia</h2>
+                <section id="historia" class="section mission-section">
+                    <span class="landing-eyebrow">NUESTRA MISIÓN</span>
+                    <h2 class="section-title">Conectar negocios para simplificar el abastecimiento</h2>
                     <div class="text-block">
-                        <p>TradConnect nació en 2023 en Managua, impulsada por la necesidad de digitalizar la cadena de
-                            suministro entre pequeños productores y el sector gastronómico. Lo que comenzó como un
-                            proyecto local hoy conecta a cientos de negocios en todo el país, reduciendo costos y
-                            mejorando la eficiencia logística.</p>
-                        <p style="margin-top:1.5rem;">En apenas dos años, hemos reducido los tiempos de entrega en un
-                            <strong>40%</strong> y los costos de adquisición en un <strong>25%</strong>. Actualmente
-                            trabajamos con más de <strong>150 proveedores</strong> y <strong>300 restaurantes</strong>,
-                            generando un impacto positivo en la economía local.
-                        </p>
+                        <p>TradConnect ofrece herramientas digitales para facilitar el encuentro entre restaurantes que buscan insumos y proveedores que presentan sus productos.</p>
+                        <p>La plataforma organiza información de catálogo, pedidos, inventario y seguimiento en función de las necesidades de cada rol. Las condiciones comerciales y de entrega se coordinan entre los negocios participantes.</p>
                     </div>
                 </section>
 
                 <!-- Beneficios clave -->
                 <section id="beneficios" class="section">
-                    <h2 class="section-title">Beneficios clave</h2>
+                    <span class="landing-eyebrow">UNA OPERACIÓN MÁS ORGANIZADA</span>
+                    <h2 class="section-title">Herramientas para el trabajo cotidiano</h2>
+                    <p class="lead">Consulta la información, gestiona cada paso y conserva un registro de la actividad de tu negocio.</p>
                     <div class="benefits-grid">
-                        <div class="benefit-item"><i class="fas fa-clock" style="font-size:2.5rem; color:#1e4a76;"></i>
-                            <h3>Ahorro de tiempo</h3>
-                            <p>Pedidos en minutos, entregas en horas. Olvídate de llamadas y cotizaciones manuales.</p>
+                        <div class="benefit-item"><span class="landing-card-icon"><i class="fas fa-magnifying-glass" aria-hidden="true"></i></span>
+                            <h3>Encuentra información</h3>
+                            <p>Busca productos y consulta los datos publicados por cada proveedor antes de preparar tu pedido.</p>
                         </div>
-                        <div class="benefit-item"><i class="fas fa-chart-line"
-                                style="font-size:2.5rem; color:#1e4a76;"></i>
-                            <h3>Reducción de costos</h3>
-                            <p>Hasta un 30% menos en tus compras gracias a precios directos de proveedores.</p>
+                        <div class="benefit-item"><span class="landing-card-icon"><i class="fas fa-list-check" aria-hidden="true"></i></span>
+                            <h3>Organiza pedidos</h3>
+                            <p>Revisa productos, cantidades, sucursal y estado en el historial disponible para tu cuenta.</p>
                         </div>
-                        <div class="benefit-item"><i class="fas fa-leaf" style="font-size:2.5rem; color:#1e4a76;"></i>
-                            <h3>Sostenibilidad</h3>
-                            <p>Apoya a productores locales y reduce la huella de carbono.</p>
+                        <div class="benefit-item"><span class="landing-card-icon"><i class="fas fa-chart-column" aria-hidden="true"></i></span>
+                            <h3>Consulta resultados</h3>
+                            <p>Filtra los datos de compras o ventas por fecha y moneda para preparar tus reportes.</p>
                         </div>
                     </div>
                 </section>
 
                 <!-- Cómo empezar -->
                 <section class="section" id="como-empezar">
-                    <h2 class="section-title">Cómo empezar</h2>
+                    <span class="landing-eyebrow">PRIMEROS PASOS</span>
+                    <h2 class="section-title">Empieza desde el espacio de tu negocio</h2>
+                    <p class="lead">Crea la cuenta adecuada y sigue el recorrido correspondiente a tu actividad.</p>
                     <div class="steps-grid">
-                        <div class="step-item"><span style="font-size:2rem; font-weight:800; color:#1e4a76;">1</span>
-                            <h3>Regístrate gratis</h3>
-                            <p>Crea tu cuenta como restaurante en menos de 2 minutos.</p>
+                        <div class="step-item"><span class="step-icon"><i class="fas fa-user-plus" aria-hidden="true"></i></span>
+                            <h3>Registra tu negocio</h3>
+                            <p>Selecciona restaurante o proveedor y completa los datos solicitados.</p>
                         </div>
-                        <div class="step-item"><span style="font-size:2rem; font-weight:800; color:#1e4a76;">2</span>
-                            <h3>Explora el marketplace</h3>
-                            <p>Encuentra alimentos, utensilios y bebidas de proveedores verificados.</p>
+                        <div class="step-item"><span class="step-icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+                            <h3>Prepara tu espacio</h3>
+                            <p>Restaurantes exploran productos; proveedores organizan catálogo y existencias.</p>
                         </div>
-                        <div class="step-item"><span style="font-size:2rem; font-weight:800; color:#1e4a76;">3</span>
-                            <h3>Realiza tu pedido</h3>
-                            <p>Selecciona productos, elige tu sucursal de entrega y paga de forma segura.</p>
+                        <div class="step-item"><span class="step-icon"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span>
+                            <h3>Gestiona la operación</h3>
+                            <p>Revisa cada pedido y coordina los detalles necesarios con la otra parte.</p>
                         </div>
-                        <div class="step-item"><span style="font-size:2rem; font-weight:800; color:#1e4a76;">4</span>
-                            <h3>Recibe y ahorra</h3>
-                            <p>Disfruta de entregas rápidas y seguimiento en tiempo real.</p>
+                        <div class="step-item"><span class="step-icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></span>
+                            <h3>Da seguimiento</h3>
+                            <p>Consulta estados, comentarios y reportes disponibles para tu rol.</p>
                         </div>
                     </div>
                 </section>
@@ -151,78 +251,71 @@
                 <!-- Productos -->
                 <section id="productos" class="section">
                     <h2 class="section-title">Lo que ofrecemos</h2>
-                    <p class="lead">Categorías especialmente seleccionadas para restaurantes y comederos</p>
+                    <p class="lead">Explora las categorías y productos disponibles en el catálogo de cada proveedor.</p>
                     <div class="landing-categories">
-                        <div style="text-align: center;"><i class="fas fa-carrot"
-                                style="font-size: 2.5rem; color:#1e4a76;"></i>
-                            <h4 style="margin-top:0.5rem;">Alimentos frescos</h4>
-                            <p>Verduras, frutas, lácteos, carnes</p>
+                        <div><span class="landing-card-icon"><i class="fas fa-carrot" aria-hidden="true"></i></span>
+                            <h4>Alimentos e ingredientes</h4>
+                            <p>Consulta las opciones y presentaciones publicadas por los proveedores.</p>
                         </div>
-                        <div style="text-align: center;"><i class="fas fa-utensils"
-                                style="font-size: 2.5rem; color:#1e4a76;"></i>
-                            <h4 style="margin-top:0.5rem;">Utensilios de cocina</h4>
-                            <p>Vajilla, ollas, menaje profesional</p>
+                        <div><span class="landing-card-icon"><i class="fas fa-utensils" aria-hidden="true"></i></span>
+                            <h4>Insumos para tu operación</h4>
+                            <p>Revisa el catálogo para encontrar artículos relacionados con tu negocio.</p>
                         </div>
-                        <div style="text-align: center;"><i class="fas fa-wine-bottle"
-                                style="font-size: 2.5rem; color:#1e4a76;"></i>
-                            <h4 style="margin-top:0.5rem;">Bebidas</h4>
-                            <p>Jugos, gaseosas, vinos nacionales</p>
+                        <div><span class="landing-card-icon"><i class="fas fa-boxes-stacked" aria-hidden="true"></i></span>
+                            <h4>Catálogo de proveedores</h4>
+                            <p>La disponibilidad y los detalles dependen de la oferta registrada.</p>
                         </div>
-                        
                     </div>
                 </section>
-
-                <!-- Estadísticas -->
-                <div class="stats-inline">
-                    <div><span class="stat-number">+450</span><br>Negocios conectados</div>
-                    <div><span class="stat-number">+12k</span><br>Pedidos realizados</div>
-                    <div><span class="stat-number">98%</span><br>Satisfacción del cliente</div>
-                    <div><span class="stat-number">-25%</span><br>Reducción de costos</div>
-                </div>
 
                 <!-- Testimonios -->
                 <section id="testimonios" class="section">
-                    <h2 class="section-title">Comentarios y experiencias</h2><p class="lead">Ejemplos ilustrativos para conocer el tipo de opiniones que se pueden compartir. No son reseñas verificadas.</p>
-                    <div class="two-columns">
-                        <div class="testimonial"><i class="fas fa-quote-left"
-                                style="color:#1e4a76; margin-right:0.5rem;"></i> "Revisé los productos que necesitaba y organicé mi compra antes de confirmar el pedido."<br><strong>Ejemplo de comentario de restaurante</strong></div>
-                        <div class="testimonial"><i class="fas fa-quote-left"
-                                style="color:#1e4a76; margin-right:0.5rem;"></i> "Consultar los pedidos recibidos me ayuda a organizar la información de cada venta."<br><strong>Ejemplo de comentario de proveedor</strong></div>
+                    <span class="landing-eyebrow">CADA ROL, SU ESPACIO</span>
+                    <h2 class="section-title">Compra y venta con información organizada</h2>
+                    <p class="lead">TradConnect adapta las herramientas al trabajo de cada negocio, sin prometer resultados comerciales específicos.</p>
+                    <div class="role-preview-grid">
+                        <a class="role-preview-card" href="#guia-restaurantes"><i class="fas fa-utensils" aria-hidden="true"></i><span><strong>Si tienes un restaurante</strong><small>Explora el catálogo, prepara pedidos y consulta tus compras.</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="role-preview-card" href="#guia-proveedores"><i class="fas fa-boxes-stacked" aria-hidden="true"></i><span><strong>Si eres proveedor</strong><small>Organiza productos, inventario, pedidos y reportes de ventas.</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                     </div>
                 </section>
 
-<p class="lead"><a href="informacion/comunidad.html#ejemplos">Explorar comentarios y canales de atención →</a></p>
                 <!-- FAQ -->
-                <section id="faq" class="section">
-                    <h2 class="section-title">Preguntas frecuentes</h2><label class="faq-search-label" for="landingFaqSearch">Encuentra una respuesta</label><input type="search" id="landingFaqSearch" class="faq-search" placeholder="Busca: registro, entregas, facturas..."><p id="faqSearchStatus" class="lead" role="status"></p>
-                    <div style="max-width: 800px; margin: 0 auto;">
+                <section id="faq" class="section faq-section">
+                    <span class="landing-eyebrow">AYUDA</span>
+                    <h2 class="section-title">Preguntas frecuentes</h2>
+                    <p class="lead">Respuestas claras para que sepas qué esperar de cada espacio.</p>
+                    <label class="faq-search-label" for="landingFaqSearch"><i class="fas fa-magnifying-glass" aria-hidden="true"></i> Encuentra una respuesta</label>
+                    <input type="search" id="landingFaqSearch" class="faq-search" placeholder="Busca: cuenta, pedido, app móvil..." autocomplete="off">
+                    <p id="faqSearchStatus" class="lead" role="status" aria-live="polite"></p>
+                    <div class="faq-list">
                         <div class="faq-item">
-                            <div class="faq-question">¿Cómo me registro? <i class="fas fa-chevron-down"></i></div>
-                            <div class="faq-answer">Elige tu tipo de negocio y completa usuario, correo, contraseña, razón social, RUC y teléfono. Confirma tu contraseña para crear la cuenta.</div>
+                            <button type="button" class="faq-question" aria-expanded="false">¿Cómo me registro? <i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                            <div class="faq-answer" hidden>Selecciona restaurante o proveedor y completa los datos de usuario y negocio solicitados en el formulario de registro.</div>
                         </div>
                         <div class="faq-item">
-                            <div class="faq-question">¿Qué costo tiene la plataforma? <i
-                                    class="fas fa-chevron-down"></i></div>
-                            <div class="faq-answer">El registro y la navegación son completamente gratuitos. Solo pagas
-                                los productos que compras.</div>
+                            <button type="button" class="faq-question" aria-expanded="false">¿Qué puedo hacer en la web? <i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                            <div class="faq-answer" hidden>Restaurantes pueden explorar productos, gestionar pedidos y revisar compras. Proveedores pueden administrar productos e inventario, atender pedidos y consultar sus ventas.</div>
                         </div>
                         <div class="faq-item">
-                            <div class="faq-question">¿Cómo son las entregas? <i class="fas fa-chevron-down"></i></div>
-                            <div class="faq-answer">Coordinamos con proveedores locales para entregas en un plazo de 24
-                                a 48 horas en Managua y 3 días en el resto del país.</div>
+                            <button type="button" class="faq-question" aria-expanded="false">¿Dónde accede el personal gerencial? <i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                            <div class="faq-answer" hidden>Las funciones gerenciales están destinadas a una aplicación móvil independiente. Su publicación para Android y iPhone aún no está disponible.</div>
                         </div>
                         <div class="faq-item">
-                            <div class="faq-question">¿Puedo facturar mis compras? <i class="fas fa-chevron-down"></i>
-                            </div>
-                            <div class="faq-answer">Sí, todas las transacciones generan factura electrónica con tu RUC.
-                            </div>
+                            <button type="button" class="faq-question" aria-expanded="false">¿Los reportes descargados son facturas? <i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                            <div class="faq-answer" hidden>No. Los reportes son documentos informativos basados en los datos disponibles y no sustituyen una factura fiscal ni confirman un pago.</div>
+                        </div>
+                        <div class="faq-item">
+                            <button type="button" class="faq-question" aria-expanded="false">¿Cómo coordino una entrega o condición de compra? <i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                            <div class="faq-answer" hidden>Revisa la información del producto y del pedido, y confirma directamente con el proveedor cualquier detalle que no aparezca en la plataforma.</div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Aliados -->
-                <section class="section">
-                    <h2 class="section-title">Aliados estratégicos</h2>
+                <section class="section ecosystem-section">
+                    <span class="landing-eyebrow">UN ECOSISTEMA CONECTADO</span>
+                    <h2 class="section-title">Del origen al abastecimiento</h2>
+                    <p class="lead">TradConnect acompaña el intercambio de información entre los negocios participantes.</p>
                     <div class="partner-logos">
                         <article class="partner-logo-card">
                             <span class="partner-logo-mark partner-logo-produce" aria-hidden="true"><i class="fas fa-seedling"></i></span>
@@ -243,48 +336,25 @@
                     </div>
                 </section>
 
-                <!-- Blog -->
-                <section class="section">
-                    <h2 class="section-title">Noticias y consejos</h2>
+                <!-- Guías -->
+                <section class="section resource-section">
+                    <span class="landing-eyebrow">SIGUE EXPLORANDO</span>
+                    <h2 class="section-title">Guías para cada etapa de tu operación</h2>
+                    <p class="lead">Consulta la información completa sin salir de esta página.</p>
                     <div class="blog-grid">
-                        <div class="blog-card">
-                            <h4>5 tendencias en abastecimiento para restaurantes 2025</h4>
-                            <p>Descubre cómo optimizar tu cadena de suministro.</p><a href="#"
-                                style="color:#1e4a76;">Leer más →</a>
-                        </div>
-                        <div class="blog-card">
-                            <h4>Cómo reducir el desperdicio de alimentos</h4>
-                            <p>Estrategias prácticas para tu cocina.</p><a href="#" style="color:#1e4a76;">Leer más
-                                →</a>
-                        </div>
-                        <div class="blog-card">
-                            <h4>Entrevista: productores locales que triunfan</h4>
-                            <p>Conoce sus historias de éxito.</p><a href="#" style="color:#1e4a76;">Leer más →</a>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Video -->
-                <section id="video" class="section">
-                    <h2 class="section-title">Cómo funciona TradConnect</h2>
-                    <div class="video-container">
-                        <iframe src="https://www.youtube-nocookie.com/embed/0_77uBv48tY" title="Presentación de TradConnect" loading="lazy"
-                            allowfullscreen></iframe>
+                        <a class="blog-card" href="#guia-funcionamiento"><i class="fas fa-route" aria-hidden="true"></i><h3>El recorrido de un pedido</h3><p>Desde el registro hasta los reportes y el seguimiento.</p><span>Ver guía <i class="fas fa-arrow-right" aria-hidden="true"></i></span></a>
+                        <a class="blog-card" href="#guia-restaurantes"><i class="fas fa-basket-shopping" aria-hidden="true"></i><h3>Abastecimiento para restaurantes</h3><p>Prepara tu lista, verifica las condiciones y conserva el historial.</p><span>Ver guía <i class="fas fa-arrow-right" aria-hidden="true"></i></span></a>
+                        <a class="blog-card" href="#guia-proveedores"><i class="fas fa-boxes-stacked" aria-hidden="true"></i><h3>Herramientas para proveedores</h3><p>Organiza productos, existencias, ventas y atención al cliente.</p><span>Ver guía <i class="fas fa-arrow-right" aria-hidden="true"></i></span></a>
                     </div>
                 </section>
 
                 <!-- Contacto -->
                 <section id="contacto" class="section">
-                    <h2 class="section-title">¿Listo para crecer?</h2>
-                    <form style="max-width: 600px; margin: 0 auto;">
-                        <input type="text" placeholder="Nombre"
-                            style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:3rem; border:1px solid #e2e8f0;">
-                        <input type="email" placeholder="Correo"
-                            style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:3rem; border:1px solid #e2e8f0;">
-                        <textarea placeholder="Mensaje" rows="3"
-                            style="width:100%; padding:1rem; border-radius:1.5rem; border:1px solid #e2e8f0;"></textarea>
-                        <button type="submit" class="btn-primary" style="margin-top:1rem;">Enviar mensaje</button>
-                    </form>
+                    <div class="contact-card">
+                        <span class="contact-card-icon"><i class="fas fa-paper-plane" aria-hidden="true"></i></span>
+                        <div><span class="landing-eyebrow">¿NECESITAS AYUDA?</span><h2>Estamos para orientarte</h2><p>Escríbenos para consultas sobre la plataforma, tu rol o el acceso a tu cuenta.</p></div>
+                        <a class="btn-primary" href="mailto:hello@tradconnect.com"><i class="fas fa-envelope" aria-hidden="true"></i> hello@tradconnect.com</a>
+                    </div>
                 </section>
             </div>
         </main>
@@ -292,43 +362,23 @@
             <div class="footer-container">
                 <!-- GRID PRINCIPAL -->
                 <div class="footer-grid">
-                    <!-- Columna 1: Brand + Newsletter -->
+                    <!-- Columna 1: Marca -->
                     <div class="footer-section footer-brand">
                         <div class="logo">TradConnect</div>
                         <p class="footer-description">
-                            Transformando el comercio tradicional con tecnología
-                            innovadora. Conectamos tradición y futuro desde 2026.
+                            Una plataforma para conectar restaurantes, proveedores y operaciones locales.
                         </p>
-
-                        <div class="newsletter-wrapper">
-                            <input type="email" class="newsletter-input" placeholder="Recibe ofertas exclusivas..."
-                                aria-label="Email para newsletter" />
-                            <button class="newsletter-btn" aria-label="Suscribirse">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        </div>
+                        <a class="footer-cta" href="#solucion-bifocal">Conoce cómo funciona <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                     </div>
 
                     <!-- Columna 2: Producto -->
                     <div class="footer-section">
                         <h3 class="footer-heading">Producto</h3>
                         <ul class="footer-links">
-                            <li><a href="#">Características</a></li>
-                            <li>
-                                <a href="#">Marketplace
-                                    <span class="badge-new">Nuevo</span>
-                                </a>
-                            </li>
-                            <li><a href="#">Precios</a></li>
-                            <li>
-                                <a href="#">API
-                                    <span class="badge-soon">Próximo</span>
-                                </a>
-                            </li>
-                            <li><a href="#">Integraciones</a></li>
+                            <li><a href="#explora-plataforma">Explorar la plataforma</a></li>
+                            <li><a href="#productos">Catálogo</a></li>
+                            <li><a href="#beneficios">Herramientas</a></li>
+                            <li><a href="#guia-funcionamiento">Cómo funciona</a></li>
                         </ul>
                     </div>
 
@@ -336,11 +386,10 @@
                     <div class="footer-section">
                         <h3 class="footer-heading">Empresa</h3>
                         <ul class="footer-links">
-                            <li><a href="#">Sobre nosotros</a></li>
-                            <li><a href="#">Blog</a></li>
-                            <li><a href="#">Careers</a></li>
-                            <li><a href="#">Partners</a></li>
-                            <li><a href="#">Contacto</a></li>
+                            <li><a href="#historia">Nuestra misión</a></li>
+                            <li><a href="#guia-restaurantes">Restaurantes</a></li>
+                            <li><a href="#guia-proveedores">Proveedores</a></li>
+                            <li><a href="#guia-comunidad">Atención y comunidad</a></li>
                         </ul>
                     </div>
 
@@ -354,22 +403,14 @@
                                     <path
                                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                <span>hello@tradconnect.com</span>
-                            </div>
-                            <div class="contact-item">
-                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
-                                </svg>
-                                <span>+1 (555) 123-4567</span>
+                                <a href="mailto:hello@tradconnect.com">hello@tradconnect.com</a>
                             </div>
                         </div>
 
                         <!-- Redes Sociales Mejoradas -->
                         <div class="social-section">
                             <!-- Twitter/X -->
-                            <a href="#" class="social-link" aria-label="Twitter">
+                            <a href="#contacto" class="social-link" aria-label="Consultar contacto">
                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -377,7 +418,7 @@
                             </a>
 
                             <!-- LinkedIn -->
-                            <a href="#" class="social-link" aria-label="LinkedIn">
+                            <a href="#guia-restaurantes" class="social-link" aria-label="Guía para restaurantes">
                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
@@ -385,7 +426,7 @@
                             </a>
 
                             <!-- Instagram -->
-                            <a href="#" class="social-link" aria-label="Instagram">
+                            <a href="#guia-proveedores" class="social-link" aria-label="Guía para proveedores">
                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
@@ -393,7 +434,7 @@
                             </a>
 
                             <!-- Facebook -->
-                            <a href="#" class="social-link" aria-label="Facebook">
+                            <a href="#guia-comunidad" class="social-link" aria-label="Atención y comunidad">
                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -401,7 +442,7 @@
                             </a>
 
                             <!-- YouTube -->
-                            <a href="#" class="social-link" aria-label="YouTube">
+                            <a href="#explora-plataforma" class="social-link" aria-label="Explorar la plataforma">
                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
@@ -420,15 +461,9 @@
                     </div>
 
                     <div class="footer-legal-links">
-                        <a href="#">Privacidad</a>
-                        <a href="#">Términos</a>
-                        <a href="#">Cookies</a>
-                        <select class="language-selector" aria-label="Seleccionar idioma">
-                            <option value="es">🇪🇸 Español</option>
-                            <option value="en">🇺🇸 English</option>
-                            <option value="fr">🇫🇷 Français</option>
-                            <option value="de">🇩🇪 Deutsch</option>
-                        </select>
+                        <a href="#faq">Preguntas frecuentes</a>
+                        <a href="#contacto">Contacto</a>
+                        <a href="#inicio">Volver arriba <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
                     </div>
                 </div>
             </div>
@@ -673,7 +708,7 @@
     <div id="landingLoginModal" class="landing-modal" role="dialog" aria-modal="true" aria-labelledby="landingLoginTitle">
         <div class="landing-modal-content">
             <button type="button" class="landing-close-modal" id="landingCloseLoginBtn" aria-label="Cerrar">&times;</button>
-            <h3>Iniciar sesión</h3>
+            <h3 id="landingLoginTitle">Iniciar sesión</h3>
             <form id="landingLoginForm">
                 <label for="landingLoginUsername">Usuario o correo</label>
                 <input type="text" id="landingLoginUsername" maxlength="150" placeholder="Usuario o correo electrónico" autocomplete="username" required>
@@ -684,7 +719,7 @@
                 </div>
                 <button type="submit" class="landing-btn-primary">Ingresar</button>
                 <div class="landing-modal-link">
-                    ¿No tienes cuenta? <a href="#" id="landingSwitchToRegister">Regístrate aquí</a>
+                    ¿No tienes cuenta? <button type="button" class="modal-switch" id="landingSwitchToRegister">Regístrate aquí</button>
                 </div>
             </form>
         </div>
@@ -718,7 +753,7 @@
                 </select>
                 <button type="submit" class="landing-btn-primary">Registrarse</button>
                 <div class="landing-modal-link">
-                    ¿Ya tienes cuenta? <a href="#" id="landingSwitchToLogin">Inicia sesión</a>
+                    ¿Ya tienes cuenta? <button type="button" class="modal-switch" id="landingSwitchToLogin">Inicia sesión</button>
                 </div>
             </form>
         </div>
@@ -729,10 +764,11 @@
     <!-- Scripts -->
     <script src="javascripts/utils/common.js"></script>
     <script src="javascripts/utils/export.js"></script>
-    <script src="javascripts/config.js"></script>
+    <script src="javascripts/config.js?v=20261110-api-cloud"></script>
     <script src="javascripts/feedback.js?v=20261030-comments-2"></script>
     <script src="javascripts/documents.js"></script>
-    <script src="javascripts/utils/api.js?v=20261030-auth-fix"></script>
+    <script src="javascripts/mobile.js"></script>
+    <script src="javascripts/utils/api.js?v=20261110-api-cloud"></script>
     <script src="javascripts/utils/rolusuario.js"></script>
     <script src="javascripts/utils/router.js"></script>
     <script src="javascripts/utils/landing_spa.js?v=20261030-auth-fix"></script>

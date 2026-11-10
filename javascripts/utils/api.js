@@ -1,5 +1,5 @@
 // javascripts/utils/api.js - VERSIÓN CON REFRESCO AUTOMÁTICO TRAS CRUD (dump-all)
-let API_BASE_URL = (window.TRADCONNECT_CONFIG?.apiBaseUrl || 'http://localhost:8001/api').replace(/\/$/, '');
+let API_BASE_URL = (window.TRADCONNECT_CONFIG?.apiBaseUrl || 'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/api').replace(/\/$/, '');
 
 const apiErrorStats = { total: 0, byEndpoint: {}, byStatus: {}, lastErrorAt: null };
 
@@ -25,8 +25,11 @@ const api = {
                 const data = await this.readResponse(response);
                 if (!response.ok || typeof data.api_base_url !== 'string') throw new Error('Configuración de API no disponible.');
                 const next = new URL(data.api_base_url);
-                if (next.origin !== new URL(API_BASE_URL).origin || !['http:', 'https:'].includes(next.protocol)) {
-                    throw new Error('La configuración debe pertenecer al mismo servidor de la API.');
+                const securePage = window.location?.protocol === 'https:';
+                if (next.origin !== new URL(API_BASE_URL).origin
+                    || !['http:', 'https:'].includes(next.protocol)
+                    || (securePage && next.protocol !== 'https:')) {
+                    throw new Error('La configuración debe pertenecer al mismo servidor de la API y usar HTTPS en páginas seguras.');
                 }
                 API_BASE_URL = next.href.replace(/\/$/, '');
                 window.TRADCONNECT_CONFIG = { ...window.TRADCONNECT_CONFIG, apiBaseUrl: API_BASE_URL, links: data };

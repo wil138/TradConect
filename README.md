@@ -4,10 +4,10 @@ TradConnect es una plataforma web B2B para relacionar restaurantes y proveedores
 de productos gastronómicos. Este repositorio contiene la interfaz web y el
 proyecto Django de la API en `TradConnect_Api/`.
 
-> **Desarrollo local:** la configuración web actual apunta a la API en
-> `http://localhost:8001/api`. El puerto se define inicialmente en
-> [`javascripts/config.js`](./javascripts/config.js) y la API publica la
-> configuración activa en `/api/configuracion/`.
+> **API web:** [`javascripts/config.js`](./javascripts/config.js) apunta por
+> defecto a la API HTTPS de Azure. Para desarrollo local, cambia esa URL a
+> `http://localhost:8001/api`; la API publica su configuración activa en
+> `/api/configuracion/`.
 
 ## Arquitectura general
 
@@ -139,7 +139,7 @@ TradConect/
 | `Styles/` | Hojas CSS: `style.css` para la base de la aplicación, `landing.css` para la portada, `information.css` para páginas informativas, `modules.css` para estilos compartidos de módulos y `theme.css` para temas. |
 | `assets/` | Recursos gráficos locales; incluye el SVG de imagen de producto de reemplazo. |
 | `fragments/` | Vistas HTML parciales insertadas dentro del shell; no son páginas HTML completas ni contienen la carga general de scripts. |
-| `informacion/` | Páginas públicas completas: cómo funciona, comunidad, restaurantes y proveedores. |
+| `informacion/` | Rutas anteriores de las guías; redirigen a sus secciones integradas en la landing principal y su footer compartido. |
 | `javascripts/` | Lógica de los módulos SPA: analytics, dashboard, documentos, feedback, inventario, marketplace, pedidos y perfil. |
 | `javascripts/utils/` | Funciones compartidas de API, carrito, sesión/roles, router, utilidades, exportación, temas e interacciones de la portada. |
 | `tests/` | Pruebas Node.js para regresiones del frontend y pruebas Python de integración/registro. |

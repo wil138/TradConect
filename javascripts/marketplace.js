@@ -110,7 +110,7 @@ window.marketplace = {
             }
             .btn-add {
                 width: 100%;
-                background: linear-gradient(135deg, #2563eb, #1d4ed8);
+                background: linear-gradient(135deg, var(--blue-primary), var(--blue-hover));
                 color: white;
                 border: none;
                 padding: 10px 0;
@@ -126,7 +126,7 @@ window.marketplace = {
             }
             .btn-add:hover {
                 transform: scale(1.02);
-                box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+                box-shadow: 0 8px 20px rgba(30,74,118,0.3);
             }
             .detail-modal-overlay {
                 position: fixed;
@@ -226,10 +226,10 @@ window.marketplace = {
                 font-size: 1rem;
             }
             .detail-modal-body .info-item.price {
-                background: #dbeafe;
+                background: var(--blue-soft);
             }
             .detail-modal-body .info-item.price span {
-                color: #2563eb;
+                color: var(--blue-primary);
                 font-size: 1.3rem;
             }
             .detail-modal-footer {
@@ -241,7 +241,7 @@ window.marketplace = {
                 border-top: 1px solid #f1f5f9;
             }
             .detail-modal-footer .btn-add-cart {
-                background: linear-gradient(135deg, #2563eb, #1d4ed8);
+                background: linear-gradient(135deg, var(--blue-primary), var(--blue-hover));
                 color: white;
                 border: none;
                 padding: 0.8rem 2rem;
@@ -255,7 +255,7 @@ window.marketplace = {
             }
             .detail-modal-footer .btn-add-cart:hover {
                 transform: scale(1.04);
-                box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+                box-shadow: 0 8px 20px rgba(30,74,118,0.3);
             }
             .detail-modal-footer .btn-close {
                 background: #e2e8f0;

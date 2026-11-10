@@ -25,6 +25,7 @@ async function showSpaAndInit() {
     const userName = localStorage.getItem('userName') || 'Usuario';
     const userRole = localStorage.getItem('userRole') || 'client';
     const userEmail = localStorage.getItem('userEmail') || '';
+    document.body.classList.toggle('gerencial-mobile-mode', userRole === 'staff');
 
     console.log("📌 Datos usuario:", { userName, userRole, userEmail });
 
@@ -337,6 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window._openLoginHandler = () => openLoginModal();
         loginBtn.addEventListener('click', window._openLoginHandler);
     }
+
+    const bifocalLoginBtn = document.getElementById('bifocalWebLogin');
+    if (bifocalLoginBtn) bifocalLoginBtn.addEventListener('click', openLoginModal);
     
     const registerHeroBtn = document.getElementById('landingOpenRegisterBtn');
     if (registerHeroBtn) {

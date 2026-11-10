@@ -1,4 +1,4 @@
-﻿const { test } = require('node:test');
+const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { readFileSync, existsSync } = require('node:fs');
 const vm = require('node:vm');
@@ -66,9 +66,9 @@ test('daily sales chart uses the dashboard purple palette', () => {
     assert.equal(chartConfig.data.datasets[0].borderColor, '#7c3aed');
     assert.equal(chartConfig.data.datasets[0].backgroundColor, 'rgba(167, 139, 250, 0.72)');
 });
-test('landing strategic ecosystem displays four original partner category marks', () => {
+test('landing ecosystem displays four category marks without implying named sponsors', () => {
     const html = readFileSync('index.html', 'utf8');
-    const section = html.match(/<h2 class="section-title">Aliados estratégicos<\/h2>([\s\S]*?)<\/section>/)?.[1];
+    const section = html.match(/<section class="section ecosystem-section">([\s\S]*?)<\/section>/)?.[1];
     assert.ok(section);
     assert.equal((section.match(/class="partner-logo-card"/g) || []).length, 4);
     assert.match(section, /Producción local/);
@@ -125,6 +125,15 @@ test('API accepts empty successful responses and reports non-JSON responses', as
     assert.equal(ctx.window.api.formatError(null), 'Error en la petición');
 });
 
+test('production web configuration uses the HTTPS cloud API before loading its client', () => {
+    const config = context();
+    vm.runInContext(readFileSync('javascripts/config.js', 'utf8'), config);
+    assert.equal(config.window.TRADCONNECT_CONFIG.apiBaseUrl, 'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/api');
+
+    const html = readFileSync('index.html', 'utf8');
+    assert.ok(html.indexOf('javascripts/config.js?v=20261110-api-cloud') < html.indexOf('javascripts/utils/api.js?v=20261110-api-cloud'));
+});
+
 test('login uses the current API endpoint and maps optional session fields to safe UI defaults', async () => {
     const ctx = context();
     const calls = [];
@@ -152,7 +161,7 @@ test('login uses the current API endpoint and maps optional session fields to sa
     const result = await ctx.window.api.login('cuenta@example.com', 'password');
 
     assert.equal(result.success, true);
-    assert.equal(calls[0].url, 'http://localhost:8001/api/auth/login/');
+    assert.equal(calls[0].url, 'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/api/auth/login/');
     assert.equal(JSON.parse(calls[0].options.body).username, 'cuenta@example.com');
     assert.equal(ctx.localStorage.getItem('userName'), 'cuenta@example.com');
     assert.equal(ctx.localStorage.getItem('userRole'), 'provider');
@@ -231,7 +240,7 @@ test('refresh uses JWT snapshot endpoint and preserves existing tokens', async (
     ctx.localStorage.setItem('access_token', 'existing-access');
     ctx.localStorage.setItem('refresh_token', 'existing-refresh');
     ctx.fetch = async (url, options) => {
-        assert.equal(url, 'http://localhost:8001/api/auth/my-data/');
+        assert.equal(url, 'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/api/auth/my-data/');
         assert.equal(options.method, 'GET');
         assert.equal(options.headers.Authorization, 'Bearer existing-access');
         return { ok: true, status: 200, text: async () => JSON.stringify({usuario: {nombreusuario: 'Ana'}, productos: [{id: 1}]}) };
@@ -252,6 +261,104 @@ test('API maps administrative roles independently from clients', () => {
     assert.equal(ctx.window.api.resolveRole('Proveedor'), 'provider');
     assert.equal(typeof ctx.window.api.getProducts, 'function');
     assert.equal(typeof ctx.window.api.getInventory, 'function');
+});
+
+test('gerencia users get the mobile access module and see their assigned role', () => {
+    const values = new Map([
+        ['userRole', 'staff'],
+        ['user', JSON.stringify({rol_nombre: 'Gerencia'})]
+    ]);
+    const menu = { innerHTML: '', appendChild(item) { this.items.push(item); }, items: [] };
+    const ctx = vm.createContext({
+        window: {},
+        console,
+        localStorage: {
+            getItem: key => values.get(key) ?? null,
+            setItem: (key, value) => values.set(key, value)
+        },
+        document: {
+            getElementById: id => id === 'menu' ? menu : null,
+            querySelectorAll: () => [],
+            addEventListener() {},
+            createElement: () => ({ style: {}, setAttribute(key, value) { this[key] = value; }, addEventListener() {} })
+        }
+    });
+    vm.runInContext(readFileSync('javascripts/utils/common.js', 'utf8'), ctx);
+    ctx.appUtils = ctx.window.appUtils;
+    vm.runInContext(readFileSync('javascripts/utils/rolusuario.js', 'utf8'), ctx);
+    ctx.renderMenu();
+
+    assert.ok(menu.items.some(item => item['data-module'] === 'mobile'));
+
+    const roleElement = { textContent: '' };
+    ctx.document.getElementById = id => id === 'mobileAccessRole' ? roleElement : null;
+    vm.runInContext(readFileSync('javascripts/mobile.js', 'utf8'), ctx);
+    ctx.window.mobile.init();
+    assert.equal(roleElement.textContent, 'Gerencia');
+});
+
+test('staff users start in the mobile module and cannot load web modules', async () => {
+    const values = new Map([
+        ['userRole', 'staff'],
+        ['access_token', 'session-token'],
+        ['currentModule', 'marketplace']
+    ]);
+    const requestedRoutes = [];
+    const ctx = vm.createContext({
+        window: { addEventListener() {} },
+        AbortController,
+        localStorage: {
+            getItem: key => values.get(key) ?? null,
+            setItem: (key, value) => values.set(key, value)
+        },
+        document: { querySelectorAll: () => [], getElementById: () => ({ innerHTML: '' }) },
+        fetch: async route => { requestedRoutes.push(route); return { ok: true, text: async () => '' }; }
+    });
+    vm.runInContext(readFileSync('javascripts/utils/router.js', 'utf8'), ctx);
+
+    ctx.window.router.init();
+    await ctx.window.router.loadModule('profile');
+
+    assert.equal(ctx.window.router.currentModule, 'mobile');
+    assert.equal(values.get('currentModule'), 'mobile');
+    assert.deepEqual(requestedRoutes, ['fragments/mobile.html', 'fragments/mobile.html']);
+});
+
+test('landing explains the web and mobile administrative roles', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const section = html.match(/<section class="section bifocal-section"[\s\S]*?<\/section>/)?.[0];
+    assert.ok(section);
+    assert.match(section, /solución bifocal/i);
+    assert.match(section, /web para restaurantes y proveedores/i);
+    assert.match(section, /app móvil para gerencia/i);
+    assert.match(section, /todavía no está publicada/i);
+    assert.match(section, /id="landingMobileDownloads"/);
+    assert.match(html, /id="bifocalWebLogin"/);
+});
+
+test('landing guide submodules are internal sections with a shared footer', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const landing = html.split('<!-- ==================== SPA WRAPPER ==================== -->')[0];
+    const ids = new Set([...landing.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]));
+    for (const id of ['guia-funcionamiento', 'guia-restaurantes', 'guia-proveedores', 'guia-comunidad', 'faq', 'contacto']) {
+        assert.ok(ids.has(id), `Missing landing guide section: ${id}`);
+        assert.match(landing, new RegExp(`href="#${id}"`), `Missing internal link to ${id}`);
+    }
+    assert.match(landing, /<footer class="modern-footer">/);
+    assert.doesNotMatch(landing, /informacion\/[^"]+\.html/);
+    for (const [, target] of landing.matchAll(/<a\b[^>]*href="#([^"]+)"/g)) {
+        assert.ok(ids.has(target), `Landing anchor has no destination: #${target}`);
+    }
+    for (const [file, section] of [
+        ['como-funciona.html', 'guia-funcionamiento'],
+        ['restaurantes.html', 'guia-restaurantes'],
+        ['proveedores.html', 'guia-proveedores'],
+        ['comunidad.html', 'guia-comunidad']
+    ]) {
+        const redirect = readFileSync(`informacion/${file}`, 'utf8');
+        assert.match(redirect, new RegExp(`http-equiv="refresh" content="0;url=\\.\\./index\\.html#${section}"`));
+        assert.match(redirect, new RegExp(`href="../index\\.html#${section}"`));
+    }
 });
 
 test('sidebar shows the signed-in account name, role, company and avatar initial', () => {
@@ -352,20 +459,33 @@ test('frontend accepts central configuration from its API server and uses its ba
     const calls = [];
     ctx.fetch = async url => {
         calls.push(url);
-        const data = url.endsWith('/configuracion/') ? {api_base_url:'http://localhost:8001/proxy/api/'} : [];
+        const data = url.endsWith('/configuracion/') ? {api_base_url:'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/proxy/api/'} : [];
         return {ok:true,status:200,text:async()=>JSON.stringify(data)};
     };
     vm.runInContext(readFileSync('javascripts/utils/api.js','utf8'),ctx);
     assert.equal((await ctx.window.api.loadConfiguration()).success,true);
     await ctx.window.api.publicRequest('/categorias/',{},false);
-    assert.equal(calls[0],'http://localhost:8001/api/configuracion/');
-    assert.equal(calls[1],'http://localhost:8001/proxy/api/categorias/');
-    assert.equal(ctx.window.TRADCONNECT_CONFIG.apiBaseUrl,'http://localhost:8001/proxy/api');
+    assert.equal(calls[0],'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/api/configuracion/');
+    assert.equal(calls[1],'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/proxy/api/categorias/');
+    assert.equal(ctx.window.TRADCONNECT_CONFIG.apiBaseUrl,'https://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/proxy/api');
 });
 
 test('frontend rejects a configuration pointing to another server', async () => {
     const ctx = context(); ctx.URL = URL; ctx.setTimeout = setTimeout; ctx.clearTimeout = clearTimeout;
     ctx.fetch = async () => ({ok:true,status:200,text:async()=>JSON.stringify({api_base_url:'https://untrusted.example/api'})});
     vm.runInContext(readFileSync('javascripts/utils/api.js','utf8'),ctx);
+    assert.equal((await ctx.window.api.loadConfiguration()).success,false);
+});
+
+test('frontend refuses an HTTP API URL on an HTTPS page', async () => {
+    const ctx = context(); ctx.URL = URL; ctx.setTimeout = setTimeout; ctx.clearTimeout = clearTimeout;
+    ctx.window.location = {protocol: 'https:'};
+    ctx.fetch = async () => ({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({api_base_url:'http://tradconnec-api-g9brdvb6bpaddvfz.westus-01.azurewebsites.net/api'})
+    });
+    vm.runInContext(readFileSync('javascripts/utils/api.js','utf8'),ctx);
+
     assert.equal((await ctx.window.api.loadConfiguration()).success,false);
 });
